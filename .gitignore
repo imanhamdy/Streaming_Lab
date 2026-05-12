@@ -1,0 +1,26 @@
+# Environment
+.env
+*.env.local
+
+# Docker volumes / data
+**/data/
+**/volumes/
+
+# Terraform state
+infra/terraform/.terraform/
+infra/terraform/*.tfstate
+infra/terraform/*.tfstate.backup
+infra/terraform/*.tfvars
+
+# Ansible vault / secrets
+infra/ansible/vault_pass
+infra/ansible/*.secret
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editors
+.vscode/
+.idea/
+*.swp
