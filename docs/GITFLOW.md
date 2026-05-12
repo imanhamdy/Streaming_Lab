@@ -1,0 +1,157 @@
+# Gitflow Guide — Streaming Lab
+
+## Branches
+
+| Branche | Rôle | Accès direct |
+|---|---|---|
+| `main` | Production stable — livrables/démos | Interdit |
+| `develop` | Intégration continue — travail principal | Interdit |
+| `feature/*` | Développement d'une fonctionnalité | Oui |
+
+---
+
+## Répartition des branches par personne
+
+| Personne | Branches |
+|---|---|
+| **P1** | `feature/proxmox-vms` · `feature/iac-devops` |
+| **P2** | `feature/docker-stacks` · `feature/bases-de-donnees` · `feature/iam-securite` |
+| **P3** | `feature/reseau-securite` · `feature/monitoring-ids` · `feature/stockage-backup` |
+| **Tous** | `feature/documentation` |
+
+---
+
+## Workflow quotidien
+
+### 1. Début de session — se synchroniser
+
+```bash
+git checkout develop
+git pull origin develop
+git checkout feature/ma-branche
+git rebase develop
+```
+
+### 2. Travailler et commiter
+
+```bash
+git add .
+git commit -m "feat(proxy): add Traefik HTTPS config"
+```
+
+### 3. Pousser et ouvrir une PR
+
+```bash
+git push origin feature/ma-branche
+```
+
+Sur GitHub :
+- Ouvrir une **Pull Request** vers `develop`
+- Assigner un autre membre pour **review**
+- Attendre **1 approval** minimum avant de merger
+
+### 4. Après merge de la PR
+
+```bash
+git checkout develop
+git pull origin develop
+git branch -d feature/ma-branche
+```
+
+---
+
+## Convention des messages de commit
+
+```
+<type>(<scope>): <description courte>
+```
+
+| Type | Usage |
+|---|---|
+| `feat` | Nouvelle fonctionnalité |
+| `fix` | Correction de bug |
+| `chore` | Tâche technique (config, deps) |
+| `docs` | Documentation |
+| `ci` | CI/CD, scripts |
+| `refactor` | Refactoring sans changement fonctionnel |
+
+**Exemples :**
+```
+feat(keycloak): add realm config for streaminglab
+fix(traefik): correct HTTPS redirect rule
+chore(env): update .env.example with Vault vars
+docs(dat): add network architecture section
+```
+
+---
+
+## Mise en production (merge develop → main)
+
+Uniquement pour les **démos et livrables** :
+
+```bash
+git checkout main
+git pull origin main
+git merge develop --no-ff -m "release: oral intermédiaire v1.0"
+git push origin main
+```
+
+---
+
+## Schéma des flux
+
+```
+main        ────────────────────────────────────● release
+                                               /
+develop     ──●────●────●────●────●────●──────●
+               \  /      \  /      \  /
+feature/*   ────●          ●        ●
+            docker-stacks  db       monitoring
+```
+
+---
+
+## Règles absolues
+
+1. **Ne jamais pusher directement sur `develop` ou `main`**
+2. **Toujours passer par une Pull Request**
+3. **1 review minimum** avant merge
+4. **Jamais de `git push --force`** sur `develop` ou `main`
+5. **Rebase avant d'ouvrir une PR** pour éviter les conflits
+
+---
+
+## Commandes utiles
+
+```bash
+# Voir toutes les branches
+git branch -a
+
+# Voir l'état du dépôt
+git status
+
+# Voir les derniers commits
+git log --oneline --graph --all
+
+# Annuler le dernier commit (avant push)
+git reset --soft HEAD~1
+
+# Mettre de côté des modifications non commitées
+git stash
+git stash pop
+```
+
+---
+
+## Résolution de conflits
+
+```bash
+# Lors d'un rebase avec conflit :
+git status                   # voir les fichiers en conflit
+# éditer les fichiers → résoudre les conflits
+git add <fichier>
+git rebase --continue
+
+# Annuler le rebase si besoin
+git rebase --abort
+```
