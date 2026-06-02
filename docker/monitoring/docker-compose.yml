@@ -2,7 +2,8 @@ version: "3.8"
 
 networks:
   monitoring:
-    driver: bridge
+    external: true
+    name: monitoring-net
 
 volumes:
   prometheus_data:
@@ -138,7 +139,8 @@ services:
     ports:
       - "9090:9090"
     networks:
-      - monitoring
+      monitoring:
+        ipv4_address: 192.168.40.10
 
   # Loki
   loki:
@@ -154,7 +156,8 @@ services:
     ports:
       - "3100:3100"
     networks:
-      - monitoring
+      monitoring:
+        ipv4_address: 192.168.40.11
 
   # Promtail
   promtail:
@@ -171,7 +174,8 @@ services:
     depends_on:
       - loki
     networks:
-      - monitoring
+      monitoring:
+        ipv4_address: 192.168.40.12
 
   # Grafana
   grafana:
@@ -193,4 +197,5 @@ services:
       - prometheus
       - loki
     networks:
-      - monitoring
+      monitoring:
+        ipv4_address: 192.168.40.13

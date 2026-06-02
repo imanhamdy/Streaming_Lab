@@ -121,6 +121,26 @@ feature/*   ────●          ●        ●
 
 ---
 
+## Travailler avec des branches feature déjà existantes
+
+Si plusieurs personnes travaillent déjà sur des branches longue durée (ex : `feature/*`) :
+
+- **Ne pas créer de nouvelle branche longue durée** tant que possible : préférez de petites branches courtes et ciblées dérivées de `develop`.
+- **Stabiliser l'intégration** : mettez en place une cadence régulière (quotidienne ou bi-quotidienne) où chaque propriétaire de branche :
+    - fait un `git fetch origin` puis `git rebase origin/develop` (ou `git merge origin/develop` si vous préférez) ;
+    - exécute les tests et corrige rapidement les régressions avant de pousser.
+- **Conversion progressive** : pour les branches très longues, créez des sous-branches petites (ex : `feature/iam-securite/part-1`) et ouvrez des PRs incrémentales plutôt qu'une PR monolithique.
+- **Feature flags** : si une fonctionnalité est incomplète mais doit être intégrée, utilisez des feature flags pour garder `develop` déployable.
+- **Draft PRs & communication** : ouvrez des Draft PRs pour signaler le travail en cours ; ajoutez un échéancier et notes dans la description pour synchroniser l'équipe.
+- **Propriétaires et responsabilités** : ajoutez un `CODEOWNERS` (ou liste d'assignees) pour chaque dossier critique (`docker/`, `infra/`, `monitoring/`) afin d'obtenir des revues pertinentes rapidement.
+- **Stratégie de rattrapage** : lorsqu'une branche longue est prête à être fusionnée :
+    1. Mettre à jour la branche avec `develop` et résoudre tous les conflits localement.
+    2. Exécuter la suite CI complète et corriger les échecs.
+    3. Ouvrir une PR vers `develop` en demandant des reviewers identifiés et en joignant un plan de test.
+
+Ces règles minimisent les conflits et maintiennent `develop` sain même si plusieurs branches longues existent.
+
+
 ## Commandes utiles
 
 ```bash
