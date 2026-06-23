@@ -164,7 +164,28 @@ La norme ISO 27001:2022 définit 93 contrôles répartis en 4 thèmes. Le tablea
 
 ---
 
-## 6. Références
+## 6. Routage Traefik — exposition des services
+
+Traefik v3 agit comme reverse proxy HTTPS unique pour tous les services exposés. Chaque service est déclaré via des labels Docker et obtient un certificat TLS automatiquement via Let's Encrypt (challenge TLS-ALPN).
+
+| Sous-domaine | Service | Port interne | Stack |
+|---|---|---|---|
+| traefik.duoowatch.com | Dashboard Traefik | 8080 | proxy |
+| keycloak.duoowatch.com | Keycloak SSO / OIDC | 8080 | keycloak |
+| vault.duoowatch.com | HashiCorp Vault (secrets, PKI) | 8200 | security |
+| jellyfin.duoowatch.com | Jellyfin (streaming vidéo) | 8096 | jellyfin |
+| grafana.duoowatch.com | Grafana (supervision) | 3000 | monitoring |
+| minio.duoowatch.com | MinIO console (stockage S3) | 9001 | storage |
+
+**Règles de sécurité Traefik :**
+- Redirection HTTP → HTTPS automatique (entrypoint `web` → `websecure`)
+- `exposedByDefault=false` — seuls les services avec `traefik.enable=true` sont exposés
+- TLS 1.2 minimum imposé
+- Dashboard protégé (`traefik.duoowatch.com`) — accès restreint VPN
+
+---
+
+## 7. Références
 
 - ITIL 4 Foundation — Axelos (2019)
 - ISO/CEI 20000-1:2018 — Technologie de l'information — Gestion des services
