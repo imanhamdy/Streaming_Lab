@@ -1,4 +1,4 @@
-name: CI — Lint & Validate
+name: CI - Lint & Validate
 
 on:
   pull_request:
@@ -8,7 +8,7 @@ on:
 
 jobs:
   compose-validate:
-    name: Docker Compose — syntax validation
+    name: Docker Compose - syntax validation
     runs-on: ubuntu-latest
 
     steps:
@@ -21,29 +21,29 @@ jobs:
       - name: Create dummy .env for validation
         run: cp docker/.env.example docker/.env
 
-      - name: Validate — databases
+      - name: Validate - databases
         run: docker compose -f docker/databases/docker-compose.yml config --quiet
 
-      - name: Validate — monitoring
+      - name: Validate - monitoring
         run: docker compose -f docker/monitoring/docker-compose.yml config --quiet
 
-      - name: Validate — storage
+      - name: Validate - storage
         run: docker compose -f docker/storage/docker-compose.yml config --quiet
 
-      - name: Validate — proxy
+      - name: Validate - proxy
         run: docker compose -f docker/proxy/docker-compose.yml config --quiet
 
-      - name: Validate — keycloak
+      - name: Validate - keycloak
         run: docker compose -f docker/keycloak/docker-compose.yml config --quiet
 
-      - name: Validate — security (vault)
+      - name: Validate - security (vault)
         run: docker compose -f docker/security/docker-compose.yml config --quiet
 
-      - name: Validate — jellyfin
+      - name: Validate - jellyfin
         run: docker compose -f docker/jellyfin/docker-compose.yml config --quiet
 
   yaml-lint:
-    name: YAML — lint all compose files
+    name: YAML - lint all files
     runs-on: ubuntu-latest
 
     steps:
@@ -57,7 +57,7 @@ jobs:
         run: yamllint .
 
   secret-scan:
-    name: Secret detection — no credentials in git
+    name: Secret detection
     runs-on: ubuntu-latest
 
     steps:
