@@ -18,12 +18,8 @@ jobs:
       - name: Git pull latest code
         run: git fetch origin && git reset --hard origin/develop
 
-      - name: Create Docker networks if missing
-        run: |
-          docker network inspect streaming-net >/dev/null 2>&1 || docker network create streaming-net
-          docker network inspect db-net >/dev/null 2>&1 || docker network create db-net
-          docker network inspect monitoring-net >/dev/null 2>&1 || docker network create monitoring-net
-          docker network inspect storage-net >/dev/null 2>&1 || docker network create storage-net
+      - name: Init - create Docker networks with correct subnets
+        run: bash scripts/init-vm.sh
 
       - name: Deploy - databases
         run: |
