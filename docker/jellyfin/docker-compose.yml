@@ -24,7 +24,9 @@ services:
         source: /path/to/fonts
         target: /usr/local/share/fonts/custom
         read_only: true
-    restart: 'unless-stopped'    hostname: jellyfin    # Optional - alternative address used for autodiscovery
+    restart: 'unless-stopped'
+    hostname: jellyfin
+    # Optional - alternative address used for autodiscovery
     environment:
       - JELLYFIN_PublishedServerUrl=http://jellyfin.duoowatch.com
     # Optional - may be necessary for docker healthcheck to pass if running in host network mode
