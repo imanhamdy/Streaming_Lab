@@ -1,0 +1,35 @@
+version: '3.8'
+
+networks:
+  streaming-net:
+    external: true
+    name: streaming-net
+
+volumes:
+  vault_data:
+
+services:
+  vault:
+    image: hashicorp/vault:1.17
+    container_name: vault
+    restart: unless-stopped
+    environment:
+      - VAULT_ADDR=http://0.0.0.0:8200
+      - VAULT_API_ADDR=https://vault.duoowatch.com
+    cap_add:
+      - IPC_LOCK
+    command: server
+    volumes:
+      - vault_data:/vault/data
+      - ./vault-config.hcl:/vault/config/vault.hcl:ro
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.vault.rule=Host(`vault.duoowatch.com`)"
+      - "traefik.http.routers.vault.entrypoints=websecure"
+      - "traefik.http.routers.vault.tls.certresolver=letsencrypt"
+      - "traefik.http.services.vault.loadbalancer.server.port=8200"
+    ports:
+      - "8200:8200"
+    networks:
+      streaming-net:
+        ipv4_address: 192.168.10.40

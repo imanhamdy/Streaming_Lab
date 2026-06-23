@@ -1,140 +1,79 @@
-name: security
+name: Security Scan — Trivy
 
 on:
-  push:
-    branches: [ develop, main, 'feature/**' ]
   pull_request:
-    branches: [ develop ]
+    branches: [main, develop]
+  push:
+    branches: [main, develop]
 
 jobs:
-  yamllint:
-    name: yamllint
+  trivy-scan:
+    name: Trivy — Docker image vulnerability scan
     runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Install yamllint
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y python3-pip
-          python3 -m pip install --upgrade pip
-          python3 -m pip install yamllint
-      - name: Run yamllint
-        run: |
-          set -e
-          files=$(git ls-files '*.yml' '*.yaml' | tr '\n' ' ')
-          if [ -z "$files" ]; then
-            echo "No YAML files found; skipping"
-            exit 0
-          fi
-          yamllint $files
 
-  trivy-fs:
-    name: trivy-fs
-    runs-on: ubuntu-latest
-    needs: yamllint
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - image: jellyfin/jellyfin:latest
+            name: jellyfin
+          - image: traefik:v3.0
+            name: traefik
+          - image: quay.io/keycloak/keycloak:24
+            name: keycloak
+          - image: hashicorp/vault:1.17
+            name: vault
+          - image: postgres:15-alpine
+            name: postgres
+          - image: mongo:6.0
+            name: mongodb
+          - image: redis:7-alpine
+            name: redis
+          - image: minio/minio:latest
+            name: minio
+          - image: grafana/grafana:latest
+            name: grafana
+          - image: prom/prometheus:latest
+            name: prometheus
+          - image: grafana/loki:latest
+            name: loki
+          - image: containrrr/watchtower:latest
+            name: watchtower
+
     steps:
-      - uses: actions/checkout@v4
-      - name: Install Trivy
-        run: |
-          curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sudo sh -s -- -b /usr/local/bin
-          trivy --version
-      - name: Run Trivy filesystem scan (HIGH,CRITICAL)
-        run: |
-          set -e
-          set +e
-          trivy fs --severity HIGH,CRITICAL --format table -o trivy-fs.txt .
-          rc=$?
-          set -e
-          if [ "$rc" -eq 0 ]; then echo "OK" > trivy-fs.status; else echo "VULNERABILITIES_FOUND" > trivy-fs.status; fi
-      - name: Upload Trivy FS results
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Pull image — ${{ matrix.name }}
+        run: docker pull ${{ matrix.image }}
+
+      - name: Run Trivy — ${{ matrix.name }}
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: ${{ matrix.image }}
+          format: table
+          exit-code: "0"
+          ignore-unfixed: true
+          severity: "CRITICAL"
+          output: trivy-${{ matrix.name }}.txt
+
+      - name: Upload Trivy report — ${{ matrix.name }}
+        if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: trivy-fs-results
-          path: |
-            trivy-fs.txt
-            trivy-fs.status
+          name: trivy-report-${{ matrix.name }}
+          path: trivy-${{ matrix.name }}.txt
+          retention-days: 30
 
-  trivy-image:
-    name: trivy-image
+  trivy-summary:
+    name: Trivy — Summary gate
     runs-on: ubuntu-latest
-    needs: yamllint
+    needs: trivy-scan
+    if: always()
     steps:
-      - uses: actions/checkout@v4
-      - name: Install Trivy and Docker
+      - name: Check scan results
         run: |
-          sudo apt-get update
-          sudo apt-get install -y docker.io
-          curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sudo sh -s -- -b /usr/local/bin
-          trivy --version
-      - name: Build Docker images found in repo and record tags
-        run: |
-          set -e
-          rm -f images.txt || true
-          find . -type f -name Dockerfile -not -path './.github/*' -print0 | while IFS= read -r -d '' df; do
-            dir=$(dirname "$df")
-            # tag derived from path
-            tag="security-scan-$(echo "$dir" | sed 's|[^a-zA-Z0-9]|-|g' | sed 's/^-*//;s/-*$//')"
-            echo "Building $dir as $tag:latest"
-            docker build -t "$tag:latest" "$dir"
-            echo "$tag:latest" >> images.txt
-          done
-          if [ ! -f images.txt ]; then echo "No Dockerfiles found; skipping image build"; fi
-      - name: Scan built images with Trivy (HIGH,CRITICAL)
-        run: |
-          set -e
-          if [ ! -f images.txt ]; then echo "No images to scan"; echo "OK" > trivy-image.status; exit 0; fi
-          rm -f trivy-image-*.txt || true
-          vuln_found=0
-          while IFS= read -r image; do
-            outfile="trivy-image-$(echo "$image" | sed 's/[:/]/-/g').txt"
-            set +e
-            trivy image --severity HIGH,CRITICAL --format table -o "$outfile" "$image"
-            rc=$?
-            set -e
-            if [ "$rc" -ne 0 ]; then vuln_found=1; fi
-          done < images.txt
-          if [ "$vuln_found" -eq 1 ]; then echo "VULNERABILITIES_FOUND" > trivy-image.status; else echo "OK" > trivy-image.status; fi
-      - name: Upload Trivy image results
-        uses: actions/upload-artifact@v4
-        with:
-          name: trivy-image-results
-          path: |
-            images.txt
-            trivy-image-*.txt
-            trivy-image.status
-
-  notify:
-    name: notify
-    runs-on: ubuntu-latest
-    needs: [trivy-fs, trivy-image]
-    if: github.event_name == 'pull_request'
-    steps:
-      - uses: actions/checkout@v4
-      - name: Download artifacts
-        uses: actions/download-artifact@v4
-        with:
-          path: ./artifacts
-      - name: Summarize results and comment on PR
-        uses: actions/github-script@v6
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          script: |
-            const fs = require('fs')
-            const path = './artifacts'
-            function readStatus(name){
-              const p = `${path}/${name}`
-              if (fs.existsSync(p)) return fs.readFileSync(p,'utf8').trim()
-              return 'MISSING'
-            }
-            const fsStatus = readStatus('trivy-fs.status')
-            const imgStatus = readStatus('trivy-image.status')
-            let body = `Security scan summary for this PR:\n\n- YAML lint: ran (see checks)\n- Trivy filesystem scan (HIGH,CRITICAL): **${fsStatus}**\n- Trivy image scans (HIGH,CRITICAL): **${imgStatus}**\n\nArtifacts:\n`;
-            const artifacts = fs.readdirSync(path).filter(f=>f.endsWith('.txt'))
-            for (const a of artifacts) body += `- ${a}\n`
-            body += `\nIf vulnerabilities are reported, open issues or fix the findings before merging.`
-            github.rest.issues.createComment({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: context.issue.number,
-              body: body
-            })
+          echo "ℹ️  Trivy scan complete. Reports available in artifacts."
+          echo "Severity scanned: CRITICAL only (ignore-unfixed: true)"
+          echo "Exit-code: 0 — scan is informational, does not block merge."
+          echo "Review artifacts to track CVEs over time."

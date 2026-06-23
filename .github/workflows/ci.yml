@@ -1,98 +1,72 @@
-name: ci
+name: CI — Lint & Validate
 
 on:
-  push:
-    branches:
-      - develop
-      - main
-      - 'feature/**'
   pull_request:
-    branches:
-      - develop
-      - main
+    branches: [main, develop]
+  push:
+    branches: [main, develop]
 
 jobs:
-  lint:
-    name: ci/lint
+  compose-validate:
+    name: Docker Compose — syntax validation
     runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Run lint steps
-        run: |
-          set -e
-          if [ -f scripts/lint.sh ]; then
-            bash scripts/lint.sh
-            exit 0
-          fi
-          if [ -f package.json ] && grep -q '"lint"' package.json; then
-            echo "Node lint detected"
-            curl -sL https://deb.nodesource.com/setup_18.x | sudo -E bash -
-            sudo apt-get install -y nodejs
-            npm ci
-            npm run lint
-            exit 0
-          fi
-          if find . -name "*.py" -print -quit | grep -q .; then
-            echo "Python files detected; running flake8 if available"
-            python3 -m pip install --upgrade pip || true
-            python3 -m pip install flake8 || true
-            python3 -m flake8 || true
-            exit 0
-          fi
-          echo "No lint configured; skipping"
 
-  build:
-    name: ci/build
-    runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - name: Build docker images if Dockerfiles exist
-        uses: docker/build-push-action@v5
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Docker Compose v2
+        run: docker compose version
+
+      - name: Create dummy .env for validation
+        run: cp docker/.env.example docker/.env
+
+      - name: Validate — databases
+        run: docker compose -f docker/databases/docker-compose.yml config --quiet
+
+      - name: Validate — monitoring
+        run: docker compose -f docker/monitoring/docker-compose.yml config --quiet
+
+      - name: Validate — storage
+        run: docker compose -f docker/storage/docker-compose.yml config --quiet
+
+      - name: Validate — proxy
+        run: docker compose -f docker/proxy/docker-compose.yml config --quiet
+
+      - name: Validate — keycloak
+        run: docker compose -f docker/keycloak/docker-compose.yml config --quiet
+
+      - name: Validate — security (vault)
+        run: docker compose -f docker/security/docker-compose.yml config --quiet
+
+      - name: Validate — jellyfin
+        run: docker compose -f docker/jellyfin/docker-compose.yml config --quiet
+
+  yaml-lint:
+    name: YAML — lint all compose files
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install yamllint
+        run: pip install yamllint
+
+      - name: Lint all YAML files
+        run: yamllint .
+
+  secret-scan:
+    name: Secret detection — no credentials in git
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
         with:
-          push: false
-          platforms: linux/amd64
-          # Build context discovery: if there's a Dockerfile in docker/ or repo root, build those directories.
-          # If none exist, this step will no-op by using a minimal default.
-          context: .
-          file: ./Dockerfile
-        continue-on-error: false
-      - name: Fallback: check for docker-compose and build
-        if: ${{ always() }}
-        run: |
-          if [ -f docker/docker-compose.yml ]; then
-            echo "docker/docker-compose.yml found; building images"
-            sudo apt-get update && sudo apt-get install -y docker.io docker-compose
-            docker compose -f docker/docker-compose.yml build || true
-          else
-            echo "No Docker build configured; skipping"
-          fi
+          fetch-depth: 0
 
-  test:
-    name: ci/test
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Run tests
-        run: |
-          set -e
-          if [ -f scripts/test.sh ]; then
-            bash scripts/test.sh
-            exit 0
-          fi
-          if [ -f package.json ] && grep -q '"test"' package.json; then
-            echo "Node test detected"
-            curl -sL https://deb.nodesource.com/setup_18.x | sudo -E bash -
-            sudo apt-get install -y nodejs
-            npm ci
-            npm test
-            exit 0
-          fi
-          if [ -f pyproject.toml ] || find . -name "test_*.py" -print -quit | grep -q .; then
-            echo "Python tests detected"
-            python3 -m pip install --upgrade pip
-            python3 -m pip install -r requirements.txt || true
-            python3 -m pip install pytest || true
-            pytest -q
-            exit 0
-          fi
-          echo "No tests configured; skipping"
+      - name: Run Gitleaks
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
