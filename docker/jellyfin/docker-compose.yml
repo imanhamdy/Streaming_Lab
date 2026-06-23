@@ -24,14 +24,18 @@ services:
         source: /path/to/fonts
         target: /usr/local/share/fonts/custom
         read_only: true
-    restart: 'unless-stopped'
+    restart: unless-stopped
     hostname: jellyfin
-    # Optional - alternative address used for autodiscovery
     environment:
-      - JELLYFIN_PublishedServerUrl=http://jellyfin.duoowatch.com
-    # Optional - may be necessary for docker healthcheck to pass if running in host network mode
+      - JELLYFIN_PublishedServerUrl=https://jellyfin.duoowatch.com
     extra_hosts:
-      - 'host.docker.internal:host-gateway'
+      - host.docker.internal:host-gateway
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.jellyfin.rule=Host(`jellyfin.duoowatch.com`)
+      - traefik.http.routers.jellyfin.entrypoints=websecure
+      - traefik.http.routers.jellyfin.tls.certresolver=letsencrypt
+      - traefik.http.services.jellyfin.loadbalancer.server.port=8096
     networks:
       streaming-net:
         ipv4_address: 192.168.10.20

@@ -4,6 +4,9 @@ networks:
   monitoring:
     external: true
     name: monitoring-net
+  streaming-net:
+    external: true
+    name: streaming-net
 
 volumes:
   prometheus_data:
@@ -197,9 +200,17 @@ services:
     depends_on:
       - prometheus
       - loki
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.grafana.rule=Host(`grafana.duoowatch.com`)
+      - traefik.http.routers.grafana.entrypoints=websecure
+      - traefik.http.routers.grafana.tls.certresolver=letsencrypt
+      - traefik.http.services.grafana.loadbalancer.server.port=3000
     networks:
       monitoring:
         ipv4_address: 192.168.40.13
+      streaming-net:
+        ipv4_address: 192.168.10.50
 
   # Watchtower — automatic Docker image updates (patch management)
   watchtower:
