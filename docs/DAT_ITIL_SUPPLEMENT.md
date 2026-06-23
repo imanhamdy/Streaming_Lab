@@ -107,7 +107,64 @@ Les indicateurs ci-dessous sont mesurés et visualisés dans Grafana :
 
 ---
 
-## 5. Références
+## 5. Conformité ISO 27001 — Annexe A (contrôles appliqués)
+
+La norme ISO 27001:2022 définit 93 contrôles répartis en 4 thèmes. Le tableau ci-dessous liste les contrôles couverts par le Streaming Lab.
+
+### Thème A.5 — Contrôles organisationnels
+
+| Contrôle | Intitulé | Mise en œuvre | Statut |
+|---|---|---|---|
+| A.5.1 | Politiques de sécurité | `docs/CHARTE_INFORMATIQUE.md` | ✅ |
+| A.5.2 | Rôles et responsabilités | `CHARTE_INFORMATIQUE.md` section 8 | ✅ |
+| A.5.7 | Renseignement sur les menaces | `ANALYSE_RISQUES.md` | ✅ |
+| A.5.10 | Utilisation acceptable des actifs | `CHARTE_INFORMATIQUE.md` section 7 | ✅ |
+| A.5.29 | Sécurité des informations en cas de perturbation | `PCA_PRA.docx`, `BIA.md` | ✅ |
+| A.5.30 | Préparation des TIC pour la continuité | `PROCEDURE_BACKUP_RESTORE.md` | ✅ |
+
+### Thème A.6 — Contrôles liés aux personnes
+
+| Contrôle | Intitulé | Mise en œuvre | Statut |
+|---|---|---|---|
+| A.6.3 | Sensibilisation, formation sécurité | `CHARTE_INFORMATIQUE.md` diffusée à l'équipe | ✅ |
+| A.6.7 | Télétravail | `PLAN_TELETRAVAIL.md` | ✅ |
+| A.6.8 | Signalement des événements | `GESTION_INCIDENTS.md` section 4 | ✅ |
+
+### Thème A.7 — Contrôles physiques
+
+| Contrôle | Intitulé | Mise en œuvre | Statut |
+|---|---|---|---|
+| A.7.1 | Périmètres de sécurité physique | Salle serveur Ynov Campus (accès restreint) | ✅ |
+| A.7.6 | Travail dans les zones sécurisées | Accès physique serveur = personnel autorisé uniquement | ✅ |
+| A.7.14 | Mise au rebut sécurisée | Politique documentée dans `CHARTE_INFORMATIQUE.md` | 📋 |
+
+### Thème A.8 — Contrôles technologiques
+
+| Contrôle | Intitulé | Mise en œuvre | Statut |
+|---|---|---|---|
+| A.8.2 | Droits d'accès privilégiés | Keycloak RBAC + principe moindre privilège | ✅ |
+| A.8.3 | Restriction d'accès aux informations | Réseaux Docker isolés (db-net, storage-net) | ✅ |
+| A.8.4 | Accès au code source | GitHub — branches protégées, PR obligatoires | ✅ |
+| A.8.5 | Authentification sécurisée | MFA FortiClient + Keycloak SSO + MFA | ✅ |
+| A.8.6 | Gestion de la capacité | Prometheus métriques CPU/RAM + alertes Grafana | ✅ |
+| A.8.7 | Protection contre les malwares | Suricata IDS + images Docker officielles + Watchtower | ✅ |
+| A.8.8 | Gestion des vulnérabilités techniques | Watchtower (MAJ auto images) + scan CI/CD | 🔄 |
+| A.8.9 | Gestion de la configuration | Infrastructure as Code (Git + Compose + Ansible) | ✅ |
+| A.8.12 | Prévention des fuites de données | `.gitignore` + Vault + `.env` non commité | ✅ |
+| A.8.13 | Sauvegarde des informations | Veeam B&R AES-256 quotidien + tests restauration | ✅ |
+| A.8.15 | Journalisation | Loki + Promtail — logs centralisés 7 jours | ✅ |
+| A.8.16 | Surveillance des activités | Grafana dashboards + Suricata alertes | ✅ |
+| A.8.20 | Sécurité des réseaux | VLAN segmentation + FortiGate deny-all inter-VLAN | ✅ |
+| A.8.21 | Sécurité des services réseau | Traefik TLS 1.3 + Let's Encrypt + FortiGate VPN | ✅ |
+| A.8.22 | Cloisonnement des réseaux | 4 réseaux Docker isolés + 7 VLANs | ✅ |
+| A.8.24 | Utilisation de la cryptographie | TLS 1.3 (Traefik) + AES-256 (Veeam) + Vault PKI | ✅ |
+| A.8.28 | Codage sécurisé | Secrets dans Vault/`.env`, pas dans le code | ✅ |
+
+**Légende :** ✅ Contrôle appliqué | 🔄 En cours | 📋 Planifié
+
+---
+
+## 6. Références
 
 - ITIL 4 Foundation — Axelos (2019)
 - ISO/CEI 20000-1:2018 — Technologie de l'information — Gestion des services
