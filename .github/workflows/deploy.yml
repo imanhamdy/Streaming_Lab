@@ -10,9 +10,12 @@ jobs:
     runs-on: self-hosted
     environment: homelab
 
+    env:
+      DEPLOY_PATH: ${{ secrets.DEPLOY_PATH }}
+
     defaults:
       run:
-        working-directory: ${{ secrets.DEPLOY_PATH }}
+        working-directory: ${{ env.DEPLOY_PATH }}
 
     steps:
       - name: Git pull latest code
