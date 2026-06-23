@@ -53,16 +53,8 @@ jobs:
       - name: Install yamllint
         run: pip install yamllint
 
-      - name: Lint compose files
-        run: |
-          yamllint -d "{extends: relaxed, rules: {line-length: {max: 120}}}" \
-            docker/databases/docker-compose.yml \
-            docker/monitoring/docker-compose.yml \
-            docker/storage/docker-compose.yml \
-            docker/proxy/docker-compose.yml \
-            docker/keycloak/docker-compose.yml \
-            docker/security/docker-compose.yml \
-            docker/jellyfin/docker-compose.yml
+      - name: Lint all YAML files
+        run: yamllint .
 
   secret-scan:
     name: Secret detection — no credentials in git
