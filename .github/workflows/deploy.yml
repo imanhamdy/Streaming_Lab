@@ -18,8 +18,16 @@ jobs:
       - name: Git pull latest code
         run: git fetch origin && git reset --hard origin/develop
 
-      - name: Init - create Docker networks with correct subnets
-        run: bash scripts/init-vm.sh
+      - name: Create Docker networks with correct subnets
+        run: |
+          docker network inspect streaming-net >/dev/null 2>&1 || \
+            docker network create --subnet 192.168.10.0/24 streaming-net
+          docker network inspect db-net >/dev/null 2>&1 || \
+            docker network create --subnet 192.168.20.0/24 db-net
+          docker network inspect monitoring-net >/dev/null 2>&1 || \
+            docker network create --subnet 192.168.40.0/24 monitoring-net
+          docker network inspect storage-net >/dev/null 2>&1 || \
+            docker network create --subnet 192.168.50.0/24 storage-net
 
       - name: Deploy - databases
         run: |
