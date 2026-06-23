@@ -1,0 +1,78 @@
+name: CD — Deploy to vm-streaming
+
+on:
+  push:
+    branches: [develop]
+
+jobs:
+  deploy:
+    name: Deploy — docker compose up
+    runs-on: self-hosted
+    environment: homelab
+
+    steps:
+      - name: Checkout latest code
+        uses: actions/checkout@v4
+
+      - name: Git pull on VM
+        run: |
+          cd ${{ secrets.DEPLOY_PATH }}
+          git pull origin develop
+
+      - name: Deploy — databases
+        run: |
+          cd ${{ secrets.DEPLOY_PATH }}
+          docker compose -f docker/databases/docker-compose.yml pull --quiet
+          docker compose -f docker/databases/docker-compose.yml up -d --remove-orphans
+
+      - name: Deploy — proxy (Traefik)
+        run: |
+          cd ${{ secrets.DEPLOY_PATH }}
+          docker compose -f docker/proxy/docker-compose.yml pull --quiet
+          docker compose -f docker/proxy/docker-compose.yml up -d --remove-orphans
+
+      - name: Deploy — keycloak
+        run: |
+          cd ${{ secrets.DEPLOY_PATH }}
+          docker compose -f docker/keycloak/docker-compose.yml pull --quiet
+          docker compose -f docker/keycloak/docker-compose.yml up -d --remove-orphans
+
+      - name: Deploy — security (vault)
+        run: |
+          cd ${{ secrets.DEPLOY_PATH }}
+          docker compose -f docker/security/docker-compose.yml pull --quiet
+          docker compose -f docker/security/docker-compose.yml up -d --remove-orphans
+
+      - name: Deploy — storage (minio)
+        run: |
+          cd ${{ secrets.DEPLOY_PATH }}
+          docker compose -f docker/storage/docker-compose.yml pull --quiet
+          docker compose -f docker/storage/docker-compose.yml up -d --remove-orphans
+
+      - name: Deploy — jellyfin
+        run: |
+          cd ${{ secrets.DEPLOY_PATH }}
+          docker compose -f docker/jellyfin/docker-compose.yml pull --quiet
+          docker compose -f docker/jellyfin/docker-compose.yml up -d --remove-orphans
+
+      - name: Deploy — monitoring
+        run: |
+          cd ${{ secrets.DEPLOY_PATH }}
+          docker compose -f docker/monitoring/docker-compose.yml pull --quiet
+          docker compose -f docker/monitoring/docker-compose.yml up -d --remove-orphans
+
+      - name: Health check — containers running
+        run: |
+          sleep 15
+          echo "=== Running containers ==="
+          docker ps --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"
+          FAILED=$(docker ps --filter "status=exited" --format "{{.Names}}" | grep -v "^$" || true)
+          if [ -n "$FAILED" ]; then
+            echo "❌ Containers en erreur : $FAILED"
+            for c in $FAILED; do
+              echo "--- Logs $c ---"
+              docker logs --tail 20 "$c"
+            done
+            exit 1
+          fi
+          echo "✅ Tous les containers sont UP"
