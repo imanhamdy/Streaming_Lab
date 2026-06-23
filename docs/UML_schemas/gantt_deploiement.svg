@@ -52,7 +52,7 @@
   <text x="763" y="585" fill="#f85149" font-size="9">Aujourd'hui</text>
 
   <rect x="0" y="74" width="220" height="14" fill="#1c2128"/>
-  <text x="6" y="84" fill="#58a6ff" font-size="9" font-weight="bold">PROXMOX / VMs — Gros</text>
+  <text x="6" y="84" fill="#58a6ff" font-size="9" font-weight="bold">PROXMOX / VMs — Quentin</text>
   <rect x="0" y="90" width="220" height="18" fill="#0d1117"/>
   <text x="6" y="102" fill="#8b949e" font-size="8.5">KAN-29 Installer Proxmox VE 8</text>
   <rect x="220" y="93" width="114" height="12" rx="3" fill="#238636"/>
@@ -67,7 +67,7 @@
   <text x="362" y="142" fill="#fff" font-size="7.5" text-anchor="middle">✓</text>
 
   <rect x="0" y="152" width="220" height="14" fill="#1c2128"/>
-  <text x="6" y="162" fill="#f85149" font-size="9" font-weight="bold">RÉSEAU / SÉCURITÉ — Gros + Iman</text>
+  <text x="6" y="162" fill="#f85149" font-size="9" font-weight="bold">RÉSEAU / SÉCURITÉ — Quentin + Iman</text>
   <rect x="0" y="168" width="220" height="18" fill="#0d1117"/>
   <text x="6" y="180" fill="#8b949e" font-size="8.5">KAN-22 FortiGate HA</text>
   <rect x="220" y="171" width="541" height="12" rx="3" fill="#9e6a03" opacity="0.8"/>
@@ -113,7 +113,7 @@
   <text x="818" y="380" fill="#fff" font-size="7.5" text-anchor="middle">Planifié</text>
 
   <rect x="0" y="392" width="220" height="14" fill="#1c2128"/>
-  <text x="6" y="402" fill="#39d353" font-size="9" font-weight="bold">MONITORING / IDS — adrien</text>
+  <text x="6" y="402" fill="#39d353" font-size="9" font-weight="bold">MONITORING / IDS — Adrien</text>
   <rect x="0" y="408" width="220" height="18" fill="#0d1117"/>
   <text x="6" y="420" fill="#8b949e" font-size="8.5">KAN-19 Grafana+Prometheus+Loki</text>
   <rect x="619" y="411" width="228" height="12" rx="3" fill="#9e6a03" opacity="0.8"/>

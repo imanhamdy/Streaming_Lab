@@ -113,5 +113,5 @@ Le processus ITIL de gestion des changements est **nativement implémenté** dan
 | RFC-001 | 2026-06-23 | Normal | Ajout stack MinIO (storage-net) | Clôturé ✅ | Iman H. |
 | RFC-002 | 2026-06-23 | Normal | Migration credentials vers docker/.env partagé | Clôturé ✅ | Iman H. |
 | RFC-003 | 2026-06-23 | Standard | Fix syntaxe docker-compose Jellyfin | Clôturé ✅ | Iman H. |
-| RFC-004 | En cours | Normal | Déploiement stack monitoring (Grafana/Prometheus/Loki/Suricata) | En cours 🔄 | adrien |
-| RFC-005 | Planifié | Normal | Configuration Cloudflare Zero Trust Tunnel | Planifié 📋 | Gros |
+| RFC-004 | En cours | Normal | Déploiement stack monitoring (Grafana/Prometheus/Loki/Suricata) | En cours 🔄 | Adrien |
+| RFC-005 | Planifié | Normal | Configuration Cloudflare Zero Trust Tunnel | Planifié 📋 | Quentin |

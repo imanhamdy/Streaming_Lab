@@ -45,7 +45,7 @@ Version 1.0 — Juin 2026
 ## 3. Phasage du déploiement
 
 ### Phase 1 — Infrastructure fondatrice (S16–S18 · Avril 2026)
-**Responsable : Gros**
+**Responsable : Quentin**
 | Tâche | KAN | Statut |
 |---|---|---|
 | Installer et configurer Proxmox VE 8 | KAN-29 | ✅ Terminé |
@@ -57,7 +57,7 @@ Version 1.0 — Juin 2026
 ---
 
 ### Phase 2 — Réseau et sécurité périmétrique (S16–S25 · Avril–Juin 2026)
-**Responsable : Gros + Iman Hamdy**
+**Responsable : Quentin + Iman Hamdy**
 | Tâche | KAN | Statut |
 |---|---|---|
 | Configurer FortiGate HA (VIP 192.168.1.20) | KAN-22 | 🔄 En cours |
@@ -85,7 +85,7 @@ Version 1.0 — Juin 2026
 ---
 
 ### Phase 4 — Monitoring et IDS (S22–S27 · Juin–Juillet 2026)
-**Responsable : adrien**
+**Responsable : Adrien**
 | Tâche | KAN | Statut |
 |---|---|---|
 | Grafana + Prometheus + Loki + Promtail | KAN-19 | 🔄 En cours |

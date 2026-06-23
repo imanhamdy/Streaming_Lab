@@ -187,5 +187,5 @@ En cas de défaillance réelle d'une VM de production :
 | Rôle | Nom | Responsabilité |
 |---|---|---|
 | Admin principal | Iman Hamdy | Proxmox, restauration VMs |
-| Admin réseau | Gros | FortiGate, accès réseau |
-| Admin monitoring | adrien | Suricata, détection incident |
+| Admin réseau | Quentin | FortiGate, accès réseau |
+| Admin monitoring | Adrien | Suricata, détection incident |

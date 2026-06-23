@@ -111,8 +111,8 @@ curl -I http://192.168.50.10:9001
 | Membre | Rôle | Décision | Date |
 |---|---|---|---|
 | Iman Hamdy | Change Manager | ✅ Approuvé | 23/06/2026 |
-| Gros | Admin réseau | ✅ Approuvé | 23/06/2026 |
-| adrien | Admin monitoring | ✅ Approuvé | 23/06/2026 |
+| Quentin | Admin réseau | ✅ Approuvé | 23/06/2026 |
+| Adrien | Admin monitoring | ✅ Approuvé | 23/06/2026 |
 
 ---
 
