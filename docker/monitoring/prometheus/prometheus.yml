@@ -1,0 +1,50 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  external_labels:
+    monitor: "streaming-monitoring"
+
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets:
+            - alertmanager:9093
+
+rule_files:
+  - "/etc/prometheus/alerts.yml"
+
+scrape_configs:
+
+  - job_name: "prometheus"
+    static_configs:
+      - targets: ["localhost:9090"]
+
+  - job_name: "node-vm-streaming"
+    static_configs:
+      - targets: ["node-exporter:9100"]
+        labels:
+          instance: "vm-streaming"
+          env: "prod"
+
+  - job_name: "cadvisor-vm-streaming"
+    static_configs:
+      - targets: ["cadvisor:8080"]
+        labels:
+          instance: "vm-streaming"
+          env: "prod"
+
+  # ── VM DNS ────────────────────────────────────────────────
+  - job_name: "node-vm-dns"
+    static_configs:
+      - targets: ["192.168.20.2:9100"]
+        labels:
+          instance: "vm-dns"
+          env: "prod"
+
+  # ── VM BACKUP ─────────────────────────────────────────────
+  - job_name: "node-vm-backup"
+    static_configs:
+      - targets: ["192.168.30.2:9100"]
+        labels:
+          instance: "vm-backup"
+          env: "prod"

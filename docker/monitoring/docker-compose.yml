@@ -1,201 +1,150 @@
-version: "3.8"
-
 networks:
   monitoring:
-    external: true
-    name: monitoring-net
+    driver: bridge
 
 volumes:
   prometheus_data:
   grafana_data:
   loki_data:
 
-
-configs:
-  prometheus_config:
-    content: |
-      global:
-        scrape_interval: 15s
-        evaluation_interval: 15s
-
-      # A AJOUTER 
-      scrape_configs:
-        - job_name: "prometheus"
-          static_configs:
-            - targets: ["localhost:9090"]
-
-
-  loki_config:
-    content: |
-      auth_enabled: false
-
-      server:
-        http_listen_port: 3100
-
-      ingester:
-        lifecycler:
-          ring:
-            kvstore:
-              store: inmemory
-            replication_factor: 1
-        chunk_idle_period: 5m
-        chunk_retain_period: 30s
-
-      schema_config:
-        configs:
-          - from: 2024-01-01
-            store: tsdb
-            object_store: filesystem
-            schema: v13
-            index:
-              prefix: index_
-              period: 24h
-
-      storage_config:
-        tsdb_shipper:
-          active_index_directory: /loki/index
-          cache_location: /loki/index_cache
-        filesystem:
-          directory: /loki/chunks
-
-      limits_config:
-        reject_old_samples: true
-        reject_old_samples_max_age: 168h
-
-      compactor:
-        working_directory: /loki/compactor
-
-  promtail_config:
-    content: |
-      server:
-        http_listen_port: 9080
-        grpc_listen_port: 0
-
-      positions:
-        filename: /tmp/positions.yaml
-
-      clients:
-        - url: http://loki:3100/loki/api/v1/push
-
-      scrape_configs:
-        - job_name: system
-          static_configs:
-            - targets: [localhost]
-              labels:
-                job: varlogs
-                __path__: /var/log/*.log
-
-        - job_name: docker
-          static_configs:
-            - targets: [localhost]
-              labels:
-                job: docker
-                __path__: /var/lib/docker/containers/*/*-json.log
-          pipeline_stages:
-            - json:
-                expressions:
-                  log: log
-                  stream: stream
-            - labels:
-                stream:
-            - output:
-                source: log
-
-  grafana_datasources:
-    content: |
-      apiVersion: 1
-
-      datasources:
-        - name: Prometheus
-          type: prometheus
-          access: proxy
-          url: http://prometheus:9090
-          isDefault: true
-          editable: true
-
-        - name: Loki
-          type: loki
-          access: proxy
-          url: http://loki:3100
-          editable: true
-
 services:
 
-  # Prometheus
+  # ── PROMETHEUS ────────────────────────────────────────────
   prometheus:
     image: prom/prometheus:latest
     container_name: prometheus
     restart: unless-stopped
-    configs:
-      - source: prometheus_config
-        target: /etc/prometheus/prometheus.yml
     volumes:
       - prometheus_data:/prometheus
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./prometheus/alerts.yml:/etc/prometheus/alerts.yml:ro
     command:
       - "--config.file=/etc/prometheus/prometheus.yml"
       - "--storage.tsdb.path=/prometheus"
       - "--storage.tsdb.retention.time=15d"
       - "--web.enable-lifecycle"
+      - "--web.enable-admin-api"
     ports:
       - "9090:9090"
     networks:
-      monitoring:
-        ipv4_address: 192.168.40.10
+      - monitoring
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:9090/-/healthy"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
 
-  # Loki
+  # ── LOKI ──────────────────────────────────────────────────
   loki:
     image: grafana/loki:latest
     container_name: loki
     restart: unless-stopped
-    configs:
-      - source: loki_config
-        target: /etc/loki/loki-config.yml
     volumes:
       - loki_data:/loki
+      - ./loki/loki-config.yml:/etc/loki/loki-config.yml:ro
     command: -config.file=/etc/loki/loki-config.yml
     ports:
       - "3100:3100"
     networks:
-      monitoring:
-        ipv4_address: 192.168.40.11
+      - monitoring
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:3100/ready"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
 
-  # Promtail
+  # ── PROMTAIL ──────────────────────────────────────────────
   promtail:
     image: grafana/promtail:latest
     container_name: promtail
     restart: unless-stopped
-    configs:
-      - source: promtail_config
-        target: /etc/promtail/promtail-config.yml
     volumes:
+      - ./promtail/promtail-config.yml:/etc/promtail/config.yml:ro
       - /var/log:/var/log:ro
       - /var/lib/docker/containers:/var/lib/docker/containers:ro
-    command: -config.file=/etc/promtail/promtail-config.yml
+      - /var/log/journal:/var/log/journal:ro
+    command: -config.file=/etc/promtail/config.yml
     depends_on:
       - loki
     networks:
-      monitoring:
-        ipv4_address: 192.168.40.12
+      - monitoring
 
-  # Grafana
+  # ── NODE EXPORTER ─────────────────────────────────────────
+  node-exporter:
+    image: prom/node-exporter:latest
+    container_name: node-exporter
+    restart: unless-stopped
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+    command:
+      - "--path.procfs=/host/proc"
+      - "--path.sysfs=/host/sys"
+      - "--path.rootfs=/rootfs"
+      - "--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)"
+    ports:
+      - "9100:9100"
+    networks:
+      - monitoring
+
+  # ── CADVISOR ──────────────────────────────────────────────
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:latest
+    container_name: cadvisor
+    restart: unless-stopped
+    privileged: true
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:ro
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+      - /dev/disk/:/dev/disk:ro
+    devices:
+      - /dev/kmsg
+    ports:
+      - "8080:8080"
+    networks:
+      - monitoring
+
+  # ── ALERTMANAGER ──────────────────────────────────────────
+  alertmanager:
+    image: prom/alertmanager:latest
+    container_name: alertmanager
+    restart: unless-stopped
+    volumes:
+      - ./alertmanager/alertmanager.yml:/etc/alertmanager/alertmanager.yml:ro
+    command:
+      - "--config.file=/etc/alertmanager/alertmanager.yml"
+      - "--storage.path=/alertmanager"
+    ports:
+      - "9093:9093"
+    networks:
+      - monitoring
+
+  # ── GRAFANA ───────────────────────────────────────────────
   grafana:
     image: grafana/grafana:latest
     container_name: grafana
     restart: unless-stopped
     environment:
       - GF_SECURITY_ADMIN_USER=principal
-      - GF_SECURITY_ADMIN_PASSWORD=azertyuiop^ni1234. # A CHANGER -> .ENV
+      - GF_SECURITY_ADMIN_PASSWORD=principal
       - GF_USERS_ALLOW_SIGN_UP=false
-    configs:
-      - source: grafana_datasources
-        target: /etc/grafana/provisioning/datasources/datasources.yml
+      - GF_SERVER_ROOT_URL=http://192.168.10.2:3000
+      - GF_FEATURE_TOGGLES_ENABLE=traceqlEditor
     volumes:
       - grafana_data:/var/lib/grafana
+      - ./grafana/provisioning:/etc/grafana/provisioning:ro
     ports:
       - "3000:3000"
     depends_on:
       - prometheus
       - loki
     networks:
-      monitoring:
-        ipv4_address: 192.168.40.13
+      - monitoring
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
