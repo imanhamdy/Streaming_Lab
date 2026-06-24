@@ -1,11 +1,124 @@
 networks:
   monitoring:
-    driver: bridge
+    external: true
+    name: monitoring-net
+  streaming-net:
+    external: true
+    name: streaming-net
 
 volumes:
   prometheus_data:
   grafana_data:
   loki_data:
+
+
+configs:
+  prometheus_config:
+    content: |
+      global:
+        scrape_interval: 15s
+        evaluation_interval: 15s
+
+      # A AJOUTER
+      scrape_configs:
+        - job_name: "prometheus"
+          static_configs:
+            - targets: ["localhost:9090"]
+
+
+  loki_config:
+    content: |
+      auth_enabled: false
+
+      server:
+        http_listen_port: 3100
+
+      ingester:
+        lifecycler:
+          ring:
+            kvstore:
+              store: inmemory
+            replication_factor: 1
+        chunk_idle_period: 5m
+        chunk_retain_period: 30s
+
+      schema_config:
+        configs:
+          - from: 2024-01-01
+            store: tsdb
+            object_store: filesystem
+            schema: v13
+            index:
+              prefix: index_
+              period: 24h
+
+      storage_config:
+        tsdb_shipper:
+          active_index_directory: /loki/index
+          cache_location: /loki/index_cache
+        filesystem:
+          directory: /loki/chunks
+
+      limits_config:
+        reject_old_samples: true
+        reject_old_samples_max_age: 168h
+
+      compactor:
+        working_directory: /loki/compactor
+
+  promtail_config:
+    content: |
+      server:
+        http_listen_port: 9080
+        grpc_listen_port: 0
+
+      positions:
+        filename: /tmp/positions.yaml
+
+      clients:
+        - url: http://loki:3100/loki/api/v1/push
+
+      scrape_configs:
+        - job_name: system
+          static_configs:
+            - targets: [localhost]
+              labels:
+                job: varlogs
+                __path__: /var/log/*.log
+
+        - job_name: docker
+          static_configs:
+            - targets: [localhost]
+              labels:
+                job: docker
+                __path__: /var/lib/docker/containers/*/*-json.log
+          pipeline_stages:
+            - json:
+                expressions:
+                  log: log
+                  stream: stream
+            - labels:
+                stream:
+            - output:
+                source: log
+
+  grafana_datasources:
+    content: |
+      apiVersion: 1
+
+      datasources:
+        - name: Prometheus
+          type: prometheus
+          access: proxy
+          url: http://prometheus:9090
+          isDefault: true
+          editable: true
+
+        - name: Loki
+          type: loki
+          access: proxy
+          url: http://loki:3100
+          editable: true
 
 services:
 
@@ -127,9 +240,10 @@ services:
     image: grafana/grafana:latest
     container_name: grafana
     restart: unless-stopped
+    env_file: ../.env
     environment:
-      - GF_SECURITY_ADMIN_USER=principal
-      - GF_SECURITY_ADMIN_PASSWORD=principal
+      - GF_SECURITY_ADMIN_USER=${GF_SECURITY_ADMIN_USER}
+      - GF_SECURITY_ADMIN_PASSWORD=${GF_SECURITY_ADMIN_PASSWORD}
       - GF_USERS_ALLOW_SIGN_UP=false
       - GF_SERVER_ROOT_URL=http://192.168.10.2:3000
       - GF_FEATURE_TOGGLES_ENABLE=traceqlEditor
@@ -141,10 +255,32 @@ services:
     depends_on:
       - prometheus
       - loki
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.grafana.rule=Host(`grafana.duoowatch.com`)
+      - traefik.http.routers.grafana.entrypoints=websecure
+      - traefik.http.routers.grafana.tls.certresolver=letsencrypt
+      - traefik.http.services.grafana.loadbalancer.server.port=3000
     networks:
-      - monitoring
-    healthcheck:
-      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:3000/api/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
+      monitoring:
+        ipv4_address: 192.168.40.13
+      streaming-net:
+        ipv4_address: 192.168.10.50
+
+  # Watchtower — automatic Docker image updates (patch management)
+  watchtower:
+    image: containrrr/watchtower:latest
+    container_name: watchtower
+    restart: unless-stopped
+    environment:
+      - WATCHTOWER_CLEANUP=true
+      - WATCHTOWER_INCLUDE_STOPPED=false
+      - WATCHTOWER_SCHEDULE=0 0 3 * * *
+      - WATCHTOWER_NOTIFICATIONS=slack
+      - WATCHTOWER_NOTIFICATION_SLACK_HOOK_URL=${WATCHTOWER_SLACK_WEBHOOK}
+      - WATCHTOWER_NOTIFICATION_SLACK_IDENTIFIER=watchtower-streaminglab
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    networks:
+      monitoring:
+        ipv4_address: 192.168.40.14
