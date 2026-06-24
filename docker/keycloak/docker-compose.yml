@@ -19,8 +19,9 @@ services:
       - KC_DB_URL=jdbc:postgresql://postgres:5432/${POSTGRES_DB}
       - KC_DB_USERNAME=${POSTGRES_USER}
       - KC_DB_PASSWORD=${POSTGRES_PASSWORD}
-      - KC_HOSTNAME=keycloak.duoowatch.com
-      - KC_HOSTNAME_STRICT=true
+      - KC_HOSTNAME=192.168.10.2
+      - KC_HOSTNAME_PORT=8081
+      - KC_HOSTNAME_STRICT=false
       - KC_HTTP_ENABLED=true
       - KC_PROXY=edge
       - KEYCLOAK_ADMIN=${KEYCLOAK_ADMIN_USER}
