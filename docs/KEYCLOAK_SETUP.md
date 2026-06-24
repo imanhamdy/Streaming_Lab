@@ -1,7 +1,7 @@
 # Keycloak — Configuration SSO
 
 URL : http://192.168.10.2:8081  
-Admin : `admin` / `K3ycl0ak#Admin2026!`
+Admin : `admin` / voir `docker/.env` → `KEYCLOAK_ADMIN_PASSWORD`
 
 ---
 
