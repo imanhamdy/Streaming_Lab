@@ -12,18 +12,13 @@ PGDB=$(docker exec vault vault kv get -field=postgres_db secret/databases)
 
 docker exec postgres psql -U "$PGUSER" -d "$PGDB" -c "\l" && echo "PostgreSQL OK"
 
-# Create additional databases if needed
-docker exec postgres psql -U "$PGUSER" -c "
-  SELECT datname FROM pg_database WHERE datname NOT IN ('postgres','template0','template1');
-" | grep -q "$PGDB" && echo "Database '$PGDB' exists"
-
 # MongoDB
 echo ""
 echo "--- MongoDB ---"
 MONGO_USER=$(docker exec vault vault kv get -field=mongo_user secret/databases)
 MONGO_PASS=$(docker exec vault vault kv get -field=mongo_password secret/databases)
 
-docker exec mongodb mongosh \
+docker exec mongodb mongo \
   --username "$MONGO_USER" \
   --password "$MONGO_PASS" \
   --authenticationDatabase admin \
