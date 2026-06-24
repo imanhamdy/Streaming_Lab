@@ -18,6 +18,11 @@ jobs:
           git fetch origin
           git reset --hard origin/${{ github.base_ref }}
 
+      - name: Generate .env from Vault
+        env:
+          VAULT_TOKEN: ${{ secrets.VAULT_APP_TOKEN }}
+        run: ${{ secrets.DEPLOY_PATH }}/scripts/vault-env.sh
+
       - name: Recreate Docker networks
         run: |
           for net in streaming-net db-net monitoring-net; do
