@@ -19,14 +19,21 @@ sudo usermod -aG docker "$USER"
 
 echo "==> Docker installed: $(docker --version)"
 
-echo "==> Creating Docker networks..."
+echo "==> Creating Docker networks with explicit subnets..."
+
+declare -A subnets
+subnets[streaming-net]="192.168.10.0/24"
+subnets[db-net]="192.168.20.0/24"
+subnets[monitoring-net]="192.168.40.0/24"
+subnets[storage-net]="192.168.30.0/24"
 
 for network in streaming-net db-net monitoring-net storage-net; do
+  subnet=${subnets[$network]}
   if docker network ls --format '{{.Name}}' | grep -q "^${network}$"; then
     echo "    [skip] ${network} already exists"
   else
-    docker network create "${network}"
-    echo "    [ok]   ${network} created"
+    docker network create --subnet ${subnet} "${network}"
+    echo "    [ok]   ${network} created with subnet ${subnet}"
   fi
 done
 

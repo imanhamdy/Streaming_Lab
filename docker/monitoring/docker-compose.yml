@@ -2,7 +2,11 @@ version: "3.8"
 
 networks:
   monitoring:
-    driver: bridge
+    external: true
+    name: monitoring-net
+  streaming-net:
+    external: true
+    name: streaming-net
 
 volumes:
   prometheus_data:
@@ -17,7 +21,7 @@ configs:
         scrape_interval: 15s
         evaluation_interval: 15s
 
-      # A AJOUTER 
+      # A AJOUTER
       scrape_configs:
         - job_name: "prometheus"
           static_configs:
@@ -138,7 +142,8 @@ services:
     ports:
       - "9090:9090"
     networks:
-      - monitoring
+      monitoring:
+        ipv4_address: 192.168.40.10
 
   # Loki
   loki:
@@ -154,7 +159,8 @@ services:
     ports:
       - "3100:3100"
     networks:
-      - monitoring
+      monitoring:
+        ipv4_address: 192.168.40.11
 
   # Promtail
   promtail:
@@ -171,7 +177,8 @@ services:
     depends_on:
       - loki
     networks:
-      - monitoring
+      monitoring:
+        ipv4_address: 192.168.40.12
 
   # Grafana
   grafana:
@@ -193,5 +200,32 @@ services:
     depends_on:
       - prometheus
       - loki
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.grafana.rule=Host(`grafana.duoowatch.com`)
+      - traefik.http.routers.grafana.entrypoints=websecure
+      - traefik.http.routers.grafana.tls.certresolver=letsencrypt
+      - traefik.http.services.grafana.loadbalancer.server.port=3000
     networks:
-      - monitoring
+      monitoring:
+        ipv4_address: 192.168.40.13
+      streaming-net:
+        ipv4_address: 192.168.10.50
+
+  # Watchtower — automatic Docker image updates (patch management)
+  watchtower:
+    image: containrrr/watchtower:latest
+    container_name: watchtower
+    restart: unless-stopped
+    environment:
+      - WATCHTOWER_CLEANUP=true
+      - WATCHTOWER_INCLUDE_STOPPED=false
+      - WATCHTOWER_SCHEDULE=0 0 3 * * *
+      - WATCHTOWER_NOTIFICATIONS=slack
+      - WATCHTOWER_NOTIFICATION_SLACK_HOOK_URL=${WATCHTOWER_SLACK_WEBHOOK}
+      - WATCHTOWER_NOTIFICATION_SLACK_IDENTIFIER=watchtower-streaminglab
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    networks:
+      monitoring:
+        ipv4_address: 192.168.40.14

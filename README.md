@@ -12,6 +12,8 @@ Infrastructure de streaming auto-hébergée déployée sur un serveur Dell T140 
 
 Domaine interne : `streaminglab.local`
 
+DNS interne : configurez la zone `streaminglab.local` dans votre serveur DNS ou Pi-hole.
+
 ## Déploiement rapide
 
 ```bash

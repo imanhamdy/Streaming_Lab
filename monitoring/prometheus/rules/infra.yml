@@ -1,0 +1,90 @@
+groups:
+
+  - name: availability
+    rules:
+      - alert: InstanceDown
+        expr: up == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "{{ $labels.instance }} hors ligne"
+          description: "{{ $labels.instance }} ne répond plus depuis 1 minute."
+
+  - name: cpu
+    rules:
+      - alert: HighCPU
+        expr: 100 - (avg by(instance)(rate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 80
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "CPU élevé sur {{ $labels.instance }}"
+          description: "CPU à {{ $value | printf \"%.1f\" }}%"
+
+      - alert: CriticalCPU
+        expr: 100 - (avg by(instance)(rate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 95
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "CPU critique sur {{ $labels.instance }}"
+          description: "CPU à {{ $value | printf \"%.1f\" }}%"
+
+  - name: memory
+    rules:
+      - alert: HighMemory
+        expr: (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) * 100 > 85
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "RAM élevée sur {{ $labels.instance }}"
+          description: "RAM à {{ $value | printf \"%.1f\" }}%"
+
+      - alert: CriticalMemory
+        expr: (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) * 100 > 95
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "RAM critique sur {{ $labels.instance }}"
+          description: "RAM à {{ $value | printf \"%.1f\" }}%"
+
+  - name: disk
+    rules:
+      - alert: DiskWarning
+        expr: |
+          (1 - (node_filesystem_avail_bytes{fstype!~"tmpfs|overlay|squashfs"} /
+                node_filesystem_size_bytes{fstype!~"tmpfs|overlay|squashfs"})) * 100 > 75
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Disque {{ $labels.mountpoint }} sur {{ $labels.instance }}"
+          description: "Utilisation à {{ $value | printf \"%.1f\" }}%"
+
+      - alert: DiskCritical
+        expr: |
+          (1 - (node_filesystem_avail_bytes{fstype!~"tmpfs|overlay|squashfs"} /
+                node_filesystem_size_bytes{fstype!~"tmpfs|overlay|squashfs"})) * 100 > 90
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Disque plein {{ $labels.mountpoint }} sur {{ $labels.instance }}"
+          description: "Utilisation à {{ $value | printf \"%.1f\" }}%"
+
+  - name: security
+    rules:
+      - alert: SuricataAlerts
+        expr: |
+          sum by(host)(
+            rate({job="suricata"} |= "ALERT" [5m])
+          ) > 5
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Alertes IDS Suricata sur {{ $labels.host }}"
+          description: "Plus de 5 alertes/min détectées par Suricata."
