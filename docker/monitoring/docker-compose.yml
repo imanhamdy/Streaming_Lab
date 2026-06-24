@@ -262,10 +262,8 @@ services:
       - traefik.http.routers.grafana.tls.certresolver=letsencrypt
       - traefik.http.services.grafana.loadbalancer.server.port=3000
     networks:
-      monitoring:
-        ipv4_address: 192.168.40.13
-      streaming-net:
-        ipv4_address: 192.168.10.50
+      - monitoring
+      - streaming-net
 
   # Watchtower — automatic Docker image updates (patch management)
   watchtower:
@@ -282,5 +280,4 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
     networks:
-      monitoring:
-        ipv4_address: 192.168.40.14
+      - monitoring

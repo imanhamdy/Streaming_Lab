@@ -15,8 +15,7 @@ services:
     ports:
       - "5432:5432"
     networks:
-      db-net:
-        ipv4_address: 192.168.20.10
+      - db-net
 
   mongodb:
     image: mongo:6.0
@@ -31,8 +30,7 @@ services:
     ports:
       - "27017:27017"
     networks:
-      db-net:
-        ipv4_address: 192.168.20.11
+      - db-net
 
   redis:
     image: redis:7-alpine
@@ -44,8 +42,7 @@ services:
     ports:
       - "6379:6379"
     networks:
-      db-net:
-        ipv4_address: 192.168.20.12
+      - db-net
 
 networks:
   db-net:

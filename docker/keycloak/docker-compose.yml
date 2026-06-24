@@ -35,7 +35,5 @@ services:
     ports:
       - "8080:8080"
     networks:
-      streaming-net:
-        ipv4_address: 192.168.10.30
-      db-net:
-        ipv4_address: 192.168.20.20
+      - streaming-net
+      - db-net

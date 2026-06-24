@@ -27,10 +27,8 @@ services:
       - traefik.http.routers.minio.tls.certresolver=letsencrypt
       - traefik.http.services.minio.loadbalancer.server.port=9001
     networks:
-      storage:
-        ipv4_address: 192.168.50.10
-      streaming-net:
-        ipv4_address: 192.168.10.51
+      - storage
+      - streaming-net
 
 volumes:
   minio_data:
@@ -39,9 +37,6 @@ networks:
   storage:
     name: storage-net
     driver: bridge
-    ipam:
-      config:
-        - subnet: 192.168.50.0/24
   streaming-net:
     external: true
     name: streaming-net

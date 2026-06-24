@@ -45,8 +45,7 @@ services:
       - traefik.http.routers.jellyfin.tls.certresolver=letsencrypt
       - traefik.http.services.jellyfin.loadbalancer.server.port=8096
     networks:
-      streaming-net:
-        ipv4_address: 192.168.10.20
+      - streaming-net
 
 networks:
   streaming-net:

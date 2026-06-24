@@ -18,15 +18,14 @@ jobs:
           git fetch origin
           git reset --hard origin/${{ github.base_ref }}
 
-      - name: Recreate networks with correct subnets
+      - name: Recreate Docker networks
         run: |
-          for net in streaming-net db-net monitoring-net storage-net; do
+          for net in streaming-net db-net monitoring-net; do
             docker network rm $net 2>/dev/null || true
           done
-          docker network create --subnet 192.168.10.0/24 streaming-net
-          docker network create --subnet 192.168.20.0/24 db-net
-          docker network create --subnet 192.168.40.0/24 monitoring-net
-          docker network create --subnet 192.168.50.0/24 storage-net
+          docker network create streaming-net
+          docker network create db-net
+          docker network create monitoring-net
 
       - name: Deploy - databases
         run: docker compose -f ${{ secrets.DEPLOY_PATH }}/docker/databases/docker-compose.yml up -d --remove-orphans

@@ -50,5 +50,4 @@ services:
       # Basic auth for dashboard (user: admin)
       - "traefik.http.middlewares.auth.basicauth.users=admin:$$2y$$10$$placeholder"
     networks:
-      streaming-net:
-        ipv4_address: 192.168.10.10
+      - streaming-net
