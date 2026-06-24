@@ -144,7 +144,81 @@ Ajouter en crontab après reboot :
 
 ---
 
-## 8. Vérification
+## 8. Connexion des applications à Vault
+
+Les apps lisent leurs secrets depuis Vault au lieu du `.env`. Deux approches :
+
+### Option A — Via variable d'environnement (simple)
+
+Ajouter dans chaque compose le token applicatif et l'adresse Vault, puis utiliser un entrypoint qui lit les secrets au démarrage.
+
+Exemple pour Grafana dans `docker/monitoring/docker-compose.yml` :
+```yaml
+environment:
+  - VAULT_ADDR=http://192.168.10.2:8200
+  - VAULT_TOKEN=<app_token>
+```
+
+Puis dans un script d'init :
+```bash
+GF_SECURITY_ADMIN_PASSWORD=$(vault kv get -field=admin_password secret/grafana)
+```
+
+### Option B — Via Vault Agent (recommandé)
+
+Vault Agent tourne en sidecar et écrit les secrets dans des fichiers que l'app lit.
+
+**1. Créer la config Vault Agent**
+
+```hcl
+# docker/security/vault-agent.hcl
+vault {
+  address = "http://192.168.10.2:8200"
+}
+
+auto_auth {
+  method "token_file" {
+    config = {
+      token_file_path = "/vault/token"
+    }
+  }
+}
+
+template {
+  source      = "/vault/templates/grafana.env.tpl"
+  destination = "/vault/secrets/grafana.env"
+}
+```
+
+**2. Template pour Grafana**
+
+```
+{{- with secret "secret/data/grafana" -}}
+GF_SECURITY_ADMIN_USER={{ .Data.data.admin_user }}
+GF_SECURITY_ADMIN_PASSWORD={{ .Data.data.admin_password }}
+{{- end }}
+```
+
+**3. Charger le fichier généré dans le compose**
+
+```yaml
+env_file:
+  - /vault/secrets/grafana.env
+```
+
+### Lire un secret manuellement depuis la VM
+
+```bash
+# Avec le token root
+docker exec vault vault kv get -field=admin_password secret/grafana
+
+# Avec le token applicatif
+VAULT_TOKEN=<app_token> docker exec vault vault kv get secret/grafana
+```
+
+---
+
+## 9. Vérification
 
 ```bash
 docker exec vault vault status
