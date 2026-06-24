@@ -31,5 +31,4 @@ services:
     ports:
       - "8200:8200"
     networks:
-      streaming-net:
-        ipv4_address: 192.168.10.40
+      - streaming-net

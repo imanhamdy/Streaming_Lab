@@ -18,36 +18,40 @@ jobs:
           git fetch origin
           git reset --hard origin/${{ github.base_ref }}
 
-      - name: Recreate networks with correct subnets
+      - name: Generate .env from Vault
+        env:
+          VAULT_TOKEN: ${{ secrets.VAULT_APP_TOKEN }}
+        run: ${{ secrets.DEPLOY_PATH }}/scripts/vault-env.sh
+
+      - name: Recreate Docker networks
         run: |
-          for net in streaming-net db-net monitoring-net storage-net; do
+          for net in streaming-net db-net monitoring-net; do
             docker network rm $net 2>/dev/null || true
           done
-          docker network create --subnet 192.168.10.0/24 streaming-net
-          docker network create --subnet 192.168.20.0/24 db-net
-          docker network create --subnet 192.168.40.0/24 monitoring-net
-          docker network create --subnet 192.168.50.0/24 storage-net
+          docker network create streaming-net
+          docker network create db-net
+          docker network create monitoring-net
 
       - name: Deploy - databases
-        run: docker compose -f ${{ secrets.DEPLOY_PATH }}/docker/databases/docker-compose.yml up -d --remove-orphans
+        run: docker compose --env-file ${{ secrets.DEPLOY_PATH }}/docker/.env -f ${{ secrets.DEPLOY_PATH }}/docker/databases/docker-compose.yml up -d --remove-orphans
 
       - name: Deploy - proxy
-        run: docker compose -f ${{ secrets.DEPLOY_PATH }}/docker/proxy/docker-compose.yml up -d --remove-orphans
+        run: docker compose --env-file ${{ secrets.DEPLOY_PATH }}/docker/.env -f ${{ secrets.DEPLOY_PATH }}/docker/proxy/docker-compose.yml up -d --remove-orphans
 
       - name: Deploy - keycloak
-        run: docker compose -f ${{ secrets.DEPLOY_PATH }}/docker/keycloak/docker-compose.yml up -d --remove-orphans
+        run: docker compose --env-file ${{ secrets.DEPLOY_PATH }}/docker/.env -f ${{ secrets.DEPLOY_PATH }}/docker/keycloak/docker-compose.yml up -d --remove-orphans
 
       - name: Deploy - vault
-        run: docker compose -f ${{ secrets.DEPLOY_PATH }}/docker/security/docker-compose.yml up -d --remove-orphans
+        run: docker compose --env-file ${{ secrets.DEPLOY_PATH }}/docker/.env -f ${{ secrets.DEPLOY_PATH }}/docker/security/docker-compose.yml up -d --remove-orphans
 
       - name: Deploy - storage
-        run: docker compose -f ${{ secrets.DEPLOY_PATH }}/docker/storage/docker-compose.yml up -d --remove-orphans
+        run: docker compose --env-file ${{ secrets.DEPLOY_PATH }}/docker/.env -f ${{ secrets.DEPLOY_PATH }}/docker/storage/docker-compose.yml up -d --remove-orphans
 
       - name: Deploy - jellyfin
-        run: docker compose -f ${{ secrets.DEPLOY_PATH }}/docker/jellyfin/docker-compose.yml up -d --remove-orphans
+        run: docker compose --env-file ${{ secrets.DEPLOY_PATH }}/docker/.env -f ${{ secrets.DEPLOY_PATH }}/docker/jellyfin/docker-compose.yml up -d --remove-orphans
 
       - name: Deploy - monitoring
-        run: docker compose -f ${{ secrets.DEPLOY_PATH }}/docker/monitoring/docker-compose.yml up -d --remove-orphans
+        run: docker compose --env-file ${{ secrets.DEPLOY_PATH }}/docker/.env -f ${{ secrets.DEPLOY_PATH }}/docker/monitoring/docker-compose.yml up -d --remove-orphans
 
       - name: Health check
         run: |

@@ -1,49 +1,58 @@
-# Streaming Lab — Ynov Campus B3 INFRA Projet Fil Rouge
+# Streaming Lab
 
-Infrastructure de streaming auto-hébergée déployée sur un serveur Dell T140 / Proxmox VE 8.
+Infrastructure homelab de streaming video sur Proxmox VE 8 - Ynov Campus B3 INFRA.
 
-## Architecture
+## Acces aux services
 
-| VM | IP | Rôle |
-|----|----|------|
-| vm-streaming | 192.168.10.2 | Stack Docker (Traefik, Jellyfin, Keycloak, …) |
-| vm-dns | 192.168.20.2 | DNS interne |
-| vm-backup | 192.168.30.2 | Sauvegardes |
+| Service | URL | Description |
+|---|---|---|
+| Jellyfin | https://jellyfin.duoowatch.com | Streaming video |
+| Keycloak | https://keycloak.duoowatch.com | SSO / Authentification |
+| Grafana | https://grafana.duoowatch.com | Supervision & metriques |
+| MinIO | https://minio.duoowatch.com | Stockage objet S3 |
+| Vault | https://vault.duoowatch.com | Gestion des secrets |
+| Traefik | https://traefik.duoowatch.com | Dashboard proxy (VPN requis) |
 
-Domaine interne : `streaminglab.local`
+## Stack technique
 
-DNS interne : configurez la zone `streaminglab.local` dans votre serveur DNS ou Pi-hole.
+- **Proxmox VE 8** - hyperviseur sur DELL T140
+- **Docker Compose** - stacks isolees par domaine fonctionnel
+- **Traefik v3** - reverse proxy HTTPS + Let's Encrypt
+- **Keycloak 24** - SSO OIDC + MFA
+- **HashiCorp Vault 1.17** - secrets & PKI
+- **PLG Stack** - Prometheus + Loki + Grafana
+- **Suricata** - IDS reseau
+- **MinIO** - stockage objet compatible S3
+- **Veeam B&R** - sauvegardes AES-256
 
-## Déploiement rapide
+## CI/CD
 
-```bash
-cp .env.example .env
-# Remplir .env avec vos valeurs
+| Check | Declencheur |
+|---|---|
+| YAML lint + Compose validate | PR -> develop / main |
+| Trivy (scan CVE CRITICAL) | PR -> develop / main |
+| Gitleaks (detection secrets) | PR -> develop / main |
+| Deploy auto sur vm-streaming | Merge -> develop |
 
-make up-proxy
-make up-databases
-make up-keycloak
-make up-jellyfin
-```
+## Documentation
 
-## Commandes utiles
+| Document | Contenu |
+|---|---|
+| [CHARTE_INFORMATIQUE](docs/CHARTE_INFORMATIQUE.md) | Politique de securite |
+| [ANALYSE_RISQUES](docs/ANALYSE_RISQUES.md) | Matrice de risques ISO 27005 |
+| [BIA](docs/BIA.md) | Business Impact Analysis - RTO/RPO |
+| [PLAN_URGENCE_MALWARE](docs/PLAN_URGENCE_MALWARE.md) | Reponse aux incidents malware |
+| [PLAN_TELETRAVAIL](docs/PLAN_TELETRAVAIL.md) | Plan teletravail securise |
+| [PROCEDURE_BACKUP_RESTORE](docs/PROCEDURE_BACKUP_RESTORE.md) | Sauvegarde & restauration |
+| [DAT_ITIL_SUPPLEMENT](docs/DAT_ITIL_SUPPLEMENT.md) | ITIL v4 + ISO 20000 + ISO 27001 |
+| [COMPARATIF_SOLUTIONS](docs/COMPARATIF_SOLUTIONS.md) | TCO & justification des choix |
+| [PLAN_DEPLOIEMENT](docs/PLAN_DEPLOIEMENT.md) | Plan de deploiement par phases |
+| [GREEN_IT](docs/GREEN_IT.md) | Indicateurs Green IT & RSE |
 
-| Commande | Action |
-|----------|--------|
-| `make up` | Démarre toutes les stacks |
-| `make down` | Arrête toutes les stacks |
-| `make up-<stack>` | Démarre une stack (ex: `make up-proxy`) |
-| `make logs-<stack>` | Affiche les logs d'une stack |
-| `make ps` | Liste les conteneurs actifs |
+## Equipe
 
-## Structure
-
-```
-streaming-lab/
-├── docker/          Stacks Docker (une par service)
-├── docs/            DAT, PCA/PRA, schémas UML
-├── infra/           Terraform (Proxmox) + Ansible
-├── monitoring/      Dashboards Grafana, configs Prometheus/Loki
-├── network/         Configs FortiGate, VLANs, DNS
-└── scripts/         Scripts utilitaires
-```
+| Membre | Role |
+|---|---|
+| Iman Hamdy | Admin systeme & DevOps |
+| Quentin | Admin reseau |
+| Adrien | Admin monitoring |

@@ -1,0 +1,178 @@
+<svg viewBox="0 0 900 1020" xmlns="http://www.w3.org/2000/svg" role="img" font-family="monospace, sans-serif">
+  <title>Streaming Lab — Architecture d'Infrastructure</title>
+  <desc>Full infrastructure diagram from internet/users down through Proxmox VMs and Docker networks</desc>
+
+  <!-- Background -->
+  <rect width="900" height="1020" fill="#0d1117"/>
+
+  <!-- Header -->
+  <text x="30" y="28" fill="#8b949e" font-size="11">Ynov Campus B3 INFRA</text>
+  <text x="450" y="28" fill="#e6edf3" font-size="14" font-weight="bold" text-anchor="middle">Streaming Lab — Architecture d'Infrastructure</text>
+  <text x="870" y="28" fill="#8b949e" font-size="11" text-anchor="end">Usage pédagogique</text>
+
+  <!-- INTERNET -->
+  <rect x="220" y="44" width="460" height="46" rx="6" fill="#21262d" stroke="#444c56" stroke-width="1.5"/>
+  <text x="450" y="63" fill="#e6edf3" font-size="12" font-weight="bold" text-anchor="middle">Internet / utilisateurs</text>
+  <text x="450" y="80" fill="#8b949e" font-size="10" text-anchor="middle">Cloudflare Tunnel · FortiGate VPN · MFA</text>
+
+  <line x1="450" y1="90" x2="450" y2="106" stroke="#444c56" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- FORTIGATE -->
+  <rect x="160" y="106" width="580" height="46" rx="6" fill="#2d1f1f" stroke="#f85149" stroke-width="1.5"/>
+  <text x="450" y="126" fill="#f85149" font-size="12" font-weight="bold" text-anchor="middle">FortiGate HA — 192.168.1.20</text>
+  <text x="450" y="142" fill="#8b949e" font-size="10" text-anchor="middle">Firewall · ACLs · VPN SSL · Zero Trust NAC</text>
+
+  <line x1="450" y1="152" x2="450" y2="168" stroke="#444c56" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- SWITCH -->
+  <rect x="100" y="168" width="700" height="46" rx="6" fill="#1a2535" stroke="#388bfd" stroke-width="1.5"/>
+  <text x="450" y="188" fill="#58a6ff" font-size="12" font-weight="bold" text-anchor="middle">Cisco Catalyst C3650 — NIT-SW-1 — 192.168.90.2</text>
+  <text x="450" y="204" fill="#8b949e" font-size="10" text-anchor="middle">VLANs : 10 · 20 · 90 · 110 · 120 · 130 · 140</text>
+
+  <line x1="450" y1="214" x2="450" y2="230" stroke="#444c56" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- PROXMOX OUTER BOX -->
+  <rect x="30" y="230" width="840" height="730" rx="8" fill="#161b22" stroke="#30363d" stroke-width="1.5"/>
+  <text x="450" y="252" fill="#e6edf3" font-size="12" font-weight="bold" text-anchor="middle">Proxmox VE 8 — DELL T140 — 192.168.90.50</text>
+
+  <!-- vm-dns -->
+  <rect x="50" y="264" width="180" height="56" rx="6" fill="#1c2128" stroke="#6e7681" stroke-width="1"/>
+  <text x="140" y="284" fill="#e6edf3" font-size="11" font-weight="bold" text-anchor="middle">vm-dns</text>
+  <text x="140" y="298" fill="#8b949e" font-size="9.5" text-anchor="middle">Pi-hole / BIND9</text>
+  <text x="140" y="311" fill="#8b949e" font-size="9.5" text-anchor="middle">110.101 · VLAN 110</text>
+
+  <!-- vm-backup -->
+  <rect x="670" y="264" width="180" height="56" rx="6" fill="#2b1f0a" stroke="#d29922" stroke-width="1"/>
+  <text x="760" y="284" fill="#d29922" font-size="11" font-weight="bold" text-anchor="middle">vm-backup</text>
+  <text x="760" y="298" fill="#8b949e" font-size="9.5" text-anchor="middle">Veeam B&amp;R</text>
+  <text x="760" y="311" fill="#8b949e" font-size="9.5" text-anchor="middle">140.10 · VLAN 140</text>
+
+  <!-- VM-STREAMING BOX -->
+  <rect x="50" y="338" width="560" height="604" rx="8" fill="#0d1521" stroke="#1f6feb" stroke-width="1.5"/>
+  <text x="330" y="358" fill="#58a6ff" font-size="11" font-weight="bold" text-anchor="middle">vm-streaming — 192.168.20.10 — VLAN 20 — Ubuntu 24.04 — Docker Engine</text>
+
+  <!-- streaming-net -->
+  <rect x="66" y="368" width="528" height="130" rx="6" fill="#0d1f12" stroke="#238636" stroke-width="1"/>
+  <text x="110" y="384" fill="#3fb950" font-size="10" font-weight="bold">streaming-net</text>
+
+  <rect x="74" y="390" width="112" height="48" rx="5" fill="#1c2128" stroke="#3fb950" stroke-width="1"/>
+  <text x="130" y="409" fill="#e6edf3" font-size="10.5" font-weight="bold" text-anchor="middle">Traefik v3</text>
+  <text x="130" y="424" fill="#8b949e" font-size="9" text-anchor="middle">Proxy · TLS</text>
+
+  <rect x="196" y="390" width="112" height="48" rx="5" fill="#1c2128" stroke="#3fb950" stroke-width="1"/>
+  <text x="252" y="409" fill="#e6edf3" font-size="10.5" font-weight="bold" text-anchor="middle">Jellyfin</text>
+  <text x="252" y="424" fill="#8b949e" font-size="9" text-anchor="middle">Stream · Transcode</text>
+
+  <rect x="318" y="390" width="112" height="48" rx="5" fill="#1c2128" stroke="#3fb950" stroke-width="1"/>
+  <text x="374" y="409" fill="#e6edf3" font-size="10.5" font-weight="bold" text-anchor="middle">Keycloak</text>
+  <text x="374" y="424" fill="#8b949e" font-size="9" text-anchor="middle">IAM · SSO · MFA</text>
+
+  <rect x="440" y="390" width="112" height="48" rx="5" fill="#1c2128" stroke="#3fb950" stroke-width="1"/>
+  <text x="496" y="409" fill="#e6edf3" font-size="10.5" font-weight="bold" text-anchor="middle">Vault</text>
+  <text x="496" y="424" fill="#8b949e" font-size="9" text-anchor="middle">Secrets · PKI</text>
+
+  <text x="74" y="488" fill="#8b949e" font-size="9" font-style="italic">+ MinIO (également sur storage-net)</text>
+
+  <!-- db-net -->
+  <rect x="66" y="510" width="528" height="116" rx="6" fill="#131520" stroke="#6e40c9" stroke-width="1"/>
+  <text x="110" y="527" fill="#a371f7" font-size="10" font-weight="bold">db-net</text>
+
+  <rect x="74" y="534" width="156" height="52" rx="5" fill="#1c2128" stroke="#a371f7" stroke-width="1"/>
+  <text x="152" y="554" fill="#e6edf3" font-size="10.5" font-weight="bold" text-anchor="middle">PostgreSQL</text>
+  <text x="152" y="569" fill="#8b949e" font-size="9" text-anchor="middle">Users · Metadata</text>
+
+  <rect x="246" y="534" width="156" height="52" rx="5" fill="#1c2128" stroke="#a371f7" stroke-width="1"/>
+  <text x="324" y="554" fill="#e6edf3" font-size="10.5" font-weight="bold" text-anchor="middle">MongoDB</text>
+  <text x="324" y="569" fill="#8b949e" font-size="9" text-anchor="middle">History · Reco</text>
+
+  <rect x="418" y="534" width="156" height="52" rx="5" fill="#1c2128" stroke="#a371f7" stroke-width="1"/>
+  <text x="496" y="554" fill="#e6edf3" font-size="10.5" font-weight="bold" text-anchor="middle">Redis</text>
+  <text x="496" y="569" fill="#8b949e" font-size="9" text-anchor="middle">Sessions · Cache</text>
+
+  <!-- monitoring-net -->
+  <rect x="66" y="638" width="528" height="128" rx="6" fill="#0f1a1a" stroke="#39d353" stroke-width="1"/>
+  <text x="110" y="655" fill="#39d353" font-size="10" font-weight="bold">monitoring-net</text>
+
+  <rect x="74" y="662" width="118" height="52" rx="5" fill="#1c2128" stroke="#39d353" stroke-width="1"/>
+  <text x="133" y="682" fill="#e6edf3" font-size="10.5" font-weight="bold" text-anchor="middle">Grafana</text>
+  <text x="133" y="697" fill="#8b949e" font-size="9" text-anchor="middle">Dashboards</text>
+
+  <rect x="204" y="662" width="118" height="52" rx="5" fill="#1c2128" stroke="#39d353" stroke-width="1"/>
+  <text x="263" y="682" fill="#e6edf3" font-size="10.5" font-weight="bold" text-anchor="middle">Prometheus</text>
+  <text x="263" y="697" fill="#8b949e" font-size="9" text-anchor="middle">Metrics</text>
+
+  <rect x="334" y="662" width="118" height="52" rx="5" fill="#1c2128" stroke="#39d353" stroke-width="1"/>
+  <text x="393" y="682" fill="#e6edf3" font-size="10.5" font-weight="bold" text-anchor="middle">Loki</text>
+  <text x="393" y="697" fill="#8b949e" font-size="9" text-anchor="middle">Logs</text>
+
+  <rect x="464" y="662" width="118" height="52" rx="5" fill="#1c2128" stroke="#39d353" stroke-width="1"/>
+  <text x="523" y="682" fill="#e6edf3" font-size="10.5" font-weight="bold" text-anchor="middle">Suricata</text>
+  <text x="523" y="697" fill="#8b949e" font-size="9" text-anchor="middle">IDS</text>
+
+  <text x="74" y="756" fill="#8b949e" font-size="9" font-style="italic">scrape targets: tous les containers · alerting via Grafana</text>
+
+  <!-- storage-net -->
+  <rect x="66" y="778" width="528" height="88" rx="6" fill="#1a180d" stroke="#d29922" stroke-width="1"/>
+  <text x="110" y="795" fill="#d29922" font-size="10" font-weight="bold">storage-net</text>
+
+  <rect x="170" y="802" width="320" height="52" rx="5" fill="#1c2128" stroke="#d29922" stroke-width="1"/>
+  <text x="330" y="822" fill="#e6edf3" font-size="10.5" font-weight="bold" text-anchor="middle">MinIO</text>
+  <text x="330" y="837" fill="#8b949e" font-size="9" text-anchor="middle">S3 Object Storage · Media files</text>
+
+  <!-- LEGEND -->
+  <rect x="636" y="338" width="214" height="258" rx="6" fill="#161b22" stroke="#30363d" stroke-width="1"/>
+  <text x="743" y="358" fill="#e6edf3" font-size="11" font-weight="bold" text-anchor="middle">Légende</text>
+
+  <rect x="650" y="370" width="14" height="14" rx="2" fill="#21262d" stroke="#444c56" stroke-width="1"/>
+  <text x="672" y="382" fill="#8b949e" font-size="10">Infra physique</text>
+
+  <rect x="650" y="394" width="14" height="14" rx="2" fill="#2d1f1f" stroke="#f85149" stroke-width="1"/>
+  <text x="672" y="406" fill="#8b949e" font-size="10">Sécurité réseau</text>
+
+  <rect x="650" y="418" width="14" height="14" rx="2" fill="#1a2535" stroke="#388bfd" stroke-width="1"/>
+  <text x="672" y="430" fill="#8b949e" font-size="10">Switch / VLAN</text>
+
+  <rect x="650" y="442" width="14" height="14" rx="2" fill="#0d1521" stroke="#1f6feb" stroke-width="1"/>
+  <text x="672" y="454" fill="#8b949e" font-size="10">vm-streaming</text>
+
+  <rect x="650" y="466" width="14" height="14" rx="2" fill="#0d1f12" stroke="#238636" stroke-width="1"/>
+  <text x="672" y="478" fill="#8b949e" font-size="10">streaming-net</text>
+
+  <rect x="650" y="490" width="14" height="14" rx="2" fill="#131520" stroke="#6e40c9" stroke-width="1"/>
+  <text x="672" y="502" fill="#8b949e" font-size="10">db-net</text>
+
+  <rect x="650" y="514" width="14" height="14" rx="2" fill="#0f1a1a" stroke="#39d353" stroke-width="1"/>
+  <text x="672" y="526" fill="#8b949e" font-size="10">monitoring-net</text>
+
+  <rect x="650" y="538" width="14" height="14" rx="2" fill="#1a180d" stroke="#d29922" stroke-width="1"/>
+  <text x="672" y="550" fill="#8b949e" font-size="10">storage-net</text>
+
+  <!-- STARTUP ORDER -->
+  <rect x="636" y="610" width="214" height="130" rx="6" fill="#161b22" stroke="#30363d" stroke-width="1"/>
+  <text x="743" y="630" fill="#e6edf3" font-size="11" font-weight="bold" text-anchor="middle">Démarrage</text>
+
+  <circle cx="660" cy="652" r="10" fill="#238636"/>
+  <text x="660" y="657" fill="#fff" font-size="10" font-weight="bold" text-anchor="middle">3</text>
+  <text x="678" y="657" fill="#8b949e" font-size="10">VMs Proxmox</text>
+
+  <circle cx="660" cy="678" r="10" fill="#388bfd"/>
+  <text x="660" y="683" fill="#fff" font-size="10" font-weight="bold" text-anchor="middle">1</text>
+  <text x="678" y="683" fill="#8b949e" font-size="10">Serveur physique</text>
+
+  <circle cx="660" cy="704" r="10" fill="#a371f7"/>
+  <text x="660" y="709" fill="#fff" font-size="10" font-weight="bold" text-anchor="middle">7</text>
+  <text x="678" y="709" fill="#8b949e" font-size="10">Stacks Docker</text>
+
+  <circle cx="660" cy="730" r="10" fill="#d29922"/>
+  <text x="660" y="735" fill="#fff" font-size="10" font-weight="bold" text-anchor="middle">4</text>
+  <text x="678" y="735" fill="#8b949e" font-size="10">Docker networks</text>
+
+  <!-- Footer -->
+  <text x="450" y="1008" fill="#8b949e" font-size="10" text-anchor="middle">3 VMs · 7 stacks Docker · 4 Docker networks</text>
+
+  <defs>
+    <marker id="arr" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L8,3 z" fill="#444c56"/>
+    </marker>
+  </defs>
+</svg>

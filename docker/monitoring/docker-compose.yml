@@ -247,6 +247,15 @@ services:
       - GF_USERS_ALLOW_SIGN_UP=false
       - GF_SERVER_ROOT_URL=http://192.168.10.2:3000
       - GF_FEATURE_TOGGLES_ENABLE=traceqlEditor
+      - GF_AUTH_GENERIC_OAUTH_ENABLED=true
+      - GF_AUTH_GENERIC_OAUTH_NAME=Keycloak
+      - GF_AUTH_GENERIC_OAUTH_CLIENT_ID=grafana
+      - GF_AUTH_GENERIC_OAUTH_CLIENT_SECRET=${KEYCLOAK_CLIENT_SECRET_GRAFANA}
+      - GF_AUTH_GENERIC_OAUTH_SCOPES=openid email profile roles
+      - GF_AUTH_GENERIC_OAUTH_AUTH_URL=http://192.168.10.2:8081/realms/streaming-lab/protocol/openid-connect/auth
+      - GF_AUTH_GENERIC_OAUTH_TOKEN_URL=http://192.168.10.2:8081/realms/streaming-lab/protocol/openid-connect/token
+      - GF_AUTH_GENERIC_OAUTH_API_URL=http://192.168.10.2:8081/realms/streaming-lab/protocol/openid-connect/userinfo
+      - GF_AUTH_GENERIC_OAUTH_ROLE_ATTRIBUTE_PATH=contains(roles[*], 'admin') && 'Admin' || 'Viewer'
     volumes:
       - grafana_data:/var/lib/grafana
       - ./grafana/provisioning:/etc/grafana/provisioning:ro
@@ -262,25 +271,6 @@ services:
       - traefik.http.routers.grafana.tls.certresolver=letsencrypt
       - traefik.http.services.grafana.loadbalancer.server.port=3000
     networks:
-      monitoring:
-        ipv4_address: 192.168.40.13
-      streaming-net:
-        ipv4_address: 192.168.10.50
+      - monitoring
+      - streaming-net
 
-  # Watchtower — automatic Docker image updates (patch management)
-  watchtower:
-    image: containrrr/watchtower:latest
-    container_name: watchtower
-    restart: unless-stopped
-    environment:
-      - WATCHTOWER_CLEANUP=true
-      - WATCHTOWER_INCLUDE_STOPPED=false
-      - WATCHTOWER_SCHEDULE=0 0 3 * * *
-      - WATCHTOWER_NOTIFICATIONS=slack
-      - WATCHTOWER_NOTIFICATION_SLACK_HOOK_URL=${WATCHTOWER_SLACK_WEBHOOK}
-      - WATCHTOWER_NOTIFICATION_SLACK_IDENTIFIER=watchtower-streaminglab
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock:ro
-    networks:
-      monitoring:
-        ipv4_address: 192.168.40.14

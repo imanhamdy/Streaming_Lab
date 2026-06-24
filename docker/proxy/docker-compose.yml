@@ -16,7 +16,7 @@ services:
     command:
       # API & Dashboard
       - "--api.dashboard=true"
-      - "--api.insecure=false"
+      - "--api.insecure=true"
       # Entrypoints
       - "--entrypoints.web.address=:80"
       - "--entrypoints.websecure.address=:443"
@@ -37,6 +37,7 @@ services:
     ports:
       - "80:80"
       - "443:443"
+      - "8888:8080"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - traefik_certs:/certs
@@ -50,5 +51,4 @@ services:
       # Basic auth for dashboard (user: admin)
       - "traefik.http.middlewares.auth.basicauth.users=admin:$$2y$$10$$placeholder"
     networks:
-      streaming-net:
-        ipv4_address: 192.168.10.10
+      - streaming-net
