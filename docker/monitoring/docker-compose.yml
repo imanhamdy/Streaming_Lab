@@ -274,9 +274,6 @@ services:
       - WATCHTOWER_CLEANUP=true
       - WATCHTOWER_INCLUDE_STOPPED=false
       - WATCHTOWER_SCHEDULE=0 0 3 * * *
-      - WATCHTOWER_NOTIFICATIONS=slack
-      - WATCHTOWER_NOTIFICATION_SLACK_HOOK_URL=${WATCHTOWER_SLACK_WEBHOOK}
-      - WATCHTOWER_NOTIFICATION_SLACK_IDENTIFIER=watchtower-streaminglab
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
     networks:
