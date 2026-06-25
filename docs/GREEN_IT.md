@@ -1,6 +1,6 @@
-# Green IT & Éco-responsabilité — Streaming Lab
-**Ynov Campus B3 INFRA — Compétence 15 & 16**
-Version 1.0 — Juin 2026
+# Green IT & Éco-responsabilité - Streaming Lab
+**Ynov Campus B3 INFRA - Compétence 15 & 16**
+Version 1.0 - Juin 2026
 
 ---
 
@@ -12,7 +12,7 @@ Le projet Streaming Lab intègre dès sa conception les principes du **Green IT*
 
 ## 2. Choix techniques éco-responsables (Compétence 15)
 
-### 2.1 Consolidation serveur — principal levier d'économie
+### 2.1 Consolidation serveur - principal levier d'économie
 
 L'architecture retenue concentre **l'intégralité de l'infrastructure** sur un seul serveur physique DELL T140 via Proxmox VE 8, au lieu de déployer plusieurs serveurs physiques dédiés.
 
@@ -24,7 +24,7 @@ L'architecture retenue concentre **l'intégralité de l'infrastructure** sur un 
 
 > Hypothèse : facteur d'émission réseau électrique français = 0,06 kg CO₂/kWh (RTE 2024).
 
-### 2.2 Conteneurisation Docker — densification des ressources
+### 2.2 Conteneurisation Docker - densification des ressources
 
 Les stacks Docker permettent de faire tourner **13 services** sur une seule VM (`vm-streaming`) avec un overhead minimal, là où 13 VMs dédiées auraient multiplié la consommation mémoire et CPU par 3 à 5.
 
@@ -44,7 +44,7 @@ Les images sélectionnées privilégient les variantes **Alpine** :
 |---|---|---|---|
 | PostgreSQL | `postgres:15-alpine` | ~80 Mo | `postgres:15` (~380 Mo) |
 | Redis | `redis:7-alpine` | ~30 Mo | `redis:7` (~130 Mo) |
-| Loki | `grafana/loki:latest` | ~65 Mo | — |
+| Loki | `grafana/loki:latest` | ~65 Mo | - |
 
 Images plus légères = moins de transferts réseau, moins de stockage, démarrages plus rapides.
 
@@ -64,7 +64,7 @@ Cela évite l'accumulation illimitée de logs qui consommerait du stockage et de
 
 Tous les containers utilisent `restart: unless-stopped` plutôt que `restart: always`. Cela permet l'arrêt propre des services lors des maintenances planifiées sans redémarrage automatique intempestif, économisant des cycles CPU pendant les fenêtres de maintenance.
 
-### 2.6 Hébergement local — zéro transfert longue distance
+### 2.6 Hébergement local - zéro transfert longue distance
 
 L'infrastructure est hébergée **on-premise** dans les locaux d'Ynov Campus. Contrairement à une solution cloud distante, les flux de données entre utilisateurs et services ne transitent pas par des datacenters distants, réduisant la consommation réseau et la latence.
 
@@ -140,4 +140,4 @@ Ces indicateurs sont intégrés au tableau de bord Grafana pour un suivi continu
 
 ---
 
-*Références : RTE — Bilan électrique 2024 ; ADEME — Empreinte carbone du numérique 2023 ; Green IT — Guide de bonnes pratiques v4.*
+*Références : RTE - Bilan électrique 2024 ; ADEME - Empreinte carbone du numérique 2023 ; Green IT - Guide de bonnes pratiques v4.*

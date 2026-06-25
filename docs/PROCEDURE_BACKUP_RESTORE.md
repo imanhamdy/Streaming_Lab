@@ -1,6 +1,6 @@
 # Procédure de Sauvegarde et Test de Restauration
-**Streaming Lab — Ynov Campus B3 INFRA**
-Version 1.0 — Juin 2026
+**Streaming Lab - Ynov Campus B3 INFRA**
+Version 1.0 - Juin 2026
 
 ---
 
@@ -69,7 +69,7 @@ Résultat attendu : `Status: Success` pour chaque job.
 
 ---
 
-### Étape 1 — Identifier le point de restauration
+### Étape 1 - Identifier le point de restauration
 
 Sur `vm-backup`, lister les points de restauration disponibles :
 ```bash
@@ -88,7 +88,7 @@ Sélectionner le point de restauration J-1 (dernier incrémental).
 
 ---
 
-### Étape 2 — Restauration en environnement isolé
+### Étape 2 - Restauration en environnement isolé
 
 > **Important :** Ne jamais restaurer par-dessus la VM de production. Toujours restaurer dans un environnement de test isolé.
 
@@ -109,7 +109,7 @@ sudo veeamconfig restore vm \
 
 ---
 
-### Étape 3 — Vérification post-restauration
+### Étape 3 - Vérification post-restauration
 
 Une fois la VM restaurée et démarrée, vérifier :
 
@@ -143,7 +143,7 @@ docker exec minio mc ready local
 
 ---
 
-### Étape 4 — Rapport de test
+### Étape 4 - Rapport de test
 
 Compléter le tableau de suivi ci-dessous après chaque test :
 
@@ -155,7 +155,7 @@ Compléter le tableau de suivi ci-dessous après chaque test :
 
 ---
 
-### Étape 5 — Nettoyage
+### Étape 5 - Nettoyage
 
 Après validation, supprimer la VM de test :
 ```bash
@@ -170,13 +170,13 @@ qm destroy <new_vmid>
 
 En cas de défaillance réelle d'une VM de production :
 
-1. **Évaluer l'impact** — identifier la VM affectée et les services impactés
-2. **Notifier l'équipe** — informer tous les membres via le canal d'urgence
-3. **Isoler** — désactiver les accès réseau vers la VM défaillante (règle FortiGate)
-4. **Restaurer** — suivre les étapes 1 à 3 ci-dessus, mais vers la VM de production
-5. **Valider** — exécuter les vérifications de l'étape 3
-6. **Rétablir** — réactiver les accès réseau
-7. **Post-mortem** — documenter l'incident dans `docs/` sous `INCIDENT_YYYY-MM-DD.md`
+1. **Évaluer l'impact** - identifier la VM affectée et les services impactés
+2. **Notifier l'équipe** - informer tous les membres via le canal d'urgence
+3. **Isoler** - désactiver les accès réseau vers la VM défaillante (règle FortiGate)
+4. **Restaurer** - suivre les étapes 1 à 3 ci-dessus, mais vers la VM de production
+5. **Valider** - exécuter les vérifications de l'étape 3
+6. **Rétablir** - réactiver les accès réseau
+7. **Post-mortem** - documenter l'incident dans `docs/` sous `INCIDENT_YYYY-MM-DD.md`
 
 **RTO cible : 4 heures** à partir du déclenchement de la restauration.
 
@@ -186,6 +186,6 @@ En cas de défaillance réelle d'une VM de production :
 
 | Rôle | Nom | Responsabilité |
 |---|---|---|
-| Admin principal | Iman Hamdy | Proxmox, restauration VMs |
+| Admin système DevOps | Iman Hamdy | Docker, automatisation, BDD |
 | Admin réseau | Quentin | FortiGate, accès réseau |
 | Admin monitoring | Adrien | Suricata, détection incident |

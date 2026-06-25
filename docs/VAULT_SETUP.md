@@ -1,4 +1,4 @@
-# HashiCorp Vault — Configuration et initialisation
+# HashiCorp Vault - Configuration et initialisation
 
 URL : http://192.168.10.2:8200  
 Config : `docker/security/vault-config.hcl`
@@ -23,7 +23,7 @@ Unseal Key 5: <key5>
 Initial Root Token: hvs.XXXXXXXXXXXX
 ```
 
-**IMPORTANT** : Sauvegarde ces valeurs en lieu sûr — elles ne s'affichent qu'une seule fois. Ne les commite jamais dans git.
+**IMPORTANT** : Sauvegarde ces valeurs en lieu sûr - elles ne s'affichent qu'une seule fois. Ne les commite jamais dans git.
 
 ---
 
@@ -148,7 +148,7 @@ Ajouter en crontab après reboot :
 
 Les apps lisent leurs secrets depuis Vault au lieu du `.env`. Deux approches :
 
-### Option A — Via variable d'environnement (simple)
+### Option A - Via variable d'environnement (simple)
 
 Ajouter dans chaque compose le token applicatif et l'adresse Vault, puis utiliser un entrypoint qui lit les secrets au démarrage.
 
@@ -164,7 +164,7 @@ Puis dans un script d'init :
 GF_SECURITY_ADMIN_PASSWORD=$(vault kv get -field=admin_password secret/grafana)
 ```
 
-### Option B — Via Vault Agent (recommandé)
+### Option B - Via Vault Agent (recommandé)
 
 Vault Agent tourne en sidecar et écrit les secrets dans des fichiers que l'app lit.
 

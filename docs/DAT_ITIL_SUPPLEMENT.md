@@ -1,6 +1,6 @@
-# Supplément ITIL / ISO 20000 — DAT Streaming Lab
-**Ynov Campus B3 INFRA — Projet Streaming Lab**
-Version 1.0 — Juin 2026
+# Supplément ITIL / ISO 20000 - DAT Streaming Lab
+**Ynov Campus B3 INFRA - Projet Streaming Lab**
+Version 1.0 - Juin 2026
 
 > Ce document complète le DAT (`DAT_StreamingLab_v2.0.docx`) en positionnant
 > l'infrastructure Streaming Lab dans le cadre des bonnes pratiques
@@ -46,13 +46,13 @@ positionne les composants du Streaming Lab dans cette chaîne :
 La norme ISO/CEI 20000-1 définit les exigences d'un Système de Management
 des Services (SMS). Le Streaming Lab couvre les clauses suivantes :
 
-### Clause 6 — Planification
+### Clause 6 - Planification
 | Exigence ISO 20000 | Réalisation |
 |---|---|
 | 6.1 Actions face aux risques | Analyse des risques dans `PCA_PRA.docx` ; matrice VLAN/firewall |
 | 6.2 Objectifs de services | RPO/RTO documentés ; disponibilité FortiGate HA |
 
-### Clause 8 — Exploitation
+### Clause 8 - Exploitation
 | Exigence ISO 20000 | Réalisation |
 |---|---|
 | 8.2 Catalogue des services | Services Docker : Jellyfin, Keycloak, Vault, MinIO, bases de données |
@@ -65,7 +65,7 @@ des Services (SMS). Le Streaming Lab couvre les clauses suivantes :
 | 8.10 Gestion de la sécurité | `CHARTE_INFORMATIQUE.md` + Keycloak + Vault + FortiGate + Suricata |
 | 8.11 Gestion des configurations | IaC versionné dans Git (Compose, scripts, Ansible) |
 
-### Clause 9 — Évaluation des performances
+### Clause 9 - Évaluation des performances
 | Exigence ISO 20000 | Réalisation |
 |---|---|
 | 9.1 Surveillance et mesure | Prometheus (métriques) + Loki (logs) + Grafana (tableaux de bord) |
@@ -107,11 +107,11 @@ Les indicateurs ci-dessous sont mesurés et visualisés dans Grafana :
 
 ---
 
-## 5. Conformité ISO 27001 — Annexe A (contrôles appliqués)
+## 5. Conformité ISO 27001 - Annexe A (contrôles appliqués)
 
 La norme ISO 27001:2022 définit 93 contrôles répartis en 4 thèmes. Le tableau ci-dessous liste les contrôles couverts par le Streaming Lab.
 
-### Thème A.5 — Contrôles organisationnels
+### Thème A.5 - Contrôles organisationnels
 
 | Contrôle | Intitulé | Mise en œuvre | Statut |
 |---|---|---|---|
@@ -122,7 +122,7 @@ La norme ISO 27001:2022 définit 93 contrôles répartis en 4 thèmes. Le tablea
 | A.5.29 | Sécurité des informations en cas de perturbation | `PCA_PRA.docx`, `BIA.md` | ✅ |
 | A.5.30 | Préparation des TIC pour la continuité | `PROCEDURE_BACKUP_RESTORE.md` | ✅ |
 
-### Thème A.6 — Contrôles liés aux personnes
+### Thème A.6 - Contrôles liés aux personnes
 
 | Contrôle | Intitulé | Mise en œuvre | Statut |
 |---|---|---|---|
@@ -130,7 +130,7 @@ La norme ISO 27001:2022 définit 93 contrôles répartis en 4 thèmes. Le tablea
 | A.6.7 | Télétravail | `PLAN_TELETRAVAIL.md` | ✅ |
 | A.6.8 | Signalement des événements | `GESTION_INCIDENTS.md` section 4 | ✅ |
 
-### Thème A.7 — Contrôles physiques
+### Thème A.7 - Contrôles physiques
 
 | Contrôle | Intitulé | Mise en œuvre | Statut |
 |---|---|---|---|
@@ -138,13 +138,13 @@ La norme ISO 27001:2022 définit 93 contrôles répartis en 4 thèmes. Le tablea
 | A.7.6 | Travail dans les zones sécurisées | Accès physique serveur = personnel autorisé uniquement | ✅ |
 | A.7.14 | Mise au rebut sécurisée | Politique documentée dans `CHARTE_INFORMATIQUE.md` | 📋 |
 
-### Thème A.8 — Contrôles technologiques
+### Thème A.8 - Contrôles technologiques
 
 | Contrôle | Intitulé | Mise en œuvre | Statut |
 |---|---|---|---|
 | A.8.2 | Droits d'accès privilégiés | Keycloak RBAC + principe moindre privilège | ✅ |
 | A.8.3 | Restriction d'accès aux informations | Réseaux Docker isolés (db-net, storage-net) | ✅ |
-| A.8.4 | Accès au code source | GitHub — branches protégées, PR obligatoires | ✅ |
+| A.8.4 | Accès au code source | GitHub - branches protégées, PR obligatoires | ✅ |
 | A.8.5 | Authentification sécurisée | MFA FortiClient + Keycloak SSO + MFA | ✅ |
 | A.8.6 | Gestion de la capacité | Prometheus métriques CPU/RAM + alertes Grafana | ✅ |
 | A.8.7 | Protection contre les malwares | Suricata IDS + images Docker officielles + Watchtower | ✅ |
@@ -152,7 +152,7 @@ La norme ISO 27001:2022 définit 93 contrôles répartis en 4 thèmes. Le tablea
 | A.8.9 | Gestion de la configuration | Infrastructure as Code (Git + Compose + Ansible) | ✅ |
 | A.8.12 | Prévention des fuites de données | `.gitignore` + Vault + `.env` non commité | ✅ |
 | A.8.13 | Sauvegarde des informations | Veeam B&R AES-256 quotidien + tests restauration | ✅ |
-| A.8.15 | Journalisation | Loki + Promtail — logs centralisés 7 jours | ✅ |
+| A.8.15 | Journalisation | Loki + Promtail - logs centralisés 7 jours | ✅ |
 | A.8.16 | Surveillance des activités | Grafana dashboards + Suricata alertes | ✅ |
 | A.8.20 | Sécurité des réseaux | VLAN segmentation + FortiGate deny-all inter-VLAN | ✅ |
 | A.8.21 | Sécurité des services réseau | Traefik TLS 1.3 + Let's Encrypt + FortiGate VPN | ✅ |
@@ -164,7 +164,7 @@ La norme ISO 27001:2022 définit 93 contrôles répartis en 4 thèmes. Le tablea
 
 ---
 
-## 6. Routage Traefik — exposition des services
+## 6. Routage Traefik - exposition des services
 
 Traefik v3 agit comme reverse proxy HTTPS unique pour tous les services exposés. Chaque service est déclaré via des labels Docker et obtient un certificat TLS automatiquement via Let's Encrypt (challenge TLS-ALPN).
 
@@ -179,17 +179,17 @@ Traefik v3 agit comme reverse proxy HTTPS unique pour tous les services exposés
 
 **Règles de sécurité Traefik :**
 - Redirection HTTP → HTTPS automatique (entrypoint `web` → `websecure`)
-- `exposedByDefault=false` — seuls les services avec `traefik.enable=true` sont exposés
+- `exposedByDefault=false` - seuls les services avec `traefik.enable=true` sont exposés
 - TLS 1.2 minimum imposé
-- Dashboard protégé (`traefik.duoowatch.com`) — accès restreint VPN
+- Dashboard protégé (`traefik.duoowatch.com`) - accès restreint VPN
 
 ---
 
 ## 7. Références
 
-- ITIL 4 Foundation — Axelos (2019)
-- ISO/CEI 20000-1:2018 — Technologie de l'information — Gestion des services
-- `docs/DAT_StreamingLab_v2.0.docx` — Architecture technique détaillée
-- `docs/PCA_PRA.docx` — Plan de Continuité et de Reprise d'Activité
-- `docs/CHARTE_INFORMATIQUE.md` — Politique de sécurité du SI
-- `docs/PROCEDURE_BACKUP_RESTORE.md` — Procédure de sauvegarde et restauration
+- ITIL 4 Foundation - Axelos (2019)
+- ISO/CEI 20000-1:2018 - Technologie de l'information - Gestion des services
+- `docs/DAT_StreamingLab_v2.0.docx` - Architecture technique détaillée
+- `docs/PCA_PRA.docx` - Plan de Continuité et de Reprise d'Activité
+- `docs/CHARTE_INFORMATIQUE.md` - Politique de sécurité du SI
+- `docs/PROCEDURE_BACKUP_RESTORE.md` - Procédure de sauvegarde et restauration

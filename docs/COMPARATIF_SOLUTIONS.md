@@ -1,13 +1,13 @@
-# Comparatif des Solutions Techniques — Justification des Choix
-**Streaming Lab — Ynov Campus B3 INFRA**
-Version 1.0 — Juin 2026
+# Comparatif des Solutions Techniques - Justification des Choix
+**Streaming Lab - Ynov Campus B3 INFRA**
+Version 1.0 - Juin 2026
 
 > Document répondant à la Compétence 3 (BC02) : comparaison de solutions
 > avec analyse TCO/ROI et recommandations argumentées.
 
 ---
 
-## 1. Hyperviseur — Proxmox VE vs VMware ESXi vs Microsoft Hyper-V
+## 1. Hyperviseur - Proxmox VE vs VMware ESXi vs Microsoft Hyper-V
 
 | Critère | **Proxmox VE 8** ✅ | VMware ESXi 8 | Hyper-V 2022 |
 |---|---|---|---|
@@ -25,7 +25,7 @@ Version 1.0 — Juin 2026
 
 ---
 
-## 2. Firewall — FortiGate vs pfSense vs Palo Alto
+## 2. Firewall - FortiGate vs pfSense vs Palo Alto
 
 | Critère | **FortiGate 60F HA** ✅ | pfSense CE | Palo Alto PA-220 |
 |---|---|---|---|
@@ -40,11 +40,11 @@ Version 1.0 — Juin 2026
 | **Certifications** | FIPS 140-2, CC EAL4+ | Aucune | FIPS 140-2, CC |
 
 **Recommandation : FortiGate 60F HA**
-Malgré un TCO supérieur à pfSense, le FortiGate est choisi pour son **Zero Trust NAC intégré**, son **MFA natif FortiClient**, et sa **certification CC EAL4+** — exigences justifiées par le contexte de plateforme de streaming avec authentification SSO. pfSense reste la solution de référence pour un budget très contraint sans besoins NAC avancés.
+Malgré un TCO supérieur à pfSense, le FortiGate est choisi pour son **Zero Trust NAC intégré**, son **MFA natif FortiClient**, et sa **certification CC EAL4+** - exigences justifiées par le contexte de plateforme de streaming avec authentification SSO. pfSense reste la solution de référence pour un budget très contraint sans besoins NAC avancés.
 
 ---
 
-## 3. Stack Monitoring — Grafana/Prometheus/Loki vs ELK Stack vs Splunk
+## 3. Stack Monitoring - Grafana/Prometheus/Loki vs ELK Stack vs Splunk
 
 | Critère | **Grafana + Prometheus + Loki** ✅ | ELK Stack | Splunk Enterprise |
 |---|---|---|---|
@@ -59,11 +59,11 @@ Malgré un TCO supérieur à pfSense, le FortiGate est choisi pour son **Zero Tr
 | **Courbe apprentissage** | Faible | Moyenne | Faible (mais coûteux) |
 
 **Recommandation : Grafana + Prometheus + Loki (stack PLG)**
-**Économie vs Splunk : ~150 000 € sur 3 ans.** La stack PLG est la référence open-source pour le monitoring de containers. Loki est particulièrement adapté : il n'indexe que les métadonnées des logs (contrairement à Elasticsearch qui indexe tout), réduisant la consommation RAM de 80 % — avantage décisif sur un seul serveur physique.
+**Économie vs Splunk : ~150 000 € sur 3 ans.** La stack PLG est la référence open-source pour le monitoring de containers. Loki est particulièrement adapté : il n'indexe que les métadonnées des logs (contrairement à Elasticsearch qui indexe tout), réduisant la consommation RAM de 80 % - avantage décisif sur un seul serveur physique.
 
 ---
 
-## 4. IAM / SSO — Keycloak vs Okta vs Azure AD B2C
+## 4. IAM / SSO - Keycloak vs Okta vs Azure AD B2C
 
 | Critère | **Keycloak** ✅ | Okta | Azure AD B2C |
 |---|---|---|---|
@@ -77,11 +77,11 @@ Malgré un TCO supérieur à pfSense, le FortiGate est choisi pour son **Zero Tr
 | **Conformité RGPD (données en Europe)** | ✅ (on-premise) | ⚠️ (USA) | ⚠️ (USA) |
 
 **Recommandation : Keycloak**
-Keycloak est choisi pour son **hébergement on-premise** (conformité RGPD — données utilisateurs ne quittent pas le périmètre), sa **gratuité totale** et son support natif OIDC/SAML compatible Jellyfin et Traefik. Okta et Azure AD B2C introduisent une dépendance cloud et des coûts récurrents inadaptés au contexte.
+Keycloak est choisi pour son **hébergement on-premise** (conformité RGPD - données utilisateurs ne quittent pas le périmètre), sa **gratuité totale** et son support natif OIDC/SAML compatible Jellyfin et Traefik. Okta et Azure AD B2C introduisent une dépendance cloud et des coûts récurrents inadaptés au contexte.
 
 ---
 
-## 5. Stockage Objet — MinIO vs AWS S3 vs Ceph
+## 5. Stockage Objet - MinIO vs AWS S3 vs Ceph
 
 | Critère | **MinIO** ✅ | AWS S3 | Ceph |
 |---|---|---|---|
@@ -94,11 +94,11 @@ Keycloak est choisi pour son **hébergement on-premise** (conformité RGPD — d
 | **Portabilité** | ✅ | ❌ (vendor lock-in) | ✅ |
 
 **Recommandation : MinIO**
-MinIO déploie en **un seul container** une API S3 complète sur stockage local, sans vendor lock-in et sans coût. Ceph est plus puissant mais nécessite un cluster de 3 nœuds minimum — inadapté à notre architecture mono-serveur. AWS S3 introduit une dépendance cloud et un coût récurrent. MinIO permet également une **migration future transparente vers AWS S3** (même API).
+MinIO déploie en **un seul container** une API S3 complète sur stockage local, sans vendor lock-in et sans coût. Ceph est plus puissant mais nécessite un cluster de 3 nœuds minimum - inadapté à notre architecture mono-serveur. AWS S3 introduit une dépendance cloud et un coût récurrent. MinIO permet également une **migration future transparente vers AWS S3** (même API).
 
 ---
 
-## 6. Synthèse budgétaire — TCO comparatif sur 3 ans
+## 6. Synthèse budgétaire - TCO comparatif sur 3 ans
 
 | Composant | Solution retenue | TCO 3 ans | Alternative la moins chère | Différence |
 |---|---|---|---|---|
