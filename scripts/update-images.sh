@@ -47,4 +47,30 @@ echo "  promtail:3.0.0           -> promtail:3.4.3"
 echo "  grafana:11.0.0           -> grafana:11.6.1"
 echo "  watchtower:latest        -> watchtower:1.7.1"
 echo ""
-echo "Run 'docker compose up -d' for each service to apply changes."
+echo "Redeploying all services..."
+
+ENV_FILE="$DOCKER_DIR/.env"
+
+docker compose -f "$DOCKER_DIR/databases/docker-compose.yml" --env-file "$ENV_FILE" up -d --remove-orphans
+echo "  databases redeployed"
+
+docker compose -f "$DOCKER_DIR/proxy/docker-compose.yml" --env-file "$ENV_FILE" up -d --remove-orphans
+echo "  proxy redeployed"
+
+docker compose -f "$DOCKER_DIR/keycloak/docker-compose.yml" --env-file "$ENV_FILE" up -d --remove-orphans
+echo "  keycloak redeployed"
+
+docker compose -f "$DOCKER_DIR/security/docker-compose.yml" --env-file "$ENV_FILE" up -d --remove-orphans
+echo "  vault redeployed"
+
+docker compose -f "$DOCKER_DIR/storage/docker-compose.yml" --env-file "$ENV_FILE" up -d --remove-orphans
+echo "  storage redeployed"
+
+docker compose -f "$DOCKER_DIR/jellyfin/docker-compose.yml" --env-file "$ENV_FILE" up -d --remove-orphans
+echo "  jellyfin redeployed"
+
+docker compose -f "$DOCKER_DIR/monitoring/docker-compose.yml" --env-file "$ENV_FILE" up -d --remove-orphans
+echo "  monitoring redeployed"
+
+echo ""
+echo "All services redeployed successfully."
