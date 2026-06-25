@@ -31,11 +31,11 @@ jobs:
             name: redis
           - image: minio/minio:latest
             name: minio
-          - image: grafana/grafana:latest
+          - image: grafana/grafana:11.0.0
             name: grafana
-          - image: prom/prometheus:latest
+          - image: prom/prometheus:v2.51.0
             name: prometheus
-          - image: grafana/loki:latest
+          - image: grafana/loki:3.0.0
             name: loki
           - image: containrrr/watchtower:latest
             name: watchtower
@@ -44,18 +44,21 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Install Trivy
+        run: |
+          curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b /usr/local/bin
+
       - name: Pull image - ${{ matrix.name }}
         run: docker pull ${{ matrix.image }}
 
       - name: Run Trivy - ${{ matrix.name }}
-        uses: aquasecurity/trivy-action@master
-        with:
-          image-ref: ${{ matrix.image }}
-          format: json
-          exit-code: "0"
-          ignore-unfixed: true
-          severity: "CRITICAL,HIGH"
-          output: trivy-${{ matrix.name }}.json
+        run: |
+          trivy image \
+            --format json \
+            --scanners vuln \
+            --severity CRITICAL,HIGH \
+            --output trivy-${{ matrix.name }}.json \
+            ${{ matrix.image }}
 
       - name: Upload Trivy report - ${{ matrix.name }}
         if: always()
