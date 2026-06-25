@@ -41,6 +41,9 @@ KEYCLOAK_CLIENT_SECRET_MINIO=$(get minio keycloak_client_secret)
 # --- Jellyfin ---
 KEYCLOAK_CLIENT_SECRET_JELLYFIN=$(get jellyfin keycloak_client_secret)
 
+# --- TrivyHub ---
+TRIVYHUB_JWT_SECRET=$(get trivyhub jwt_secret)
+
 # --- Misc ---
 WATCHTOWER_SLACK_WEBHOOK=
 VAULT_DEV_ROOT_TOKEN_ID=
