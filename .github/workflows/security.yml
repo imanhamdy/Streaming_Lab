@@ -97,7 +97,7 @@ jobs:
       - name: Push to TrivyHub - ${{ matrix.name }}
         run: |
           curl -X POST \
-            -H "Authorization: Bearer ${{ secrets.TRIVYHUB_TOKEN }}" \
+            -H "Authorization: ApiKey ${{ secrets.TRIVYHUB_TOKEN }}" \
             -F "project=${{ github.repository }}" \
             -F "file=@trivy-${{ matrix.name }}.json" \
             -F "environment=production" \
