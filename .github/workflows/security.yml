@@ -1,4 +1,4 @@
-name: Security Scan — Trivy
+name: Security Scan - Trivy
 
 on:
   pull_request:
@@ -8,7 +8,7 @@ on:
 
 jobs:
   trivy-scan:
-    name: Trivy — Docker image vulnerability scan
+    name: Trivy - Docker image vulnerability scan
     runs-on: self-hosted
 
     strategy:
@@ -44,10 +44,10 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Pull image — ${{ matrix.name }}
+      - name: Pull image - ${{ matrix.name }}
         run: docker pull ${{ matrix.image }}
 
-      - name: Run Trivy — ${{ matrix.name }}
+      - name: Run Trivy - ${{ matrix.name }}
         uses: aquasecurity/trivy-action@master
         with:
           image-ref: ${{ matrix.image }}
@@ -57,7 +57,7 @@ jobs:
           severity: "CRITICAL,HIGH"
           output: trivy-${{ matrix.name }}.json
 
-      - name: Upload Trivy report — ${{ matrix.name }}
+      - name: Upload Trivy report - ${{ matrix.name }}
         if: always()
         uses: actions/upload-artifact@v4
         with:
@@ -65,7 +65,7 @@ jobs:
           path: trivy-${{ matrix.name }}.json
           retention-days: 30
 
-      - name: Push to TrivyHub — ${{ matrix.name }}
+      - name: Push to TrivyHub - ${{ matrix.name }}
         if: always()
         run: |
           curl -X POST \
@@ -78,7 +78,7 @@ jobs:
             http://192.168.10.2:3001/api/v1/report
 
   trivy-summary:
-    name: Trivy — Summary gate
+    name: Trivy - Summary gate
     runs-on: self-hosted
     needs: trivy-scan
     if: always()
@@ -87,5 +87,5 @@ jobs:
         run: |
           echo "ℹ️  Trivy scan complete. Reports available in artifacts."
           echo "Severity scanned: CRITICAL only (ignore-unfixed: true)"
-          echo "Exit-code: 0 — scan is informational, does not block merge."
+          echo "Exit-code: 0 - scan is informational, does not block merge."
           echo "Review artifacts to track CVEs over time."
