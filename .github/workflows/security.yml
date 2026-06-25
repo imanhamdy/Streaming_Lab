@@ -51,19 +51,31 @@ jobs:
         uses: aquasecurity/trivy-action@master
         with:
           image-ref: ${{ matrix.image }}
-          format: table
+          format: json
           exit-code: "0"
           ignore-unfixed: true
-          severity: "CRITICAL"
-          output: trivy-${{ matrix.name }}.txt
+          severity: "CRITICAL,HIGH"
+          output: trivy-${{ matrix.name }}.json
 
       - name: Upload Trivy report — ${{ matrix.name }}
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: trivy-report-${{ matrix.name }}
-          path: trivy-${{ matrix.name }}.txt
+          path: trivy-${{ matrix.name }}.json
           retention-days: 30
+
+      - name: Push to TrivyHub — ${{ matrix.name }}
+        if: always()
+        run: |
+          curl -X POST \
+            -H "Authorization: Bearer ${{ secrets.TRIVYHUB_TOKEN }}" \
+            -F "project=${{ github.repository }}" \
+            -F "file=@trivy-${{ matrix.name }}.json" \
+            -F "environment=production" \
+            -F "branch=${{ github.ref_name }}" \
+            -F "commit=${{ github.sha }}" \
+            http://192.168.10.2:3001/api/v1/report
 
   trivy-summary:
     name: Trivy — Summary gate
