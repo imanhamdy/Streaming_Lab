@@ -19,10 +19,11 @@ services:
       - KC_DB_URL=jdbc:postgresql://postgres:5432/${POSTGRES_DB}
       - KC_DB_USERNAME=${POSTGRES_USER}
       - KC_DB_PASSWORD=${POSTGRES_PASSWORD}
-      - KC_HOSTNAME=keycloak.duoowatch.com
-      - KC_HOSTNAME_STRICT=true
+      - KC_HOSTNAME_URL=http://192.168.10.2:8081
+      - KC_HOSTNAME_ADMIN_URL=http://192.168.10.2:8081
+      - KC_HOSTNAME_STRICT=false
       - KC_HTTP_ENABLED=true
-      - KC_PROXY=edge
+      - KC_PROXY=none
       - KEYCLOAK_ADMIN=${KEYCLOAK_ADMIN_USER}
       - KEYCLOAK_ADMIN_PASSWORD=${KEYCLOAK_ADMIN_PASSWORD}
     command: start
@@ -33,9 +34,7 @@ services:
       - "traefik.http.routers.keycloak.tls.certresolver=letsencrypt"
       - "traefik.http.services.keycloak.loadbalancer.server.port=8080"
     ports:
-      - "8080:8080"
+      - "8081:8080"
     networks:
-      streaming-net:
-        ipv4_address: 192.168.10.30
-      db-net:
-        ipv4_address: 192.168.20.20
+      - streaming-net
+      - db-net

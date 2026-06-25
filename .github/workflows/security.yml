@@ -19,7 +19,7 @@ jobs:
             name: jellyfin
           - image: traefik:v3.0
             name: traefik
-          - image: quay.io/keycloak/keycloak:24
+          - image: quay.io/keycloak/keycloak:24.0.5
             name: keycloak
           - image: hashicorp/vault:1.17
             name: vault

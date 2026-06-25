@@ -183,10 +183,8 @@ services:
       - traefik.http.routers.grafana.tls.certresolver=letsencrypt
       - traefik.http.services.grafana.loadbalancer.server.port=3000
     networks:
-      monitoring:
-        ipv4_address: 192.168.40.13
-      streaming-net:
-        ipv4_address: 192.168.10.50
+      - monitoring
+      - streaming-net
 
   # ── WATCHTOWER ────────────────────────────────────────────
   watchtower:

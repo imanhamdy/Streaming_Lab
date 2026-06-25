@@ -15,11 +15,10 @@ services:
     ports:
       - "5432:5432"
     networks:
-      db-net:
-        ipv4_address: 192.168.20.10
+      - db-net
 
   mongodb:
-    image: mongo:6.0
+    image: mongo:4.4
     container_name: mongodb
     restart: unless-stopped
     env_file: ../.env
@@ -31,21 +30,20 @@ services:
     ports:
       - "27017:27017"
     networks:
-      db-net:
-        ipv4_address: 192.168.20.11
+      - db-net
 
   redis:
     image: redis:7-alpine
     container_name: redis
     restart: unless-stopped
-    command: ["redis-server", "--save", "60", "1", "--appendonly", "yes"]
+    env_file: ../.env
+    command: ["redis-server", "--save", "60", "1", "--appendonly", "yes", "--requirepass", "${REDIS_PASSWORD}"]
     volumes:
       - redis_data:/data
     ports:
       - "6379:6379"
     networks:
-      db-net:
-        ipv4_address: 192.168.20.12
+      - db-net
 
 networks:
   db-net:
