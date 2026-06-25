@@ -15,29 +15,29 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - image: jellyfin/jellyfin:latest
+          - image: jellyfin/jellyfin:10.10.7
             name: jellyfin
-          - image: traefik:v3.0
+          - image: traefik:v3.4.1
             name: traefik
-          - image: quay.io/keycloak/keycloak:24.0.5
+          - image: quay.io/keycloak/keycloak:26.2.5
             name: keycloak
-          - image: hashicorp/vault:1.17
+          - image: hashicorp/vault:1.19.3
             name: vault
-          - image: postgres:15-alpine
+          - image: postgres:17-alpine
             name: postgres
-          - image: mongo:6.0
+          - image: mongo:8.0.10
             name: mongodb
           - image: redis:7-alpine
             name: redis
-          - image: minio/minio:latest
+          - image: minio/minio:RELEASE.2025-06-13T11-33-47Z
             name: minio
-          - image: grafana/grafana:11.0.0
+          - image: grafana/grafana:11.6.1
             name: grafana
-          - image: prom/prometheus:v2.51.0
+          - image: prom/prometheus:v3.4.1
             name: prometheus
-          - image: grafana/loki:3.0.0
+          - image: grafana/loki:3.4.3
             name: loki
-          - image: containrrr/watchtower:latest
+          - image: containrrr/watchtower:1.7.1
             name: watchtower
 
     steps:
