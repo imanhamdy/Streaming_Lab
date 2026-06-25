@@ -186,6 +186,7 @@ services:
       - monitoring
       - streaming-net
 
+
   # ── WATCHTOWER ────────────────────────────────────────────
   watchtower:
     image: containrrr/watchtower:latest
@@ -201,5 +202,4 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
     networks:
-      monitoring:
-        ipv4_address: 192.168.40.14
+      - monitoring
