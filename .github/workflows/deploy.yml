@@ -23,14 +23,11 @@ jobs:
           VAULT_TOKEN: ${{ secrets.VAULT_APP_TOKEN }}
         run: ${{ secrets.DEPLOY_PATH }}/scripts/vault-env.sh
 
-      - name: Recreate Docker networks
+      - name: Create Docker networks if not exist
         run: |
-          for net in streaming-net db-net monitoring-net; do
-            docker network rm $net 2>/dev/null || true
+          for net in streaming-net db-net monitoring-net storage-net; do
+            docker network inspect $net >/dev/null 2>&1 || docker network create $net
           done
-          docker network create streaming-net
-          docker network create db-net
-          docker network create monitoring-net
 
       - name: Deploy - databases
         run: docker compose --env-file ${{ secrets.DEPLOY_PATH }}/docker/.env -f ${{ secrets.DEPLOY_PATH }}/docker/databases/docker-compose.yml up -d --remove-orphans
