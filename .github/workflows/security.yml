@@ -9,7 +9,7 @@ on:
 jobs:
   trivy-scan:
     name: Trivy — Docker image vulnerability scan
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
 
     strategy:
       fail-fast: false
@@ -79,7 +79,7 @@ jobs:
 
   trivy-summary:
     name: Trivy — Summary gate
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     needs: trivy-scan
     if: always()
     steps:
