@@ -9,7 +9,6 @@ echo "Updating image versions to fix CVEs..."
 
 # Databases
 sed -i 's|image: postgres:15-alpine|image: postgres:17-alpine|g' "$DOCKER_DIR/databases/docker-compose.yml"
-sed -i 's|image: mongo:4.4|image: mongo:8.0.10|g' "$DOCKER_DIR/databases/docker-compose.yml"
 
 # Jellyfin
 sed -i 's|image: jellyfin/jellyfin$|image: jellyfin/jellyfin:10.10.7|g' "$DOCKER_DIR/jellyfin/docker-compose.yml"
@@ -35,7 +34,6 @@ sed -i 's|image: containrrr/watchtower:latest|image: containrrr/watchtower:1.7.1
 
 echo "Done. Versions updated:"
 echo "  postgres:15-alpine       -> postgres:17-alpine"
-echo "  mongo:4.4                -> mongo:8.0.10"
 echo "  jellyfin/jellyfin        -> jellyfin/jellyfin:10.10.7"
 echo "  keycloak:24.0            -> keycloak:26.2.5"
 echo "  traefik:v3.0             -> traefik:v3.4.1"

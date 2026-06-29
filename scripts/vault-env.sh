@@ -20,10 +20,6 @@ DOMAIN=duoowatch.com
 POSTGRES_USER=$(get databases postgres_user)
 POSTGRES_PASSWORD=$(get databases postgres_password)
 POSTGRES_DB=$(get databases postgres_db)
-MONGO_INITDB_ROOT_USERNAME=$(get databases mongo_user)
-MONGO_INITDB_ROOT_PASSWORD=$(get databases mongo_password)
-REDIS_PASSWORD=$(get databases redis_password)
-
 # --- Keycloak ---
 KEYCLOAK_ADMIN_USER=$(get keycloak admin_user)
 KEYCLOAK_ADMIN_PASSWORD=$(get keycloak admin_password)
