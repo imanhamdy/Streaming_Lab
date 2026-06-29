@@ -1,6 +1,6 @@
 services:
   jellyfin:
-    image: jellyfin/jellyfin
+    image: jellyfin/jellyfin:10.10.7
     container_name: jellyfin
     restart: unless-stopped
     hostname: jellyfin
@@ -8,8 +8,8 @@ services:
       - 8096:8096/tcp
       - 7359:7359/udp
     volumes:
-      - /path/to/config:/config
-      - /path/to/cache:/cache
+      - jellyfin_config:/config
+      - jellyfin_cache:/cache
     environment:
       - JELLYFIN_PublishedServerUrl=https://jellyfin.duoowatch.com
     extra_hosts:
@@ -26,3 +26,7 @@ services:
 networks:
   streaming-net:
     external: true
+
+volumes:
+  jellyfin_config:
+  jellyfin_cache:
