@@ -1,13 +1,13 @@
 # Plan de Continuité d'Activité / Plan de Reprise d'Activité
-**Streaming Lab — Ynov Campus B3 INFRA**
-Compétence 3.17 — BC03
-Version 1.0 — Juillet 2026
+**Streaming Lab - Ynov Campus B3 INFRA**
+Compétence 3.17 - BC03
+Version 1.0 - Juillet 2026
 
 ---
 
 ## Compétence visée
 
-> **3.17** — Déployer des moyens de protections matériels et logiciels pour assurer la disponibilité des données et des applicatifs conformément au plan de continuité établi par la direction de l'entreprise.
+> **3.17** - Déployer des moyens de protections matériels et logiciels pour assurer la disponibilité des données et des applicatifs conformément au plan de continuité établi par la direction de l'entreprise.
 >
 > **Critère d'évaluation :** Les données répliquées sont disponibles et opérationnelles.
 
@@ -27,7 +27,7 @@ Il s'appuie sur le BIA (`docs/BIA.md`) pour les priorités de reprise et sur `do
 
 | Élément | Détail |
 |---|---|
-| Serveur physique | DELL T140 — Proxmox VE 8 |
+| Serveur physique | DELL T140 - Proxmox VE 8 |
 | VMs couvertes | vm-streaming, vm-dns, vm-backup |
 | Services critiques | Traefik, Keycloak, PostgreSQL, Jellyfin |
 | Services secondaires | MinIO, Redis, Vault, MongoDB, Grafana, Loki, Prometheus, Suricata |
@@ -38,8 +38,8 @@ Il s'appuie sur le BIA (`docs/BIA.md`) pour les priorités de reprise et sur `do
 
 | Indicateur | Cible |
 |---|---|
-| **RPO** (Recovery Point Objective) | **24 heures** — perte de données maximale acceptable |
-| **RTO** (Recovery Time Objective) | **4 heures** — durée maximale d'interruption acceptable |
+| **RPO** (Recovery Point Objective) | **24 heures** - perte de données maximale acceptable |
+| **RTO** (Recovery Time Objective) | **4 heures** - durée maximale d'interruption acceptable |
 
 ---
 
@@ -49,8 +49,8 @@ Il s'appuie sur le BIA (`docs/BIA.md`) pour les priorités de reprise et sur `do
 
 | Moyen | Description | Compétence 3.17 |
 |---|---|---|
-| DELL T140 — alimentation redondante | Évite la coupure sur défaillance PSU | Disponibilité matérielle |
-| VLAN isolés (10, 20, 30) | Isolation réseau — une panne ne se propage pas | Cloisonnement |
+| DELL T140 - alimentation redondante | Évite la coupure sur défaillance PSU | Disponibilité matérielle |
+| VLAN isolés (10, 20, 30) | Isolation réseau - une panne ne se propage pas | Cloisonnement |
 | vm-backup (VLAN 30 dédié) | VM dédiée aux sauvegardes, isolée de la production | Réplication des données |
 
 ### 4.2 Protection logicielle
@@ -87,8 +87,8 @@ vm-streaming ──► Veeam B&R ──► vm-backup (/backup AES-256)
 
 | Scénario | Impact | Mode dégradé |
 |---|---|---|
-| Container tombé | Service indisponible | `docker restart <container>` — RTO < 5 min |
-| vm-streaming redémarrée | Tous les services down | `make up` depuis `main` — RTO < 30 min |
+| Container tombé | Service indisponible | `docker restart <container>` - RTO < 5 min |
+| vm-streaming redémarrée | Tous les services down | `make up` depuis `main` - RTO < 30 min |
 | vm-dns indisponible | Résolution DNS interne KO | Fallback DNS public (8.8.8.8) sur FortiGate |
 | Disque vm-streaming plein | Services instables | Purge logs Docker + nettoyage volumes orphelins |
 
@@ -162,9 +162,9 @@ Le PRA est déclenché lorsque :
 | Test | Fréquence | Responsable | Dernière exécution |
 |---|---|---|---|
 | Test de restauration Veeam en environnement isolé | Mensuel | Iman H. | 2026-06-22 ✅ |
-| Vérification statut jobs Veeam | Hebdomadaire | Iman H. | — |
-| Simulation panne container | Trimestriel | Tous | — |
-| Simulation panne VM complète | Semestriel | Tous | — |
+| Vérification statut jobs Veeam | Hebdomadaire | Iman H. | - |
+| Simulation panne container | Trimestriel | Tous | - |
+| Simulation panne VM complète | Semestriel | Tous | - |
 
 ---
 
