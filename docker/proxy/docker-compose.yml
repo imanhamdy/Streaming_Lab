@@ -10,6 +10,7 @@ services:
     image: nginx:alpine
     container_name: dockerproxy
     restart: unless-stopped
+    user: root
     volumes:
       - ./nginx-docker.conf:/etc/nginx/nginx.conf:ro
       - /var/run/docker.sock:/var/run/docker.sock
