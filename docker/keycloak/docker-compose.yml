@@ -1,5 +1,3 @@
-version: '3.8'
-
 networks:
   streaming-net:
     external: true
@@ -13,7 +11,7 @@ services:
     image: quay.io/keycloak/keycloak:24.0
     container_name: keycloak
     restart: unless-stopped
-    env_file: ../.env
+    env_file: ../../.env
     environment:
       - KC_DB=postgres
       - KC_DB_URL=jdbc:postgresql://postgres:5432/${POSTGRES_DB}
@@ -23,19 +21,14 @@ services:
       - KC_HOSTNAME_STRICT=true
       - KC_HTTP_ENABLED=true
       - KC_PROXY=edge
-      - KEYCLOAK_ADMIN=${KEYCLOAK_ADMIN_USER}
+      - KEYCLOAK_ADMIN=${KEYCLOAK_ADMIN}
       - KEYCLOAK_ADMIN_PASSWORD=${KEYCLOAK_ADMIN_PASSWORD}
     command: start
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.keycloak.rule=Host(`keycloak.duoowatch.com`)"
-      - "traefik.http.routers.keycloak.entrypoints=websecure"
-      - "traefik.http.routers.keycloak.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.keycloak.entrypoints=web"
       - "traefik.http.services.keycloak.loadbalancer.server.port=8080"
-    ports:
-      - "8080:8080"
     networks:
-      streaming-net:
-        ipv4_address: 192.168.10.30
-      db-net:
-        ipv4_address: 192.168.20.20
+      - streaming-net
+      - db-net
