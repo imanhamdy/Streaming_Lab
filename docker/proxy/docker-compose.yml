@@ -2,26 +2,37 @@ networks:
   streaming-net:
     external: true
     name: streaming-net
+  dockerproxy-net:
+    internal: true
 
 services:
+  dockerproxy:
+    image: nginx:alpine
+    container_name: dockerproxy
+    restart: unless-stopped
+    volumes:
+      - ./nginx-docker.conf:/etc/nginx/nginx.conf:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    networks:
+      - dockerproxy-net
+
   traefik:
     image: traefik:v3.3
     container_name: traefik
     restart: unless-stopped
-    environment:
-      - DOCKER_API_VERSION=1.41
+    depends_on:
+      - dockerproxy
     command:
       - "--api.dashboard=true"
       - "--entrypoints.web.address=:80"
       - "--providers.docker=true"
+      - "--providers.docker.endpoint=tcp://dockerproxy:2375"
       - "--providers.docker.exposedbydefault=false"
       - "--providers.docker.network=streaming-net"
       - "--log.level=INFO"
       - "--accesslog=true"
     ports:
       - "80:80"
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock:ro
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.dashboard.rule=Host(`traefik.duoowatch.com`)"
@@ -31,3 +42,4 @@ services:
       - "traefik.http.middlewares.auth.basicauth.users=${TRAEFIK_DASHBOARD_USERS}"
     networks:
       - streaming-net
+      - dockerproxy-net
