@@ -12,7 +12,7 @@ services:
     restart: unless-stopped
     volumes:
       - ./nginx-docker.conf:/etc/nginx/nginx.conf:ro
-      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /var/run/docker.sock:/var/run/docker.sock
     networks:
       - dockerproxy-net
 
