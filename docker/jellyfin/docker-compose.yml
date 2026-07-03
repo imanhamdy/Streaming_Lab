@@ -8,37 +8,10 @@ volumes:
   jellyfin_cache:
 
 services:
-  rclone:
-    image: rclone/rclone:latest
-    container_name: jellyfin-rclone
-    restart: unless-stopped
-    env_file: ../../.env
-    cap_add:
-      - SYS_ADMIN
-    devices:
-      - /dev/fuse
-    security_opt:
-      - apparmor:unconfined
-    volumes:
-      - ./rclone.conf:/config/rclone/rclone.conf:ro
-      - /home/principal/streaming-media:/mnt/media:shared
-    command: >
-      mount minio:streaming-media /mnt/media
-      --allow-other
-      --allow-non-empty
-      --vfs-cache-mode writes
-      --vfs-cache-max-size 2G
-      --dir-cache-time 10m
-      --poll-interval 30s
-    networks:
-      - streaming-net
-
   jellyfin:
     image: jellyfin/jellyfin:10.10.7
     container_name: jellyfin
     restart: unless-stopped
-    depends_on:
-      - rclone
     environment:
       - JELLYFIN_PublishedServerUrl=https://jellyfin.duoowatch.com
     volumes:

@@ -1,65 +1,41 @@
-networks:
-  storage-net:
-    external: true
-    name: storage-net
-  streaming-net:
-    external: true
-    name: streaming-net
-
-volumes:
-  minio_data:
+name: storage
 
 services:
   minio:
     image: minio/minio:latest
     container_name: minio
     restart: unless-stopped
-    env_file: ../../.env
+    env_file: ../.env
     environment:
       - MINIO_ROOT_USER=${MINIO_ROOT_USER}
       - MINIO_ROOT_PASSWORD=${MINIO_ROOT_PASSWORD}
-      # OIDC via Keycloak — realm streaming-lab must exist first
-      - MINIO_IDENTITY_OPENID_CONFIG_URL=http://keycloak:8080/realms/streaming-lab/.well-known/openid-configuration
-      - MINIO_IDENTITY_OPENID_CLIENT_ID=minio
-      - MINIO_IDENTITY_OPENID_CLIENT_SECRET=${KEYCLOAK_CLIENT_SECRET_MINIO}
-      - MINIO_IDENTITY_OPENID_SCOPES=openid,profile,email
-      - MINIO_IDENTITY_OPENID_REDIRECT_URI_DYNAMIC=on
     command: server /data --console-address ":9001"
     volumes:
       - minio_data:/data
+    ports:
+      - "9000:9000"
+      - "9001:9001"
     healthcheck:
       test: ["CMD", "mc", "ready", "local"]
       interval: 30s
-      timeout: 20s
-      retries: 5
-      start_period: 10s
+      timeout: 10s
+      retries: 3
     labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.minio.rule=Host(`minio.duoowatch.com`)"
-      - "traefik.http.routers.minio.entrypoints=web"
-      - "traefik.http.services.minio.loadbalancer.server.port=9001"
+      - traefik.enable=true
+      - traefik.http.routers.minio.rule=Host(`minio.duoowatch.com`)
+      - traefik.http.routers.minio.entrypoints=web
+      - traefik.http.services.minio.loadbalancer.server.port=9001
     networks:
-      - storage-net
+      - storage
       - streaming-net
 
-  minio-init:
-    image: minio/minio:latest
-    container_name: minio-init
-    restart: "no"
-    env_file: ../../.env
-    entrypoint: >
-      /bin/sh -c "
-        until mc alias set local http://minio:9000 $$MINIO_ROOT_USER $$MINIO_ROOT_PASSWORD; do sleep 3; done &&
-        mc mb --ignore-existing local/streaming-media &&
-        mc mb --ignore-existing local/backups &&
-        mc mb --ignore-existing local/db-dumps &&
-        mc anonymous set none local/streaming-media &&
-        mc anonymous set none local/backups &&
-        mc anonymous set none local/db-dumps &&
-        echo 'Buckets ready'
-      "
-    depends_on:
-      minio:
-        condition: service_healthy
-    networks:
-      - storage-net
+volumes:
+  minio_data:
+
+networks:
+  storage:
+    name: storage-net
+    driver: bridge
+  streaming-net:
+    external: true
+    name: streaming-net

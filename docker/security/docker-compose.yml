@@ -1,3 +1,5 @@
+version: '3.8'
+
 networks:
   streaming-net:
     external: true
@@ -25,5 +27,7 @@ services:
       - "traefik.http.routers.vault.rule=Host(`vault.duoowatch.com`)"
       - "traefik.http.routers.vault.entrypoints=web"
       - "traefik.http.services.vault.loadbalancer.server.port=8200"
+    ports:
+      - "8200:8200"
     networks:
       - streaming-net
