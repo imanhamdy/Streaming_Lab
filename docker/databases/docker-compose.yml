@@ -24,7 +24,7 @@ services:
       - db-net
 
   mongodb:
-    image: mongo:6.0
+    image: mongo:4.4
     container_name: mongodb
     restart: unless-stopped
     env_file: ../../.env
