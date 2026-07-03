@@ -37,7 +37,7 @@ GF_AUTH_GENERIC_OAUTH_CLIENT_SECRET=$(get grafana keycloak_client_secret)
 # --- MinIO ---
 MINIO_ROOT_USER=$(get minio root_user)
 MINIO_ROOT_PASSWORD=$(get minio root_password)
-KEYCLOAK_CLIENT_SECRET_MINIO=$(get minio keycloak_client_secret)
+MINIO_IDENTITY_OPENID_CLIENT_SECRET=$(get minio keycloak_client_secret)
 
 # --- Jellyfin ---
 KEYCLOAK_CLIENT_SECRET_JELLYFIN=$(get jellyfin keycloak_client_secret)
