@@ -1,0 +1,42 @@
+name: Validate Docker Compose
+
+on:
+  pull_request:
+    branches: [develop, main]
+    paths:
+      - "docker/**/docker-compose.yml"
+      - ".env.example"
+
+jobs:
+  validate:
+    name: Lint & validate compose files
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Prepare env file
+        run: cp .env.example .env
+
+      - name: Validate all stacks
+        run: |
+          FAILED=0
+          for f in docker/*/docker-compose.yml; do
+            echo "→ $f"
+            if docker compose -f "$f" --env-file .env config --quiet 2>&1; then
+              echo "  ✓ valid"
+            else
+              echo "  ✗ INVALID"
+              FAILED=1
+            fi
+          done
+          exit $FAILED
+
+      - name: Check no service exposes DB ports publicly
+        run: |
+          if grep -rn '^\s*-\s*"*[0-9]*:[5432\|27017\|6379]' docker/; then
+            echo "ERROR: database port exposed on host"
+            exit 1
+          fi
+          echo "✓ No DB ports exposed"
