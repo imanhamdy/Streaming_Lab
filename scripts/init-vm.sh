@@ -19,23 +19,27 @@ sudo usermod -aG docker "$USER"
 
 echo "==> Docker installed: $(docker --version)"
 
-echo "==> Creating Docker networks with explicit subnets..."
+echo "==> Creating Docker networks..."
 
-declare -A subnets
-subnets[streaming-net]="192.168.10.0/24"
-subnets[db-net]="192.168.20.0/24"
-subnets[monitoring-net]="192.168.40.0/24"
-subnets[storage-net]="192.168.30.0/24"
-
-for network in streaming-net db-net monitoring-net storage-net; do
-  subnet=${subnets[$network]}
-  if docker network ls --format '{{.Name}}' | grep -q "^${network}$"; then
-    echo "    [skip] ${network} already exists"
+create_network() {
+  local name="$1"
+  local flags="${2:-}"
+  if docker network ls --format '{{.Name}}' | grep -q "^${name}$"; then
+    echo "    [skip] ${name} already exists"
   else
-    docker network create --subnet ${subnet} "${network}"
-    echo "    [ok]   ${network} created with subnet ${subnet}"
+    docker network create $flags "${name}"
+    echo "    [ok]   ${name} created"
   fi
-done
+}
+
+# Public: Traefik + all URL-exposed services
+create_network streaming-public
+
+# Private: databases, storage, internal app traffic (no external routing)
+create_network streaming-private "--internal"
+
+# Monitoring: Prometheus, Loki, exporters, cAdvisor, Grafana
+create_network streaming-monitoring
 
 echo ""
 echo "==> Done. Run 'newgrp docker' or re-login to use Docker without sudo."
