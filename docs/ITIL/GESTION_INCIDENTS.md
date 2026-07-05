@@ -1,6 +1,6 @@
 # Procédure de Gestion des Incidents (ITIL v4 / ISO 20000)
-**Streaming Lab — Ynov Campus B3 INFRA**
-Version 1.0 — Juin 2026
+**Streaming Lab - Ynov Campus B3 INFRA**
+Version 1.0 - Juin 2026
 
 ---
 
@@ -18,7 +18,7 @@ Ce document définit le processus de gestion des incidents du SI Streaming Lab c
 | **Incident majeur** | Incident à fort impact nécessitant une cellule de crise |
 | **Problème** | Cause sous-jacente d'un ou plusieurs incidents |
 | **Workaround** | Solution de contournement temporaire permettant de restaurer le service |
-| **RCA** | Root Cause Analysis — analyse de cause racine post-incident |
+| **RCA** | Root Cause Analysis - analyse de cause racine post-incident |
 
 ---
 
@@ -26,29 +26,29 @@ Ce document définit le processus de gestion des incidents du SI Streaming Lab c
 
 ### 3.1 Matrice Impact / Urgence
 
-|  | **Urgence 1 — Critique** | **Urgence 2 — Haute** | **Urgence 3 — Moyenne** | **Urgence 4 — Faible** |
+|  | **Urgence 1 - Critique** | **Urgence 2 - Haute** | **Urgence 3 - Moyenne** | **Urgence 4 - Faible** |
 |---|---|---|---|---|
-| **Impact 1 — Élevé** | 🔴 **P1 — Critique** | 🔴 **P1 — Critique** | 🟠 **P2 — Haute** | 🟡 **P3 — Moyenne** |
-| **Impact 2 — Moyen** | 🔴 **P1 — Critique** | 🟠 **P2 — Haute** | 🟡 **P3 — Moyenne** | 🟢 **P4 — Faible** |
-| **Impact 3 — Faible** | 🟠 **P2 — Haute** | 🟡 **P3 — Moyenne** | 🟢 **P4 — Faible** | 🟢 **P4 — Faible** |
+| **Impact 1 - Élevé** | 🔴 **P1 - Critique** | 🔴 **P1 - Critique** | 🟠 **P2 - Haute** | 🟡 **P3 - Moyenne** |
+| **Impact 2 - Moyen** | 🔴 **P1 - Critique** | 🟠 **P2 - Haute** | 🟡 **P3 - Moyenne** | 🟢 **P4 - Faible** |
+| **Impact 3 - Faible** | 🟠 **P2 - Haute** | 🟡 **P3 - Moyenne** | 🟢 **P4 - Faible** | 🟢 **P4 - Faible** |
 
 ### 3.2 Délais de traitement (SLA)
 
 | Priorité | Délai de prise en charge | Délai de résolution | Notification équipe |
 |---|---|---|---|
-| 🔴 **P1 — Critique** | 15 min | 2 heures | Immédiate (tous membres) |
-| 🟠 **P2 — Haute** | 30 min | 4 heures | Dans l'heure |
-| 🟡 **P3 — Moyenne** | 2 heures | 24 heures | Journalière |
-| 🟢 **P4 — Faible** | 8 heures | 72 heures | Hebdomadaire |
+| 🔴 **P1 - Critique** | 15 min | 2 heures | Immédiate (tous membres) |
+| 🟠 **P2 - Haute** | 30 min | 4 heures | Dans l'heure |
+| 🟡 **P3 - Moyenne** | 2 heures | 24 heures | Journalière |
+| 🟢 **P4 - Faible** | 8 heures | 72 heures | Hebdomadaire |
 
 ### 3.3 Exemples de classification
 
 | Incident | Impact | Urgence | Priorité |
 |---|---|---|---|
 | Jellyfin inaccessible (service down) | Élevé | Critique | 🔴 P1 |
-| Keycloak SSO en erreur — aucun login possible | Élevé | Critique | 🔴 P1 |
-| Grafana inaccessible — monitoring aveugle | Moyen | Haute | 🟠 P2 |
-| Alerte Suricata — tentative intrusion | Élevé | Haute | 🟠 P2 |
+| Keycloak SSO en erreur - aucun login possible | Élevé | Critique | 🔴 P1 |
+| Grafana inaccessible - monitoring aveugle | Moyen | Haute | 🟠 P2 |
+| Alerte Suricata - tentative intrusion | Élevé | Haute | 🟠 P2 |
 | PostgreSQL connexions saturées | Moyen | Haute | 🟠 P2 |
 | Sauvegarde Veeam en échec | Élevé | Moyenne | 🟡 P3 |
 | Redis latence élevée (>100ms) | Faible | Faible | 🟢 P4 |
@@ -128,17 +128,17 @@ Détection
 
 | INC ID | Date | Service | Description | Priorité | Durée résolution | Statut | RCA |
 |---|---|---|---|---|---|---|---|
-| INC-001 | 23/06/2026 | Jellyfin | Erreur syntaxe docker-compose — service non démarrable | 🔴 P1 | 10 min | Clôturé ✅ | Syntaxe YAML invalide (restart + hostname sur même ligne) — corrigé RFC-003 |
+| INC-001 | 23/06/2026 | Jellyfin | Erreur syntaxe docker-compose - service non démarrable | 🔴 P1 | 10 min | Clôturé ✅ | Syntaxe YAML invalide (restart + hostname sur même ligne) - corrigé RFC-003 |
 | INC-002 | | | | | | | |
 
 ---
 
-## 8. Post-mortem — Template
+## 8. Post-mortem - Template
 
 Pour tout incident P1 ou P2, un post-mortem est rédigé dans les **24h** suivant la clôture :
 
 ```
-## Post-mortem INC-XXX — [Titre]
+## Post-mortem INC-XXX - [Titre]
 
 **Date :** JJ/MM/AAAA
 **Durée d'impact :** X heures X minutes
@@ -146,11 +146,11 @@ Pour tout incident P1 ou P2, un post-mortem est rédigé dans les **24h** suivan
 **Priorité :** P1 / P2
 
 ### Chronologie
-- HH:MM — Détection (par qui / quel outil)
-- HH:MM — Prise en charge (par qui)
-- HH:MM — Workaround appliqué
-- HH:MM — Résolution définitive
-- HH:MM — Clôture
+- HH:MM - Détection (par qui / quel outil)
+- HH:MM - Prise en charge (par qui)
+- HH:MM - Workaround appliqué
+- HH:MM - Résolution définitive
+- HH:MM - Clôture
 
 ### Cause racine (RCA)
 [Description précise de la cause]

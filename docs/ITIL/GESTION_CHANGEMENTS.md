@@ -1,6 +1,6 @@
 # Procédure de Gestion des Changements (ITIL v4)
-**Streaming Lab — Ynov Campus B3 INFRA**
-Version 1.0 — Juin 2026
+**Streaming Lab - Ynov Campus B3 INFRA**
+Version 1.0 - Juin 2026
 
 ---
 
@@ -14,7 +14,7 @@ Cette procédure définit le processus de gestion des changements appliqué au S
 
 | Type | Définition | Exemples dans le projet | Autorisation requise |
 |---|---|---|---|
-| **Standard** | Changement pré-approuvé, risque faible, répétable | Mise à jour image Docker, ajout variable `.env` | Aucune — procédure documentée suffit |
+| **Standard** | Changement pré-approuvé, risque faible, répétable | Mise à jour image Docker, ajout variable `.env` | Aucune - procédure documentée suffit |
 | **Normal** | Changement planifié, nécessite évaluation et RFC | Ajout d'un nouveau service Docker, modification VLAN | CAB (Change Advisory Board) |
 | **Urgent** | Changement non planifié pour restaurer un service | Rollback après incident critique | Validation a posteriori par le responsable |
 

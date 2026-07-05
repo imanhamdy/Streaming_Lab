@@ -1,6 +1,6 @@
-# Business Impact Analysis (BIA) — Streaming Lab
-**Ynov Campus B3 INFRA — BC03 Compétences 11 & 14**
-Version 1.0 — Juin 2026
+# Business Impact Analysis (BIA) - Streaming Lab
+**Ynov Campus B3 INFRA - BC03 Compétences 11 & 14**
+Version 1.0 - Juin 2026
 
 ---
 
@@ -41,7 +41,7 @@ Le BIA (Business Impact Analysis) identifie les services critiques du SI Streami
 | **Services dépendants** | Jellyfin, Grafana, Vault, tous les services protégés |
 | **RTO cible** | **1 heure** |
 | **RPO cible** | **0** (état Keycloak = BDD PostgreSQL, répliquée) |
-| **Mode dégradé** | Impossible — pas d'authentification = pas de service |
+| **Mode dégradé** | Impossible - pas d'authentification = pas de service |
 | **Solution de continuité** | Restauration Keycloak depuis snapshot Veeam + PostgreSQL |
 
 #### Traefik (Proxy HTTPS)
@@ -51,12 +51,12 @@ Le BIA (Business Impact Analysis) identifie les services critiques du SI Streami
 | **RTO cible** | **30 minutes** |
 | **RPO cible** | N/A (stateless, certificats dans volume persistant) |
 | **Mode dégradé** | Accès direct aux services via IP interne (VPN requis) |
-| **Solution de continuité** | `docker compose up traefik` — redémarrage < 1 min |
+| **Solution de continuité** | `docker compose up traefik` - redémarrage < 1 min |
 
 #### Jellyfin (Streaming)
 | Indicateur | Valeur |
 |---|---|
-| **Impact si indisponible** | Service principal indisponible — impact direct utilisateurs |
+| **Impact si indisponible** | Service principal indisponible - impact direct utilisateurs |
 | **RTO cible** | **2 heures** |
 | **RPO cible** | **24 heures** (contenu média sur MinIO) |
 | **Mode dégradé** | N/A |

@@ -1,7 +1,7 @@
-# Analyse de Risques — Streaming Lab
-**Ynov Campus B3 INFRA — BC03 Compétence 1**
+# Analyse de Risques - Streaming Lab
+**Ynov Campus B3 INFRA - BC03 Compétence 1**
 Méthode : ISO 27005 / inspiré EBIOS Risk Manager
-Version 1.0 — Juin 2026
+Version 1.0 - Juin 2026
 
 ---
 
@@ -104,18 +104,18 @@ Impact
 
 | Risque | Traitement | Mesure mise en œuvre | Responsable | Statut |
 |---|---|---|---|---|
-| R01 — Brute force SSH | Réduction | Fail2ban + clé SSH uniquement + VPN requis avant SSH | Iman H. | ✅ En place |
-| R02 — Ransomware | Réduction + Transfert | Veeam B&R quotidien, isolation VLAN, pas d'accès internet direct VMs | Quentin | ✅ En place |
-| R03 — Credentials Git | Réduction | `.gitignore` + Vault + `.env.example` sans valeurs | Iman H. | ✅ En place |
-| R04 — CVE Docker | Réduction | Watchtower (mises à jour auto) + images officielles uniquement | Adrien | 🔄 En cours |
-| R05 — Panne matérielle | Transfert | Veeam B&R + RTO 4h documenté | Quentin | ✅ En place |
-| R06 — Intrusion VLAN | Réduction | Règles FortiGate deny-all inter-VLAN + réseaux Docker isolés | Quentin | 🔄 En cours |
-| R07 — DDoS | Réduction | Cloudflare Zero Trust (rate limiting, WAF) | Quentin | 📋 Planifié |
-| R08 — Backup intercepté | Réduction | Veeam AES-256 chiffrement activé | Quentin | ✅ En place |
-| R09 — Certificat expiré | Réduction | Let's Encrypt renouvellement auto via Traefik + alerte Grafana J-30 | Iman H. | ✅ En place |
-| R10 — Admin Keycloak compromis | Réduction | MFA obligatoire compte admin + rotation password 90j | Iman H. | ✅ En place |
-| R11 — Secret sur Git | Réduction | `.gitignore` + pre-commit hook (git-secrets) | Iman H. | 📋 Planifié |
-| R12 — Supply chain Docker | Réduction | Images officielles uniquement (Docker Hub verified) + Watchtower | Adrien | 🔄 En cours |
+| R01 - Brute force SSH | Réduction | Fail2ban + clé SSH uniquement + VPN requis avant SSH | Iman H. | ✅ En place |
+| R02 - Ransomware | Réduction + Transfert | Veeam B&R quotidien, isolation VLAN, pas d'accès internet direct VMs | Quentin | ✅ En place |
+| R03 - Credentials Git | Réduction | `.gitignore` + Vault + `.env.example` sans valeurs | Iman H. | ✅ En place |
+| R04 - CVE Docker | Réduction | Watchtower (mises à jour auto) + images officielles uniquement | Adrien | 🔄 En cours |
+| R05 - Panne matérielle | Transfert | Veeam B&R + RTO 4h documenté | Quentin | ✅ En place |
+| R06 - Intrusion VLAN | Réduction | Règles FortiGate deny-all inter-VLAN + réseaux Docker isolés | Quentin | 🔄 En cours |
+| R07 - DDoS | Réduction | Cloudflare Zero Trust (rate limiting, WAF) | Quentin | 📋 Planifié |
+| R08 - Backup intercepté | Réduction | Veeam AES-256 chiffrement activé | Quentin | ✅ En place |
+| R09 - Certificat expiré | Réduction | Let's Encrypt renouvellement auto via Traefik + alerte Grafana J-30 | Iman H. | ✅ En place |
+| R10 - Admin Keycloak compromis | Réduction | MFA obligatoire compte admin + rotation password 90j | Iman H. | ✅ En place |
+| R11 - Secret sur Git | Réduction | `.gitignore` + pre-commit hook (git-secrets) | Iman H. | 📋 Planifié |
+| R12 - Supply chain Docker | Réduction | Images officielles uniquement (Docker Hub verified) + Watchtower | Adrien | 🔄 En cours |
 
 ---
 
@@ -123,9 +123,9 @@ Impact
 
 | Risque | Justification d'acceptation |
 |---|---|
-| R08 — Sauvegarde interceptée | AES-256 activé — risque résiduel négligeable |
-| R12 — Supply chain | Images officielles uniquement — risque inhérent acceptable en contexte pédagogique |
-| R07 — DDoS | Cloudflare Zero Trust planifié — acceptable jusqu'à mise en production |
+| R08 - Sauvegarde interceptée | AES-256 activé - risque résiduel négligeable |
+| R12 - Supply chain | Images officielles uniquement - risque inhérent acceptable en contexte pédagogique |
+| R07 - DDoS | Cloudflare Zero Trust planifié - acceptable jusqu'à mise en production |
 
 ---
 

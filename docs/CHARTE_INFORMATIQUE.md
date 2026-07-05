@@ -1,6 +1,6 @@
-# Charte Informatique — Streaming Lab
-**Ynov Campus B3 INFRA — Projet Streaming Lab**
-Version 1.0 — Juin 2026
+# Charte Informatique - Streaming Lab
+**Ynov Campus B3 INFRA - Projet Streaming Lab**
+Version 1.0 - Juin 2026
 
 ---
 
@@ -67,10 +67,10 @@ La politique de sécurité réseau repose sur une segmentation stricte par VLANs
 
 | VLAN / Réseau | Périmètre | Accès autorisé |
 |---|---|---|
-| VLAN 20 — `streaming-net` | Traefik, Jellyfin, Keycloak, Vault | Internet → Traefik uniquement |
-| VLAN 20 — `db-net` | PostgreSQL, MongoDB, Redis | Services applicatifs uniquement |
-| VLAN 20 — `monitoring-net` | Grafana, Prometheus, Loki, Suricata | Admins (VPN) |
-| VLAN 20 — `storage-net` | MinIO | Services applicatifs + admins (VPN) |
+| VLAN 20 - `streaming-net` | Traefik, Jellyfin, Keycloak, Vault | Internet → Traefik uniquement |
+| VLAN 20 - `db-net` | PostgreSQL, MongoDB, Redis | Services applicatifs uniquement |
+| VLAN 20 - `monitoring-net` | Grafana, Prometheus, Loki, Suricata | Admins (VPN) |
+| VLAN 20 - `storage-net` | MinIO | Services applicatifs + admins (VPN) |
 | VLAN 110 | vm-dns | Réseau interne uniquement |
 | VLAN 140 | vm-backup | Réseau interne uniquement |
 
@@ -130,4 +130,4 @@ Tout manquement aux règles de la présente charte (partage de credentials, push
 
 La présente charte entre en vigueur à compter de sa publication dans le dépôt Git du projet. Elle est révisée à chaque évolution majeure de l'infrastructure.
 
-**Signataires :** Équipe Streaming Lab — Ynov Campus B3 INFRA — Juin 2026
+**Signataires :** Équipe Streaming Lab - Ynov Campus B3 INFRA - Juin 2026

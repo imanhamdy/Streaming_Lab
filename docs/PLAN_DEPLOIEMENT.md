@@ -1,6 +1,6 @@
-# Plan de Déploiement — Streaming Lab
-**Ynov Campus B3 INFRA — Compétence 4 (BC02)**
-Version 1.0 — Juin 2026
+# Plan de Déploiement - Streaming Lab
+**Ynov Campus B3 INFRA - Compétence 4 (BC02)**
+Version 1.0 - Juin 2026
 
 > Diagramme de Gantt disponible : `docs/UML_schemas/gantt_deploiement.svg`
 
@@ -13,7 +13,7 @@ Version 1.0 — Juin 2026
 | **Disponibilités équipe** | 3 membres, chacun responsable de domaines distincts (voir TEAM_GUIDE.md) |
 | **Dépendances techniques** | Réseau doit être opérationnel avant déploiement des stacks Docker |
 | **Fenêtres de maintenance** | Interventions réseau hors heures ouvrées (après 18h ou week-ends) |
-| **Environnement partagé** | Un seul serveur physique DELL T140 — pas de rollback matériel possible |
+| **Environnement partagé** | Un seul serveur physique DELL T140 - pas de rollback matériel possible |
 | **Contrainte budget** | Aucun achat supplémentaire autorisé hors matériel déjà inventorié |
 
 ---
@@ -44,7 +44,7 @@ Version 1.0 — Juin 2026
 
 ## 3. Phasage du déploiement
 
-### Phase 1 — Infrastructure fondatrice (S16–S18 · Avril 2026)
+### Phase 1 - Infrastructure fondatrice (S16–S18 · Avril 2026)
 **Responsable : Quentin**
 | Tâche | KAN | Statut |
 |---|---|---|
@@ -56,7 +56,7 @@ Version 1.0 — Juin 2026
 
 ---
 
-### Phase 2 — Réseau et sécurité périmétrique (S16–S25 · Avril–Juin 2026)
+### Phase 2 - Réseau et sécurité périmétrique (S16–S25 · Avril–Juin 2026)
 **Responsable : Quentin + Iman Hamdy**
 | Tâche | KAN | Statut |
 |---|---|---|
@@ -73,7 +73,7 @@ Version 1.0 — Juin 2026
 
 ---
 
-### Phase 3 — Bases de données et stockage (S18–S25 · Mai–Juin 2026)
+### Phase 3 - Bases de données et stockage (S18–S25 · Mai–Juin 2026)
 **Responsable : Iman Hamdy**
 | Tâche | KAN | Statut |
 |---|---|---|
@@ -84,7 +84,7 @@ Version 1.0 — Juin 2026
 
 ---
 
-### Phase 4 — Monitoring et IDS (S22–S27 · Juin–Juillet 2026)
+### Phase 4 - Monitoring et IDS (S22–S27 · Juin–Juillet 2026)
 **Responsable : Adrien**
 | Tâche | KAN | Statut |
 |---|---|---|
@@ -94,18 +94,18 @@ Version 1.0 — Juin 2026
 
 ---
 
-### Phase 5 — Services applicatifs (S22–S28 · Juin–Juillet 2026)
+### Phase 5 - Services applicatifs (S22–S28 · Juin–Juillet 2026)
 **Responsable : Iman Hamdy**
 | Tâche | KAN | Statut |
 |---|---|---|
-| Keycloak IAM + SSO + MFA | — | 📋 Planifié (S22–S27) |
-| Vault secrets + PKI | — | 📋 Planifié (S23–S27) |
-| Traefik proxy + TLS | — | 📋 Planifié (S23–S26) |
-| Jellyfin streaming | — | 📋 Planifié (S24–S28) |
+| Keycloak IAM + SSO + MFA | - | 📋 Planifié (S22–S27) |
+| Vault secrets + PKI | - | 📋 Planifié (S23–S27) |
+| Traefik proxy + TLS | - | 📋 Planifié (S23–S26) |
+| Jellyfin streaming | - | 📋 Planifié (S24–S28) |
 
 ---
 
-### Phase 6 — DevOps, CI/CD et Kubernetes (S20–S28 · Juin–Juillet 2026)
+### Phase 6 - DevOps, CI/CD et Kubernetes (S20–S28 · Juin–Juillet 2026)
 **Responsable : Iman Hamdy**
 | Tâche | KAN | Statut |
 |---|---|---|
@@ -115,7 +115,7 @@ Version 1.0 — Juin 2026
 
 ---
 
-### Phase 7 — Documentation continue (S16–S28 · tout le projet)
+### Phase 7 - Documentation continue (S16–S28 · tout le projet)
 **Responsable : Tous**
 | Livrable | Statut |
 |---|---|
@@ -134,12 +134,12 @@ Version 1.0 — Juin 2026
 
 | Phase | Prévu | Réalisé | Écart |
 |---|---|---|---|
-| Phase 1 — Infra Proxmox | S16–S18 | S16–S18 | 0 |
-| Phase 2 — Réseau | S16–S22 | S16–S25 (en cours) | +3 semaines |
-| Phase 3 — BDD/Stockage | S20–S22 | S18–S25 | En avance |
-| Phase 4 — Monitoring | S22–S25 | S22–S27 (en cours) | +2 semaines |
-| Phase 5 — Services app | S22–S27 | S22–S28 | Décalé (dépend réseau) |
-| Phase 6 — DevOps | S20–S28 | S20–S28 | Conforme |
+| Phase 1 - Infra Proxmox | S16–S18 | S16–S18 | 0 |
+| Phase 2 - Réseau | S16–S22 | S16–S25 (en cours) | +3 semaines |
+| Phase 3 - BDD/Stockage | S20–S22 | S18–S25 | En avance |
+| Phase 4 - Monitoring | S22–S25 | S22–S27 (en cours) | +2 semaines |
+| Phase 5 - Services app | S22–S27 | S22–S28 | Décalé (dépend réseau) |
+| Phase 6 - DevOps | S20–S28 | S20–S28 | Conforme |
 
 **Analyse des écarts :** Le retard de Phase 2 (réseau) s'explique par la disponibilité du matériel FortiGate HA livré en S18 au lieu de S16, et la complexité de configuration du switch HP (KAN-7). Ce retard impacte Phase 5 (services applicatifs) qui nécessite un VLAN opérationnel pour les tests de bout en bout.
 

@@ -1,5 +1,5 @@
-# RFC-001 — Déploiement stack MinIO (Storage-net)
-**Request For Change — Streaming Lab**
+# RFC-001 - Déploiement stack MinIO (Storage-net)
+**Request For Change - Streaming Lab**
 Date de soumission : 23 juin 2026 | Statut : **CLÔTURÉ ✅**
 
 ---
@@ -14,7 +14,7 @@ Date de soumission : 23 juin 2026 | Statut : **CLÔTURÉ ✅**
 | **Change Initiator** | Iman Hamdy |
 | **Change Manager** | Iman Hamdy |
 | **Date de soumission** | 23 juin 2026 |
-| **Fenêtre d'implémentation** | 23 juin 2026 — hors heures de production |
+| **Fenêtre d'implémentation** | 23 juin 2026 - hors heures de production |
 | **Branche Git** | `feature/bases-de-donnees` |
 
 ---
@@ -33,7 +33,7 @@ Déploiement d'un service de stockage objet **MinIO** (compatible S3) sur le ré
 
 | Fichier | Nature de la modification |
 |---|---|
-| `docker/storage/docker-compose.yml` | Nouveau fichier — définition service MinIO |
+| `docker/storage/docker-compose.yml` | Nouveau fichier - définition service MinIO |
 | `docker/.env` | Ajout variables `MINIO_ROOT_USER` / `MINIO_ROOT_PASSWORD` |
 | `docker/.env.example` | Ajout entrées MinIO pour la documentation |
 
@@ -46,7 +46,7 @@ Déploiement d'un service de stockage objet **MinIO** (compatible S3) sur le ré
 | Échec démarrage container MinIO | Faible | Moyen | Image officielle stable ; volumes nommés préservent les données |
 | Conflit de port (9000/9001) | Faible | Faible | Ports non utilisés par d'autres services |
 | Credentials exposés | Très faible | Élevé | Variables dans `docker/.env` exclu du dépôt Git |
-| Rupture réseau `storage-net` | Très faible | Moyen | Réseau créé préalablement (KAN-33 — Done) |
+| Rupture réseau `storage-net` | Très faible | Moyen | Réseau créé préalablement (KAN-33 - Done) |
 
 **Niveau de risque global : FAIBLE**
 
