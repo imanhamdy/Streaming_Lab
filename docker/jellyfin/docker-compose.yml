@@ -16,8 +16,9 @@ services:
       - "8096:8096/tcp"
       - "7359:7359/udp"
     volumes:
-      - /path/to/config:/config
-      - /path/to/cache:/cache
+      - /home/principal/jellyfin/config:/config
+      - /home/principal/jellyfin/cache:/cache
+      - /home/principal/streaming-media:/media:ro,shared
     environment:
       - JELLYFIN_PublishedServerUrl=https://jellyfin.duoowatch.com
     extra_hosts:
@@ -39,6 +40,11 @@ services:
     image: rclone/rclone:latest
     container_name: jellyfin-rclone
     restart: unless-stopped
+    env_file: ../../.env
+    environment:
+      # Override rclone.conf credentials via env vars (rclone expands RCLONE_CONFIG_<NAME>_<KEY>)
+      - RCLONE_CONFIG_MINIO_ACCESS_KEY_ID=${MINIO_ROOT_USER}
+      - RCLONE_CONFIG_MINIO_SECRET_ACCESS_KEY=${MINIO_ROOT_PASSWORD}
     command: >
       mount minio:streaming-media /mnt/media
       --allow-other
