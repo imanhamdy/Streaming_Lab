@@ -4,12 +4,15 @@
 # =============================================================
 
 networks:
-  monitoring:
+  streaming-public:
     external: true
-    name: monitoring-net
-  streaming-net:
+    name: streaming-public
+  streaming-monitoring:
     external: true
-    name: streaming-net
+    name: streaming-monitoring
+  streaming-private:
+    external: true
+    name: streaming-private
 
 volumes:
   prometheus_data:
@@ -38,7 +41,8 @@ services:
     ports:
       - "9090:9090"
     networks:
-      - monitoring
+      - streaming-monitoring
+      - streaming-private
     healthcheck:
       test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:9090/-/healthy"]
       interval: 30s
@@ -57,7 +61,7 @@ services:
     ports:
       - "3100:3100"
     networks:
-      - monitoring
+      - streaming-monitoring
     healthcheck:
       test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:3100/ready"]
       interval: 30s
@@ -79,7 +83,7 @@ services:
     depends_on:
       - loki
     networks:
-      - monitoring
+      - streaming-monitoring
 
   # ── NODE EXPORTER ─────────────────────────────────────────
   node-exporter:
@@ -115,7 +119,7 @@ services:
     ports:
       - "8080:8080"
     networks:
-      - monitoring
+      - streaming-monitoring
 
   # ── ALERTMANAGER ──────────────────────────────────────────
   alertmanager:
@@ -131,7 +135,7 @@ services:
     ports:
       - "9093:9093"
     networks:
-      - monitoring
+      - streaming-monitoring
 
   # ── TRIVYHUB ──────────────────────────────────────────────
   trivyhub:
@@ -144,8 +148,15 @@ services:
       - trivyhub_data:/app/data
     ports:
       - "3001:3000"
+    labels:
+      - traefik.enable=true
+      - traefik.docker.network=streaming-public
+      - traefik.http.routers.trivyhub.rule=Host(`trivyhub.duoowatch.com`)
+      - traefik.http.routers.trivyhub.entrypoints=web
+      - traefik.http.services.trivyhub.loadbalancer.server.port=3000
     networks:
-      - monitoring
+      - streaming-public
+      - streaming-monitoring
 
   # ── GRAFANA ───────────────────────────────────────────────
   grafana:
@@ -176,10 +187,25 @@ services:
       - loki
     labels:
       - traefik.enable=true
+      - traefik.docker.network=streaming-public
       - traefik.http.routers.grafana.rule=Host(`grafana.duoowatch.com`)
       - traefik.http.routers.grafana.entrypoints=web
       - traefik.http.services.grafana.loadbalancer.server.port=3000
     networks:
-      - monitoring
-      - streaming-net
+      - streaming-public
+      - streaming-monitoring
+
+  # ── POSTGRES EXPORTER ─────────────────────────────────────
+  postgres-exporter:
+    image: prometheuscommunity/postgres-exporter:v0.15.0
+    container_name: postgres-exporter
+    restart: unless-stopped
+    env_file: ../../.env
+    environment:
+      - DATA_SOURCE_NAME=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@haproxy-postgres:5000/postgres?sslmode=disable
+      - PG_EXPORTER_AUTO_DISCOVER_DATABASES=true
+      - PG_EXPORTER_EXCLUDE_DATABASES=template0,template1
+    networks:
+      - streaming-monitoring
+      - streaming-private
 

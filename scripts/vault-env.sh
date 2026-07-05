@@ -20,6 +20,7 @@ DOCKER_API_VERSION=1.41
 POSTGRES_USER=$(get databases postgres_user)
 POSTGRES_PASSWORD=$(get databases postgres_password)
 POSTGRES_DB=$(get databases postgres_db)
+POSTGRES_REPLICATION_PASSWORD=$(get databases postgres_replication_password)
 
 # --- Keycloak ---
 KEYCLOAK_ADMIN=$(get keycloak admin_user)
@@ -36,6 +37,10 @@ MINIO_ROOT_USER=$(get minio root_user)
 MINIO_ROOT_PASSWORD=$(get minio root_password)
 KEYCLOAK_CLIENT_SECRET_MINIO=$(get minio keycloak_client_secret)
 MINIO_IDENTITY_OPENID_CLIENT_SECRET=$(get minio keycloak_client_secret)
+
+# --- Rclone (MinIO backend for Jellyfin) ---
+RCLONE_CONFIG_MINIO_ACCESS_KEY_ID=$(get minio root_user)
+RCLONE_CONFIG_MINIO_SECRET_ACCESS_KEY=$(get minio root_password)
 
 # --- Jellyfin ---
 KEYCLOAK_CLIENT_SECRET_JELLYFIN=$(get jellyfin keycloak_client_secret)
