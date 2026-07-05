@@ -1,38 +1,90 @@
 groups:
-  - name: system
+
+  - name: availability
     rules:
       - alert: InstanceDown
         expr: up == 0
-        for: 2m
+        for: 1m
         labels:
           severity: critical
         annotations:
-          summary: "Instance {{ $labels.instance }} down"
-          description: "{{ $labels.instance }} n'est plus joignable depuis 2 minutes."
+          summary: "{{ $labels.instance }} hors ligne"
+          description: "{{ $labels.instance }} ne répond plus depuis 1 minute."
 
+  - name: cpu
+    rules:
       - alert: HighCPU
-        expr: 100 - (avg by(instance) (rate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 85
+        expr: 100 - (avg by(instance)(rate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 80
         for: 5m
         labels:
           severity: warning
         annotations:
           summary: "CPU élevé sur {{ $labels.instance }}"
-          description: "CPU > 85% depuis 5 minutes."
+          description: "CPU à {{ $value | printf \"%.1f\" }}%"
 
-      - alert: LowDiskSpace
-        expr: (node_filesystem_avail_bytes{mountpoint="/"} / node_filesystem_size_bytes{mountpoint="/"}) * 100 < 15
-        for: 5m
+      - alert: CriticalCPU
+        expr: 100 - (avg by(instance)(rate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 95
+        for: 2m
         labels:
-          severity: warning
+          severity: critical
         annotations:
-          summary: "Espace disque faible sur {{ $labels.instance }}"
-          description: "Moins de 15% d'espace disponible sur /."
+          summary: "CPU critique sur {{ $labels.instance }}"
+          description: "CPU à {{ $value | printf \"%.1f\" }}%"
 
+  - name: memory
+    rules:
       - alert: HighMemory
-        expr: (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) * 100 > 90
+        expr: (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) * 100 > 85
         for: 5m
         labels:
           severity: warning
         annotations:
-          summary: "Mémoire élevée sur {{ $labels.instance }}"
-          description: "Utilisation mémoire > 90% depuis 5 minutes."
+          summary: "RAM élevée sur {{ $labels.instance }}"
+          description: "RAM à {{ $value | printf \"%.1f\" }}%"
+
+      - alert: CriticalMemory
+        expr: (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) * 100 > 95
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "RAM critique sur {{ $labels.instance }}"
+          description: "RAM à {{ $value | printf \"%.1f\" }}%"
+
+  - name: disk
+    rules:
+      - alert: DiskWarning
+        expr: |
+          (1 - (node_filesystem_avail_bytes{fstype!~"tmpfs|overlay|squashfs"} /
+                node_filesystem_size_bytes{fstype!~"tmpfs|overlay|squashfs"})) * 100 > 75
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Disque {{ $labels.mountpoint }} sur {{ $labels.instance }}"
+          description: "Utilisation à {{ $value | printf \"%.1f\" }}%"
+
+      - alert: DiskCritical
+        expr: |
+          (1 - (node_filesystem_avail_bytes{fstype!~"tmpfs|overlay|squashfs"} /
+                node_filesystem_size_bytes{fstype!~"tmpfs|overlay|squashfs"})) * 100 > 90
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Disque plein {{ $labels.mountpoint }} sur {{ $labels.instance }}"
+          description: "Utilisation à {{ $value | printf \"%.1f\" }}%"
+
+  - name: security
+    rules:
+      - alert: SuricataAlerts
+        expr: |
+          sum by(host)(
+            rate({job="suricata"} |= "ALERT" [5m])
+          ) > 5
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Alertes IDS Suricata sur {{ $labels.host }}"
+          description: "Plus de 5 alertes/min détectées par Suricata."
