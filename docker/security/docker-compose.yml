@@ -8,8 +8,25 @@ networks:
 
 volumes:
   vault_data:
+  crowdsec_data:
+  crowdsec_db:
 
 services:
+  crowdsec:
+    image: crowdsecurity/crowdsec:latest
+    container_name: crowdsec
+    restart: unless-stopped
+    environment:
+      - COLLECTIONS=crowdsecurity/traefik crowdsecurity/http-cve crowdsecurity/linux
+      - GID=1000
+    volumes:
+      - /var/log:/var/log/host:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - crowdsec_data:/etc/crowdsec
+      - crowdsec_db:/var/lib/crowdsec/data
+    networks:
+      - streaming-public
+
   vault:
     image: hashicorp/vault:1.17
     container_name: vault

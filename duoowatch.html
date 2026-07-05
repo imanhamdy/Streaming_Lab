@@ -1,0 +1,1373 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>DUOOWATCH — Streaming Lab</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+:root{
+  --bg:#09090f;--bg2:#0d0d16;--card:#12131e;--card2:#171825;
+  --teal:#1D9E75;--teal2:#4ecbaa;--teal-glow:rgba(78,203,170,0.1);
+  --text:#eef0f8;--text2:rgba(238,240,248,0.55);--text3:rgba(238,240,248,0.25);
+  --text4:rgba(238,240,248,0.12);--border:rgba(255,255,255,0.07);
+  --mono:'JetBrains Mono',monospace;--sans:'Space Grotesk',sans-serif;
+}
+html,body{height:100%;background:var(--bg);font-family:var(--sans);color:var(--text);overflow:hidden}
+.app{height:100vh;display:flex;flex-direction:column;
+  background:radial-gradient(ellipse at 50% -20%,rgba(29,158,117,0.08) 0%,transparent 55%),var(--bg)}
+
+/* ── HEADER ── */
+.hdr{display:flex;align-items:center;justify-content:space-between;padding:14px 18px 12px;flex-shrink:0}
+.logo{font-size:18px;font-weight:700;color:var(--teal2);letter-spacing:-.02em}
+.hdr-right{display:flex;align-items:center;gap:10px}
+.site-pill{font-size:10px;padding:4px 10px;border-radius:20px;border:1px solid rgba(78,203,170,0.2);color:var(--teal2);background:rgba(78,203,170,0.06);text-decoration:none}
+
+/* ── TABS ── */
+.bottom-nav{display:flex;align-items:stretch;border-top:1px solid var(--border);flex-shrink:0;background:rgba(9,9,15,0.97);backdrop-filter:blur(6px);padding-bottom:env(safe-area-inset-bottom,0)}
+.nav-btn{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;padding:9px 0 7px;
+  background:none;border:none;cursor:pointer;font-family:var(--sans);color:var(--text3)}
+.nav-icon{font-size:18px;line-height:1}
+.nav-label{font-size:9px;font-weight:600;letter-spacing:.02em}
+.nav-btn.active{color:var(--teal2)}
+.nav-btn.nav-btn-main .nav-icon{width:38px;height:38px;border-radius:50%;background:var(--teal);color:#fff;
+  display:flex;align-items:center;justify-content:center;font-size:15px;margin-top:-16px;box-shadow:0 4px 14px -2px rgba(29,158,117,0.6);border:3px solid var(--bg)}
+.nav-btn.nav-btn-main.active .nav-icon{background:var(--teal2)}
+.nav-btn.nav-btn-main.active{color:var(--teal2)}
+
+/* ── SCROLL AREA ── */
+.scroll{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch}
+.scroll::-webkit-scrollbar{display:none}
+
+/* ── SECTION LABELS ── */
+.section-label{font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--text3);padding:16px 18px 8px;display:flex;align-items:center;gap:8px}
+.section-label::after{content:'';flex:1;height:1px;background:var(--border)}
+
+/* ── NODE GRID ── */
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:0 18px 8px}
+.node-card{
+  background:var(--card);border:1px solid var(--border);border-radius:14px;
+  padding:14px 13px;cursor:pointer;transition:all .18s;position:relative;overflow:hidden;
+  display:flex;flex-direction:column;gap:4px;
+}
+.node-card::before{content:'';position:absolute;inset:0;opacity:0;transition:opacity .18s;border-radius:14px}
+.node-card:active{transform:scale(.97)}
+.node-card:active::before{opacity:1}
+.node-card.teal{border-color:rgba(78,203,170,0.2)}
+.node-card.teal::before{background:rgba(78,203,170,0.04)}
+.node-card.amber{border-color:rgba(240,160,48,0.2)}
+.node-card.amber::before{background:rgba(240,160,48,0.04)}
+.node-card.blue{border-color:rgba(133,183,235,0.2)}
+.node-card.blue::before{background:rgba(133,183,235,0.04)}
+.node-card.grey{border-color:rgba(180,178,169,0.2)}
+.node-card.grey::before{background:rgba(180,178,169,0.04)}
+.node-card.purple{border-color:rgba(175,169,236,0.2)}
+.node-card.purple::before{background:rgba(175,169,236,0.04)}
+.node-card.red{border-color:rgba(224,82,82,0.2)}
+.node-card.red::before{background:rgba(224,82,82,0.04)}
+.node-icon{font-size:24px;margin-bottom:6px;display:block}
+.node-name{font-size:13px;font-weight:700;color:var(--text)}
+.node-sub{font-size:10px;color:var(--text3);font-family:var(--mono);margin-top:1px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.node-vlan{font-size:8px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;
+  margin-top:6px;padding:2px 7px;border-radius:20px;align-self:flex-start;
+  background:rgba(255,255,255,0.05);color:var(--text3);border:1px solid rgba(255,255,255,0.06)}
+.node-docs-count{position:absolute;top:10px;right:10px;
+  width:18px;height:18px;border-radius:50%;background:rgba(78,203,170,0.15);
+  border:1px solid rgba(78,203,170,0.3);color:var(--teal2);
+  font-size:9px;font-weight:700;display:flex;align-items:center;justify-content:center}
+
+/* ── CATALOGUE TAB ── */
+.cat-wrap{padding:0 18px 24px}
+.cat-root{background:var(--card);border:1px solid rgba(78,203,170,0.2);border-radius:14px;
+  padding:16px;text-align:center;margin:16px 0 4px}
+.cat-root-icon{font-size:28px;display:block;margin-bottom:6px}
+.cat-root-title{font-size:14px;font-weight:700;color:var(--teal2)}
+.cat-root-sub{font-size:10px;color:var(--text3);margin-top:2px}
+.cat-connector{width:2px;height:20px;background:rgba(78,203,170,0.2);margin:0 auto}
+.cat-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:4px}
+.cat-row.two{grid-template-columns:1fr 1fr}
+.cat-card{background:var(--card);border:1px solid var(--border);border-radius:12px;
+  padding:12px 10px;text-align:center;cursor:pointer;transition:all .2s}
+.cat-card:active{transform:scale(.97)}
+.cat-icon{font-size:20px;display:block;margin-bottom:5px}
+.cat-title{font-size:11px;font-weight:700;color:var(--text);line-height:1.2}
+.cat-sub{font-size:9px;color:var(--text3);margin-top:3px;line-height:1.4}
+.cat-card.teal{border-color:rgba(78,203,170,0.2)}
+.cat-card.amber{border-color:rgba(240,160,48,0.2)}
+.cat-card.blue{border-color:rgba(133,183,235,0.2)}
+.cat-card.purple{border-color:rgba(175,169,236,0.2)}
+.cat-card.grey{border-color:rgba(180,178,169,0.2)}
+
+/* ── DETAIL SHEET ── */
+.sheet-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:40;
+  opacity:0;pointer-events:none;transition:opacity .25s;backdrop-filter:blur(4px)}
+.sheet-overlay.open{opacity:1;pointer-events:all}
+.sheet{position:fixed;left:0;right:0;bottom:0;background:var(--bg2);
+  border-radius:20px 20px 0 0;z-index:50;max-height:92vh;display:flex;flex-direction:column;
+  transform:translateY(100%);transition:transform .3s cubic-bezier(.4,0,.2,1)}
+.sheet.open{transform:translateY(0)}
+.sheet-handle{width:36px;height:4px;border-radius:2px;background:rgba(255,255,255,0.15);
+  margin:10px auto 0;flex-shrink:0}
+.sheet-hdr{display:flex;align-items:flex-start;gap:12px;padding:16px 18px 12px;flex-shrink:0;
+  border-bottom:1px solid var(--border)}
+.sheet-icon{font-size:28px;flex-shrink:0;margin-top:2px}
+.sheet-title-wrap{flex:1;min-width:0}
+.sheet-title{font-size:16px;font-weight:700;color:var(--text)}
+.sheet-hostname{font-size:11px;color:var(--teal2);font-family:var(--mono);margin-top:2px}
+.sheet-vlan{font-size:9px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;
+  margin-top:5px;padding:2px 8px;border-radius:20px;display:inline-block;
+  background:rgba(255,255,255,0.05);color:var(--text3);border:1px solid rgba(255,255,255,0.08)}
+.sheet-close{width:30px;height:30px;border-radius:50%;border:none;background:rgba(255,255,255,0.08);
+  color:var(--text2);cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.sheet-body{flex:1;overflow-y:auto;padding:14px 18px 24px;-webkit-overflow-scrolling:touch}
+.sheet-body::-webkit-scrollbar{display:none}
+
+/* website button */
+.website-btn{display:flex;align-items:center;justify-content:center;gap:8px;
+  padding:12px;background:rgba(78,203,170,0.1);border:1px solid rgba(78,203,170,0.3);
+  border-radius:12px;color:var(--teal2);font-size:13px;font-weight:600;
+  cursor:pointer;width:100%;margin-bottom:14px;text-decoration:none;font-family:var(--sans)}
+
+/* specs */
+.specs-grid{display:grid;grid-template-columns:1fr 1fr;gap:1px;
+  background:rgba(255,255,255,0.05);border-radius:10px;overflow:hidden;margin-bottom:14px;
+  border:1px solid var(--border)}
+.spec-cell{background:var(--card);padding:9px 12px}
+.spec-k{font-size:9px;color:var(--text3);margin-bottom:2px}
+.spec-v{font-size:10px;color:var(--text);font-family:var(--mono)}
+.sec-title{font-size:10px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;
+  color:var(--text3);margin:14px 0 8px;display:flex;align-items:center;gap:6px}
+.sec-title::after{content:'';flex:1;height:1px;background:var(--border)}
+
+/* doc buttons */
+.doc-btn{display:flex;align-items:center;gap:10px;padding:11px 13px;
+  background:rgba(78,203,170,0.06);border:1px solid rgba(78,203,170,0.14);
+  border-radius:10px;cursor:pointer;width:100%;margin-bottom:7px;font-family:var(--sans);transition:background .15s}
+.doc-btn:active{background:rgba(78,203,170,0.12)}
+.doc-btn-icon{font-size:14px;color:var(--teal2);flex-shrink:0}
+.doc-btn-label{font-size:12px;color:var(--teal2);text-align:left}
+
+/* ── DOC VIEWER ── */
+.docview{position:fixed;inset:0;background:var(--bg2);z-index:90;
+  display:flex;flex-direction:column;transform:translateX(100%);transition:transform .3s cubic-bezier(.4,0,.2,1)}
+.docview.open{transform:translateX(0)}
+.docview-hdr{display:flex;align-items:center;gap:10px;padding:14px 18px;
+  border-bottom:1px solid var(--border);flex-shrink:0}
+.docview-back{width:32px;height:32px;border-radius:8px;border:1px solid var(--border);
+  background:none;color:var(--text2);cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center}
+.docview-title{font-size:12px;font-weight:600;color:var(--text2);flex:1}
+.docview-body{flex:1;overflow-y:auto;padding:18px 18px 32px;-webkit-overflow-scrolling:touch}
+.docview-body::-webkit-scrollbar{display:none}
+
+/* doc content styles (matching cartographie) */
+.doc-eyebrow{font-size:9px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--teal2);margin-bottom:5px}
+.doc-h1{font-size:15px;font-weight:600;color:var(--text);padding-bottom:9px;border-bottom:2px solid var(--teal);margin-bottom:12px;line-height:1.3}
+.doc-igrid{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:rgba(255,255,255,0.06);border:0.5px solid rgba(255,255,255,0.08);border-radius:6px;overflow:hidden;margin-bottom:12px}
+.doc-icell{background:var(--bg);padding:6px 9px}
+.doc-ick{font-size:8px;color:rgba(238,240,248,0.3);margin-bottom:1px}
+.doc-icv{font-size:9px;color:var(--text);font-family:var(--mono)}
+.doc-h2{font-size:10px;font-weight:600;color:var(--text);margin:12px 0 6px;padding-left:6px;border-left:2px solid var(--teal)}
+.doc-p{font-size:11px;color:var(--text2);line-height:1.6;margin-bottom:6px}
+.doc-note{font-size:9px;color:rgba(78,203,170,0.8);background:rgba(78,203,170,0.06);border-left:2px solid var(--teal);padding:7px 10px;border-radius:0 4px 4px 0;margin-bottom:8px;line-height:1.5;font-style:italic}
+.doc-code{background:#0a0a12;border:0.5px solid rgba(255,255,255,0.06);border-radius:6px;padding:9px 11px;margin-bottom:8px;overflow-x:auto}
+.doc-code pre{font-size:9px;color:#b4b2a9;font-family:var(--mono);line-height:1.7;white-space:pre}
+.doc-step{display:flex;align-items:flex-start;gap:7px;margin-bottom:7px}
+.doc-stepnum{display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;border-radius:50%;background:var(--teal);color:#0a0f1a;font-size:8px;font-weight:700;flex-shrink:0;margin-top:1px}
+.doc-steptext{font-size:11px;color:var(--text2);line-height:1.5}
+.ck{color:#4ecbaa}.cs{color:#9FE1CB}.cc{color:#555}
+
+/* cat detail */
+.cat-detail-sheet{position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:40;
+  opacity:0;pointer-events:none;transition:opacity .25s;backdrop-filter:blur(4px)}
+.cat-detail-sheet.open{opacity:1;pointer-events:all}
+.cat-sheet{position:fixed;left:0;right:0;bottom:0;background:var(--bg2);
+  border-radius:20px 20px 0 0;z-index:50;max-height:80vh;display:flex;flex-direction:column;
+  transform:translateY(100%);transition:transform .3s cubic-bezier(.4,0,.2,1)}
+.cat-sheet.open{transform:translateY(0)}
+
+/* ── TICKER BAR ── */
+.ticker-bar{display:flex;align-items:center;gap:12px;padding:7px 18px;
+  background:rgba(9,9,15,0.95);border-top:1px solid var(--border);
+  flex-shrink:0;overflow:hidden;position:relative;z-index:20}
+.ticker-label{font-size:8px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--teal2);flex-shrink:0;padding-right:12px;border-right:1px solid var(--border);
+  display:flex;align-items:center;gap:5px}
+.ticker-dot{width:5px;height:5px;border-radius:50%;background:var(--teal2);
+  animation:tickpulse 2s infinite;flex-shrink:0}
+@keyframes tickpulse{0%,100%{opacity:1}50%{opacity:.25}}
+.ticker-wrap{flex:1;overflow:hidden;height:16px}
+.ticker-scroll{display:flex;gap:32px;animation:tickscroll 40s linear infinite;width:max-content}
+@keyframes tickscroll{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+.tick-item{display:flex;align-items:center;gap:6px;font-size:9px;
+  color:rgba(238,240,248,0.35);white-space:nowrap;font-family:var(--mono)}
+.tick-item::before{content:'';width:4px;height:4px;border-radius:50%;
+  background:rgba(78,203,170,0.5);flex-shrink:0}
+.demo-launch-btn{display:flex;align-items:center;gap:14px;padding:16px 16px;
+  border-radius:14px;border:1px solid;background:none;cursor:pointer;
+  width:100%;text-align:left;font-family:var(--sans);transition:all .18s}
+.demo-launch-btn:active{transform:scale(.97)}
+.demo-launch-btn.red{border-color:rgba(224,82,82,0.25);background:rgba(224,82,82,0.05)}
+.demo-launch-btn.green{border-color:rgba(78,203,170,0.25);background:rgba(78,203,170,0.05)}
+.demo-launch-btn.blue-d{border-color:rgba(74,127,232,0.25);background:rgba(74,127,232,0.05)}
+.demo-btn-icon{font-size:28px;flex-shrink:0}
+.demo-btn-text{flex:1;min-width:0}
+.demo-btn-title{font-size:14px;font-weight:700;color:var(--text)}
+.demo-btn-sub{font-size:10px;color:var(--text3);margin-top:2px}
+.demo-launch-btn.red .demo-btn-title{color:#ff6b6b}
+.demo-launch-btn.green .demo-btn-title{color:var(--teal2)}
+.demo-launch-btn.blue-d .demo-btn-title{color:#7aa8ff}
+.demo-btn-arrow{font-size:18px;color:var(--text3);flex-shrink:0}
+
+/* ── DEMO STORYBOOK INNER ── */
+.sb-hdr{display:flex;align-items:center;gap:10px;padding:13px 18px 10px;
+  border-bottom:1px solid rgba(255,255,255,0.05);flex-shrink:0}
+.sb-back{width:32px;height:32px;border-radius:8px;border:1px solid rgba(255,255,255,0.1);
+  background:none;color:rgba(238,240,248,0.5);cursor:pointer;font-size:16px;
+  display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.sb-logo{font-size:13px;font-weight:700;letter-spacing:-.01em}
+.sb-badge{font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;
+  padding:3px 9px;border-radius:20px;margin-left:auto;flex-shrink:0}
+.sb-prog{display:flex;gap:3px;padding:8px 18px;flex-shrink:0}
+.sb-seg{flex:1;height:3px;border-radius:2px;background:rgba(255,255,255,0.08);transition:all .3s}
+.sb-slides{flex:1;position:relative;overflow:hidden}
+.sb-slide{position:absolute;inset:0;padding:20px 20px 16px;display:flex;flex-direction:column;
+  gap:12px;overflow-y:auto;opacity:0;pointer-events:none;transform:translateX(40px);
+  transition:all .32s cubic-bezier(.4,0,.2,1)}
+.sb-slide.active{opacity:1;pointer-events:all;transform:translateX(0)}
+.sb-slide.exit{opacity:0;transform:translateX(-40px)}
+.sb-eyebrow{font-size:9px;font-weight:700;letter-spacing:.12em;text-transform:uppercase}
+.sb-num{font-size:10px;color:rgba(238,240,248,0.25);font-family:var(--mono)}
+.sb-icon{font-size:48px;text-align:center;padding:4px 0}
+.sb-title{font-size:22px;font-weight:700;line-height:1.2;color:#eef0f8}
+.sb-title em{font-style:normal}
+.sb-body{font-size:13px;line-height:1.7;color:rgba(238,240,248,0.55)}
+.sb-body strong{color:#eef0f8;font-weight:600}
+.sb-card{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);
+  border-radius:11px;padding:12px 14px;display:flex;flex-direction:column;gap:6px}
+.sb-row{display:flex;justify-content:space-between;align-items:baseline;gap:8px;
+  padding-bottom:5px;border-bottom:1px solid rgba(255,255,255,0.04)}
+.sb-row:last-child{border:none;padding-bottom:0}
+.sb-k{font-size:10px;color:rgba(238,240,248,0.3);flex-shrink:0}
+.sb-v{font-size:10px;color:var(--teal2);font-family:var(--mono);text-align:right;word-break:break-all}
+.sb-callout{border-radius:10px;padding:12px 14px;font-size:12px;line-height:1.7;
+  color:rgba(238,240,248,0.6);border-left:3px solid;font-family:var(--mono);white-space:pre-line}
+.sb-callout strong{color:#eef0f8}
+.sb-list{display:flex;flex-direction:column;gap:6px}
+.sb-item{display:flex;align-items:flex-start;gap:9px;background:rgba(255,255,255,0.03);
+  border:1px solid rgba(255,255,255,0.06);border-radius:9px;padding:9px 11px;
+  font-size:12px;color:rgba(238,240,248,0.6)}
+.sb-dot{width:5px;height:5px;border-radius:50%;flex-shrink:0;margin-top:4px}
+.sb-item strong{color:#eef0f8;font-weight:600}
+.sb-verdict{border-radius:13px;padding:18px 16px;text-align:center}
+.sb-vi{font-size:38px;display:block;margin-bottom:9px}
+.sb-vt{font-size:17px;font-weight:700;display:block;margin-bottom:4px}
+.sb-vs{font-size:11px;opacity:.6;display:block;line-height:1.5}
+.sb-footer{flex-shrink:0;padding:10px 18px 16px;border-top:1px solid rgba(255,255,255,0.04)}
+.sb-hint{text-align:center;font-size:10px;color:rgba(238,240,248,0.2);margin-bottom:8px;
+  display:flex;align-items:center;justify-content:center;gap:6px}
+.sb-hint::before,.sb-hint::after{content:'';flex:1;height:1px;background:rgba(255,255,255,0.05)}
+.sb-nav{display:flex;gap:8px}
+.sb-btn{flex:1;padding:12px;border-radius:10px;font-size:13px;font-weight:600;
+  cursor:pointer;border:none;font-family:var(--sans);transition:all .15s}
+.sb-prev{background:rgba(255,255,255,0.05);color:rgba(238,240,248,0.5)}
+.sb-next-red{background:#e05252;color:#fff}
+.sb-next-green{background:var(--teal);color:#fff}
+.sb-next-blue{background:#4a7fe8;color:#fff}
+.sb-next-amber{background:#f0a030;color:#fff}
+.sb-btn:disabled{opacity:.2;cursor:default;pointer-events:none}
+
+/* ── DUOOWATCH ADDITIONS ── */
+.live-dot{width:6px;height:6px;border-radius:50%;background:#ff4d4d;display:inline-block;margin-right:5px;animation:tickpulse 1.4s infinite}
+.hero{padding:22px 18px 6px}
+.hero-eyebrow{font-size:10px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--text3);margin-bottom:10px}
+.hero-title{font-size:24px;font-weight:700;color:#fff;line-height:1.15;margin-bottom:6px}
+.hero-sub{font-size:12px;color:var(--text2);line-height:1.6;margin-bottom:18px;max-width:320px}
+.hero-actions{display:flex;flex-direction:column;gap:9px;margin-bottom:22px}
+.hero-btn{display:flex;align-items:center;justify-content:center;gap:8px;padding:13px;border-radius:11px;font-size:13px;font-weight:700;cursor:pointer;border:none;font-family:var(--sans)}
+.hero-btn.primary{background:var(--teal);color:#fff}
+.hero-btn.secondary{background:rgba(255,255,255,0.06);color:var(--text);border:1px solid var(--border)}
+.now-card{margin:0 18px 20px;border-radius:16px;padding:18px;position:relative;overflow:hidden;
+  background:linear-gradient(135deg,rgba(78,203,170,0.16),rgba(78,203,170,0.03));border:1px solid rgba(78,203,170,0.25)}
+.now-eyebrow{font-size:9px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--teal2);margin-bottom:8px}
+.now-title{font-size:19px;font-weight:700;color:#fff;margin-bottom:5px;display:flex;align-items:center;gap:9px}
+.now-sub{font-size:11px;color:var(--text2);line-height:1.6}
+.now-status{position:absolute;top:16px;right:18px;font-size:9px;font-weight:700;color:var(--teal2);letter-spacing:.06em}
+.cw-wrap{margin:0 18px 22px;padding:15px 16px;border-radius:14px;background:var(--card);border:1px solid var(--border)}
+.cw-label{font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text3);margin-bottom:10px}
+.progress-track{height:6px;border-radius:4px;background:rgba(255,255,255,0.06);overflow:hidden;margin-bottom:8px}
+.progress-fill{height:100%;border-radius:4px;background:linear-gradient(90deg,var(--teal),var(--teal2))}
+.cw-meta{display:flex;justify-content:space-between;align-items:baseline}
+.cw-phase{font-size:12px;font-weight:700;color:var(--text)}
+.cw-pct{font-size:12px;font-weight:700;color:var(--teal2);font-family:var(--mono)}
+.trending-label{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text3);padding:0 18px 10px}
+.tile-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:0 18px 22px}
+.tile{border-radius:14px;padding:14px 13px;cursor:pointer;position:relative;overflow:hidden;min-height:92px;
+  display:flex;flex-direction:column;justify-content:space-between;border:1px solid;transition:transform .15s}
+.tile:active{transform:scale(.97)}
+.tile-icon{font-size:22px}
+.tile-title{font-size:13px;font-weight:700;color:#fff;line-height:1.2;margin-top:8px}
+.tile-count{font-size:9px;color:var(--text3);margin-top:3px}
+
+/* series catalogue */
+.series-card{margin:0 18px 14px;border-radius:16px;padding:20px 18px;cursor:pointer;border:1px solid var(--border);background:var(--card);position:relative;overflow:hidden}
+.series-card:active{transform:scale(.98)}
+.series-watermark{position:absolute;right:-6px;top:-14px;font-size:92px;opacity:.1;pointer-events:none;line-height:1}
+.series-icon{font-size:26px;margin-bottom:8px;position:relative}
+.series-title{font-size:16px;font-weight:700;color:#fff;letter-spacing:.01em;position:relative}
+.series-tagline{font-size:11px;color:var(--text2);margin-top:4px;line-height:1.5;max-width:80%;position:relative}
+.series-meta{display:inline-block;font-size:9px;font-weight:700;color:#fff;margin-top:12px;text-transform:uppercase;letter-spacing:.08em;padding:4px 10px;border-radius:20px;position:relative}
+
+/* episode rows inside sheet */
+.ep-row{display:flex;align-items:center;gap:12px;padding:11px 10px;border-radius:11px;cursor:pointer;margin-bottom:5px}
+.ep-row:active{background:rgba(255,255,255,0.04)}
+.ep-num{width:26px;height:26px;border-radius:50%;background:rgba(255,255,255,0.05);border:1px solid var(--border);
+  display:flex;align-items:center;justify-content:center;font-size:10px;font-family:var(--mono);color:var(--text2);flex-shrink:0}
+.ep-info{flex:1;min-width:0}
+.ep-title{font-size:12px;font-weight:700;color:var(--text)}
+.ep-sub{font-size:10px;color:var(--text3);margin-top:1px}
+.ep-dur{font-size:9px;color:var(--text3);font-family:var(--mono);flex-shrink:0}
+
+/* episode viewer (fullscreen) */
+.epview{position:fixed;inset:0;background:var(--bg2);z-index:65;display:flex;flex-direction:column;
+  transform:translateX(100%);transition:transform .3s cubic-bezier(.4,0,.2,1)}
+.epview.open{transform:translateX(0)}
+.epview-hdr{display:flex;align-items:center;gap:10px;padding:14px 18px;border-bottom:1px solid var(--border);flex-shrink:0}
+.epview-body{flex:1;overflow-y:auto;padding:20px 20px 32px}
+.epview-body::-webkit-scrollbar{display:none}
+.ep-eyebrow{font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--teal2);margin-bottom:6px}
+.ep-big-title{font-size:20px;font-weight:700;color:#fff;line-height:1.25;margin-bottom:14px}
+.ep-body-text{font-size:13px;color:var(--text2);line-height:1.7;margin-bottom:16px}
+.chip-row{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:18px}
+.chip{font-size:10px;padding:5px 10px;border-radius:20px;background:rgba(255,255,255,0.05);color:var(--text2);border:1px solid var(--border);font-family:var(--mono)}
+
+/* live tab */
+.live-filters{display:flex;gap:8px;padding:14px 18px 4px;overflow-x:auto}
+.live-filter{font-size:10px;font-weight:700;padding:6px 13px;border-radius:20px;border:1px solid var(--border);color:var(--text3);cursor:pointer;white-space:nowrap;background:none;font-family:var(--sans)}
+.live-filter.active{color:var(--teal2);border-color:rgba(78,203,170,0.3);background:rgba(78,203,170,0.08)}
+.health-wrap{margin:14px 18px;padding:15px 16px;border-radius:14px;background:var(--card);border:1px solid var(--border)}
+.health-label{font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--text3);margin-bottom:9px;display:flex;justify-content:space-between}
+.svc-row{display:flex;align-items:center;justify-content:space-between;padding:10px 18px;border-bottom:1px solid rgba(255,255,255,0.04)}
+.svc-name{font-size:12px;color:var(--text);font-weight:600}
+.svc-status{font-size:10px;font-weight:700;display:flex;align-items:center;gap:5px}
+.svc-dot{width:6px;height:6px;border-radius:50%}
+.event-row{display:flex;gap:12px;padding:9px 18px;font-size:11px;color:var(--text2);align-items:flex-start}
+.event-time{font-family:var(--mono);color:var(--text3);flex-shrink:0;font-size:10px;padding-top:1px}
+
+/* team tab */
+.team-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;padding:16px 18px}
+.profile-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px 8px;text-align:center;cursor:pointer}
+.profile-card:active{transform:scale(.96)}
+.profile-avatar{font-size:26px;margin-bottom:6px}
+.profile-name{font-size:11px;font-weight:700;color:var(--text)}
+.profile-role{font-size:9px;color:var(--text3);margin-top:2px}
+.activity-track{height:6px;border-radius:4px;background:rgba(255,255,255,0.06);overflow:hidden;margin:8px 0}
+
+/* incident sim */
+.incident-choice{display:block;width:100%;text-align:left;padding:12px 14px;border-radius:11px;border:1px solid var(--border);
+  background:rgba(255,255,255,0.03);color:var(--text2);font-size:12px;cursor:pointer;margin-bottom:8px;font-family:var(--sans)}
+.incident-choice:active{background:rgba(255,255,255,0.06)}
+.incident-feedback{border-radius:10px;padding:11px 13px;font-size:11px;line-height:1.6;margin-bottom:10px}
+.incident-card{display:flex;align-items:center;gap:14px;padding:14px 15px;border-radius:14px;border:1px solid;background:none;cursor:pointer;text-align:left;font-family:'Space Grotesk',sans-serif}
+.incident-card:active{transform:scale(.97)}
+.incident-card-icon{font-size:26px;flex-shrink:0}
+.incident-card-title{font-size:13px;font-weight:700;color:#fff}
+.incident-card-sub{font-size:10px;color:rgba(238,240,248,0.4);margin-top:2px}
+.incident-card-badge{margin-left:auto;font-size:9px;font-weight:700;padding:3px 8px;border-radius:20px;flex-shrink:0}
+
+/* ── FILM PICKER ── */
+.film-grid{display:flex;flex-direction:column;gap:12px;padding:16px 18px 8px}
+.film-tile{border-radius:16px;padding:16px;border:1px solid var(--border);position:relative;overflow:hidden}
+.film-tile-top{display:flex;align-items:center;gap:14px;margin-bottom:14px}
+.film-poster{font-size:34px;flex-shrink:0}
+.film-title{font-size:14px;font-weight:700;color:#fff;line-height:1.25}
+.film-meta{font-size:10px;color:var(--text3);margin-top:3px}
+.film-watch-btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:12px;border-radius:11px;
+  border:none;cursor:pointer;font-family:var(--sans);font-size:13px;font-weight:700;color:#fff}
+
+/* ── FLOW VIEW (film → backend journey) ── */
+.flow-view{position:fixed;inset:0;background:var(--bg2);z-index:75;display:none;flex-direction:column;
+  transform:translateY(100%);transition:transform .32s cubic-bezier(.4,0,.2,1)}
+.flow-view.open{display:flex;transform:translateY(0)}
+.flow-hdr{display:flex;align-items:center;gap:10px;padding:14px 16px;border-bottom:1px solid var(--border);flex-shrink:0}
+.flow-hdr-info{flex:1;min-width:0}
+.flow-hdr-title{font-size:13px;font-weight:700;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.flow-hdr-meta{font-size:9px;color:var(--text3);margin-top:1px}
+.flow-diagram{flex:1;overflow-y:auto;padding:22px 24px;display:flex;flex-direction:column;align-items:center}
+.flow-node{display:flex;align-items:center;gap:12px;width:100%;max-width:300px;padding:11px 14px;border-radius:13px;
+  border:1px solid var(--border);background:var(--card);transition:all .3s;opacity:.25;transform:scale(.94)}
+.flow-node.pending{opacity:.2}
+.flow-node.done{opacity:.55;transform:scale(1)}
+.flow-node.active{opacity:1;transform:scale(1.04);box-shadow:0 0 0 1px var(--node-color,#4ecbaa),0 0 20px -4px var(--node-color,#4ecbaa);border-color:var(--node-color,#4ecbaa)}
+.flow-node-icon{font-size:20px;flex-shrink:0}
+.flow-node-label{font-size:12px;font-weight:700;color:#fff}
+.flow-node-sub{font-size:9px;color:var(--text3);margin-top:1px}
+.flow-node-check{margin-left:auto;font-size:13px;color:#4ecbaa;flex-shrink:0}
+.flow-connector{width:2px;height:18px;background:rgba(255,255,255,0.08);margin:1px 0}
+.flow-connector.done{background:rgba(78,203,170,0.4)}
+.flow-branches{display:flex;gap:8px;width:100%;max-width:300px;justify-content:center}
+.flow-branches .flow-node{max-width:none;flex:1;padding:9px 6px;flex-direction:column;text-align:center;gap:4px}
+.flow-branches .flow-node-check{margin-left:0}
+.flow-caption{flex-shrink:0;padding:14px 20px 4px;text-align:center}
+.flow-caption-eyebrow{font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--teal2);margin-bottom:6px}
+.flow-caption-text{font-size:12px;color:var(--text2);line-height:1.6}
+.flow-verdict{border-radius:13px;padding:16px;text-align:center;margin:6px 20px 0;background:rgba(78,203,170,0.08);border:1px solid rgba(78,203,170,0.25)}
+
+/* ── ARCHITECTURE DIAGRAM ── */
+.arch-view{position:fixed;inset:0;background:var(--bg2);z-index:78;display:none;flex-direction:column}
+.arch-view.open{display:flex}
+.arch-hdr{display:flex;align-items:flex-start;gap:10px;padding:14px 18px;border-bottom:1px solid var(--border);flex-shrink:0}
+.arch-hdr-title{font-size:14px;font-weight:700;color:#fff}
+.arch-hdr-sub{font-size:9px;color:var(--text3);margin-top:2px;font-family:var(--mono)}
+.arch-body{flex:1;overflow-y:auto;padding:22px 18px 36px}
+.arch-flow-node{width:100%;border-radius:11px;padding:11px 14px;text-align:center;border:1px solid;margin-bottom:0}
+.arch-flow-title{font-size:12px;font-weight:700;color:#fff}
+.arch-flow-sub{font-size:9px;color:rgba(255,255,255,0.55);margin-top:2px;font-family:var(--mono)}
+.arch-arrow{width:2px;height:16px;background:rgba(255,255,255,0.15);margin:2px auto}
+.arch-vm-row{display:flex;justify-content:center;gap:8px;margin-top:0}
+.arch-vm-chip{border-radius:10px;padding:9px 6px;text-align:center;border:1px solid;width:140px;flex-shrink:0}
+.arch-vm-name{font-size:10px;font-weight:700;color:#fff}
+.arch-vm-ip{font-size:8px;color:rgba(255,255,255,0.5);font-family:var(--mono);margin-top:2px}
+.arch-vm-vlan{font-size:8px;color:rgba(255,255,255,0.4);margin-top:1px}
+.arch-divider{display:flex;align-items:center;gap:10px;margin:26px 0 18px;font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text3)}
+.arch-divider::before,.arch-divider::after{content:'';flex:1;height:1px;background:var(--border)}
+.arch-vmstreaming-hdr{border-radius:10px 10px 0 0;padding:9px 14px;text-align:center;font-size:11px;font-weight:700;color:#fff;background:linear-gradient(90deg,#0F6E56,#0d3d30)}
+.arch-zone{border:1px dashed;border-radius:0 0 10px 10px;padding:12px;margin-bottom:12px;background:rgba(255,255,255,0.015)}
+.arch-zone:last-child{border-radius:10px;margin-top:12px}
+.arch-zone-label{font-size:9px;font-weight:700;letter-spacing:.06em;color:var(--text3);margin-bottom:9px;font-family:var(--mono)}
+.arch-node-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.arch-node{border-radius:8px;padding:8px 9px;border:1px solid}
+.arch-node-title{font-size:10px;font-weight:700;color:#fff}
+.arch-node-sub{font-size:8px;color:rgba(255,255,255,0.45);margin-top:2px}
+.arch-node-click{cursor:pointer;transition:filter .15s,transform .1s}
+.arch-node-click:hover{filter:brightness(1.4);transform:scale(1.02)}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- HEADER -->
+  <div class="hdr">
+    <span class="logo">DUOOWATCH</span>
+    <div class="hdr-right">
+      <span class="site-pill"><span class="live-dot"></span>SYSTÈME EN LIGNE</span>
+    </div>
+  </div>
+
+  <!-- ══════════ HOME TAB ══════════ -->
+  <div class="scroll" id="view-home">
+    <div class="hero">
+      <div class="hero-eyebrow">STREAMING LAB</div>
+      <div class="hero-title">Construire. Sécuriser.<br>Observer. Diffuser.</div>
+      <div class="hero-sub">Infrastructure de streaming vidéo souveraine, sécurisée et observable — Ynov Campus B3 INFRA.</div>
+      <div class="hero-actions">
+        <button class="hero-btn primary" onclick="switchTab('journey')">▶ DÉMARRER LE PARCOURS</button>
+        <button class="hero-btn secondary" onclick="openArch()">＋ VOIR L'ARCHITECTURE</button>
+      </div>
+    </div>
+
+    <div class="now-card">
+      <div class="now-status">● EN LIGNE</div>
+      <div class="now-eyebrow">EN COURS DE DIFFUSION</div>
+      <div class="now-title">🎬 JELLYFIN</div>
+      <div class="now-sub">Streaming · Transcodage · Authentification · Stockage</div>
+    </div>
+
+    <div class="cw-wrap">
+      <div class="cw-label">Reprendre la lecture</div>
+      <div class="cw-meta" style="margin-bottom:8px">
+        <span class="cw-phase">Déploiement de l'infrastructure</span>
+        <span class="cw-pct">82%</span>
+      </div>
+      <div class="progress-track"><div class="progress-fill" style="width:82%"></div></div>
+      <div style="font-size:10px;color:var(--text3)">Phase 5 sur 7 · Supervision & IDS</div>
+      <div style="font-size:9px;color:rgba(255,255,255,0.18);margin-top:6px">◔ Progression illustrative — données de démonstration</div>
+    </div>
+
+    <div class="trending-label">Tendances sur Duoowatch</div>
+    <div class="tile-grid">
+      <div class="tile" style="border-color:rgba(78,203,170,0.25);background:rgba(78,203,170,0.05)" onclick="openSeries('request')">
+        <span class="tile-icon">🌐</span>
+        <div><div class="tile-title">LA REQUÊTE</div><div class="tile-count">7 épisodes</div></div>
+      </div>
+      <div class="tile" style="border-color:rgba(175,169,236,0.25);background:rgba(175,169,236,0.05)" onclick="openSeries('zerotrust')">
+        <span class="tile-icon">🔐</span>
+        <div><div class="tile-title">CONFIANCE ZÉRO</div><div class="tile-count">6 épisodes</div></div>
+      </div>
+      <div class="tile" style="border-color:rgba(133,183,235,0.25);background:rgba(133,183,235,0.05)" onclick="openSeries('watching')">
+        <span class="tile-icon">📊</span>
+        <div><div class="tile-title">TOUJOURS EN VEILLE</div><div class="tile-count">6 épisodes</div></div>
+      </div>
+      <div class="tile" style="border-color:rgba(224,82,82,0.25);background:rgba(224,82,82,0.05)" onclick="openSeries('incident')">
+        <span class="tile-icon">💥</span>
+        <div><div class="tile-title">QUAND TOUT CASSE</div><div class="tile-count">Interactif</div></div>
+      </div>
+    </div>
+
+    <div style="height:14px"></div>
+  </div>
+
+  <!-- ══════════ SERIES TAB ══════════ -->
+  <div class="scroll" id="view-series" style="display:none">
+    <div style="padding:18px 18px 4px;font-size:15px;font-weight:700;color:#fff;display:flex;align-items:center;justify-content:space-between">
+      <span>Catalogue technique</span>
+      <button onclick="openArch()" style="background:rgba(78,203,170,0.1);border:1px solid rgba(78,203,170,0.3);color:#4ecbaa;font-size:10px;font-weight:700;padding:6px 11px;border-radius:20px;cursor:pointer;font-family:var(--sans)">🗺️ Schéma</button>
+    </div>
+    <div style="padding:0 18px 14px;font-size:11px;color:var(--text2);line-height:1.6">Chaque série est un chapitre de l'architecture Streaming Lab. Chaque épisode est une brique technique.</div>
+
+    <div class="series-card" style="background:linear-gradient(135deg,rgba(78,203,170,0.16),rgba(78,203,170,0.02));border-color:rgba(78,203,170,0.3)" onclick="openSeries('request')">
+      <span class="series-watermark">🌐</span>
+      <div class="series-icon">🌐</div>
+      <div class="series-title">LA REQUÊTE</div>
+      <div class="series-tagline">Du clic au streaming. Ce qui se passe entre le clic et la première image.</div>
+      <div class="series-meta" style="background:rgba(78,203,170,0.25);color:#4ecbaa">Saison 1 · 7 épisodes</div>
+    </div>
+    <div class="series-card" style="background:linear-gradient(135deg,rgba(175,169,236,0.18),rgba(175,169,236,0.02));border-color:rgba(175,169,236,0.3)" onclick="openSeries('zerotrust')">
+      <span class="series-watermark">🔐</span>
+      <div class="series-icon">🔐</div>
+      <div class="series-title">CONFIANCE ZÉRO</div>
+      <div class="series-tagline">Ne faites confiance à aucune requête. Vérifiez chaque identité. Protégez chaque secret.</div>
+      <div class="series-meta" style="background:rgba(175,169,236,0.28);color:#afa9ec">6 épisodes</div>
+    </div>
+    <div class="series-card" style="background:linear-gradient(135deg,rgba(133,183,235,0.18),rgba(133,183,235,0.02));border-color:rgba(133,183,235,0.3)" onclick="openSeries('watching')">
+      <span class="series-watermark">📊</span>
+      <div class="series-icon">📊</div>
+      <div class="series-title">TOUJOURS EN VEILLE</div>
+      <div class="series-tagline">On ne protège pas ce qu'on ne voit pas.</div>
+      <div class="series-meta" style="background:rgba(133,183,235,0.28);color:#85b7eb">6 épisodes</div>
+    </div>
+    <div class="series-card" style="background:linear-gradient(135deg,rgba(224,82,82,0.2),rgba(224,82,82,0.02));border-color:rgba(224,82,82,0.35)" onclick="openSeries('incident')">
+      <span class="series-watermark">💥</span>
+      <div class="series-icon">💥</div>
+      <div class="series-title">QUAND TOUT CASSE</div>
+      <div class="series-tagline">Une série interactive. Vos décisions déterminent l'issue de l'incident.</div>
+      <div class="series-meta" style="background:rgba(224,82,82,0.28);color:#ff8080">Interactif · 3 scénarios</div>
+    </div>
+    <div class="series-card" style="background:linear-gradient(135deg,rgba(240,160,48,0.18),rgba(240,160,48,0.02));border-color:rgba(240,160,48,0.32)" onclick="openSeries('afterfall')">
+      <span class="series-watermark">💾</span>
+      <div class="series-icon">💾</div>
+      <div class="series-title">APRÈS LA CHUTE</div>
+      <div class="series-tagline">Tout système finit par tomber. La question est : à quelle vitesse repart-on ?</div>
+      <div class="series-meta" style="background:rgba(240,160,48,0.28);color:#f0a030">5 épisodes</div>
+    </div>
+    <div class="series-card" style="background:linear-gradient(135deg,rgba(78,203,170,0.16),rgba(78,203,170,0.02));border-color:rgba(78,203,170,0.3)" onclick="openSeries('cost')">
+      <span class="series-watermark">🌱</span>
+      <div class="series-icon">🌱</div>
+      <div class="series-title">LE COÛT DU STREAMING</div>
+      <div class="series-tagline">On-premise. Cloud. Énergie. Carbone.</div>
+      <div class="series-meta" style="background:rgba(78,203,170,0.25);color:#4ecbaa">5 épisodes</div>
+    </div>
+    <div style="height:20px"></div>
+  </div>
+
+  <!-- ══════════ JOURNEY TAB ══════════ -->
+  <div class="scroll" id="view-journey" style="display:none">
+    <div style="padding:20px 18px 4px">
+      <div style="font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--teal2);margin-bottom:8px">LE PARCOURS</div>
+      <div style="font-size:18px;font-weight:700;color:#fff;line-height:1.3;margin-bottom:8px">Choisissez un film.<br>Regardez ce qui se passe en coulisses.</div>
+      <div style="font-size:12px;color:var(--text2);line-height:1.6;max-width:320px">Chaque film lance une vraie requête de streaming. À côté, suivez en direct le trajet exact dans l'infrastructure — jusqu'à ce que la lecture démarre.</div>
+    </div>
+    <div class="film-grid" id="film-grid"></div>
+    <div style="padding:0 18px 22px;font-size:10px;color:rgba(255,255,255,0.2);line-height:1.6">Catalogue de démonstration Jellyfin — courts-métrages libres (Blender Foundation).</div>
+  </div>
+
+  <!-- FLOW VIEW — film click → backend journey, fullscreen -->
+  <div class="flow-view" id="flow-view">
+    <div class="flow-hdr">
+      <button class="docview-back" onclick="closeFlow()">←</button>
+      <div class="flow-hdr-info">
+        <div class="flow-hdr-title" id="flow-film-title"></div>
+        <div class="flow-hdr-meta" id="flow-film-meta"></div>
+      </div>
+      <span class="chip" id="flow-packet-chip" style="flex-shrink:0"></span>
+    </div>
+    <div class="flow-diagram" id="flow-diagram"></div>
+    <div class="flow-caption" id="flow-caption"></div>
+    <div class="sb-footer">
+      <div class="sb-prog" id="flow-prog" style="padding:0 0 8px"></div>
+      <div class="sb-nav">
+        <button class="sb-btn sb-prev" id="flow-prev" onclick="flowNav(-1)">←</button>
+        <button class="sb-btn sb-next-green" id="flow-next" onclick="flowNav(1)">Suivant →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ARCHITECTURE DIAGRAM VIEW -->
+  <div class="arch-view" id="arch-view">
+    <div class="arch-hdr">
+      <button class="docview-back" onclick="closeArch()">←</button>
+      <div style="flex:1">
+        <div class="arch-hdr-title">Architecture — Streaming Lab</div>
+        <div class="arch-hdr-sub">duoowatch.com · Ynov Campus B3 INFRA</div>
+      </div>
+    </div>
+    <div class="arch-body">
+
+      <div class="arch-divider">Internet → Hyperviseur</div>
+      <div class="arch-flow-node" style="background:rgba(74,127,232,0.12);border-color:rgba(74,127,232,0.35)">
+        <div class="arch-flow-title">Internet / Utilisateurs</div>
+        <div class="arch-flow-sub">Cloudflare Tunnel · DNS · TLS 1.3</div>
+      </div>
+      <div class="arch-arrow"></div>
+      <div class="arch-flow-node" style="background:rgba(224,82,82,0.12);border-color:rgba(224,82,82,0.35)">
+        <div class="arch-flow-title">FortiGate 60F</div>
+        <div class="arch-flow-sub">Firewall · ACLs · VPN IPsec · VLANs 10/20/30/40/90</div>
+      </div>
+      <div class="arch-arrow"></div>
+      <div class="arch-flow-node" style="background:rgba(74,127,232,0.12);border-color:rgba(74,127,232,0.35)">
+        <div class="arch-flow-title">Cisco 3650 48P (SW-01)</div>
+        <div class="arch-flow-sub">Trunk 802.1Q · VLANs 10/20/30/40/90 · 192.168.90.10</div>
+      </div>
+      <div class="arch-arrow"></div>
+      <div class="arch-flow-node" style="background:rgba(240,160,48,0.12);border-color:rgba(240,160,48,0.35);margin-bottom:12px">
+        <div class="arch-flow-title">Proxmox VE 8 — Dell T140 (PROX-01)</div>
+        <div class="arch-flow-sub">hostname: quentin</div>
+      </div>
+      <div class="arch-vm-row">
+        <div class="arch-vm-chip" style="background:rgba(78,203,170,0.12);border-color:rgba(78,203,170,0.35)">
+          <div class="arch-vm-name">vm-streaming</div>
+          <div class="arch-vm-ip">192.168.10.2</div>
+          <div class="arch-vm-vlan">VLAN 10</div>
+        </div>
+        <div class="arch-vm-chip" style="background:rgba(240,160,48,0.12);border-color:rgba(240,160,48,0.35)">
+          <div class="arch-vm-name">vm-backup</div>
+          <div class="arch-vm-ip">192.168.20.2</div>
+          <div class="arch-vm-vlan">VLAN 20 · Veeam</div>
+        </div>
+      </div>
+      <div style="font-size:10px;color:rgba(240,237,232,0.45);text-align:center;margin-top:6px">+ DNS-01 · Raspberry Pi 3B+ · 192.168.20.20 · VLAN 20 (physique)</div>
+
+      <div class="arch-divider">Détail — vm-streaming</div>
+      <div class="arch-vmstreaming-hdr">vm-streaming — 192.168.10.2 — VLAN 10</div>
+
+      <div class="arch-zone" style="border-color:rgba(78,203,170,0.4)">
+        <div class="arch-zone-label" style="color:#4ecbaa">streaming-public — services exposés via Traefik</div>
+        <div class="arch-node-grid">
+          <div class="arch-node arch-node-click" style="background:rgba(78,203,170,0.08);border-color:rgba(78,203,170,0.3)" onclick="openDoc('nd-traefik')"><div class="arch-node-title">Traefik v3.3</div><div class="arch-node-sub">Proxy inverse · :80</div></div>
+          <div class="arch-node arch-node-click" style="background:rgba(78,203,170,0.08);border-color:rgba(78,203,170,0.3)" onclick="openDoc('nd-jellyfin')"><div class="arch-node-title">Jellyfin 10.10.7</div><div class="arch-node-sub">Stream · Transcodage</div></div>
+          <div class="arch-node arch-node-click" style="background:rgba(78,203,170,0.08);border-color:rgba(78,203,170,0.3)" onclick="openDoc('nd-keycloak')"><div class="arch-node-title">Keycloak 24</div><div class="arch-node-sub">IAM · SSO · OIDC</div></div>
+          <div class="arch-node arch-node-click" style="background:rgba(78,203,170,0.08);border-color:rgba(78,203,170,0.3)" onclick="openDoc('nd-minio')"><div class="arch-node-title">MinIO</div><div class="arch-node-sub">S3 · Console OIDC</div></div>
+          <div class="arch-node arch-node-click" style="background:rgba(78,203,170,0.08);border-color:rgba(78,203,170,0.3)" onclick="openDoc('nd-vault')"><div class="arch-node-title">Vault 1.17</div><div class="arch-node-sub">Secrets · PKI</div></div>
+          <div class="arch-node arch-node-click" style="background:rgba(78,203,170,0.08);border-color:rgba(78,203,170,0.3)" onclick="openDoc('nd-trivyhub')"><div class="arch-node-title">TrivyHub</div><div class="arch-node-sub">Scan CVE · Dashboard</div></div>
+        </div>
+      </div>
+
+      <div class="arch-zone" style="border-color:rgba(175,169,236,0.4)">
+        <div class="arch-zone-label" style="color:#afa9ec">streaming-private --internal — backend isolé</div>
+        <div style="font-size:9px;font-weight:700;color:rgba(175,169,236,0.6);margin-bottom:6px;padding-left:2px">Patroni HA Cluster</div>
+        <div class="arch-node-grid">
+          <div class="arch-node arch-node-click" style="background:rgba(175,169,236,0.08);border-color:rgba(175,169,236,0.3)" onclick="openDoc('nd-etcd')"><div class="arch-node-title">etcd v3.5.17</div><div class="arch-node-sub">DCS · consensus</div></div>
+          <div class="arch-node arch-node-click" style="background:rgba(175,169,236,0.08);border-color:rgba(175,169,236,0.3)" onclick="openDoc('nd-haproxy')"><div class="arch-node-title">haproxy-postgres</div><div class="arch-node-sub">:5000 Primary · :5001 Replica</div></div>
+          <div class="arch-node arch-node-click" style="background:rgba(175,169,236,0.08);border-color:rgba(175,169,236,0.3)" onclick="openDoc('nd-pg01')"><div class="arch-node-title">postgres-01 ★</div><div class="arch-node-sub">Leader · PostgreSQL 17</div></div>
+          <div class="arch-node arch-node-click" style="background:rgba(175,169,236,0.08);border-color:rgba(175,169,236,0.3)" onclick="openDoc('nd-pg02')"><div class="arch-node-title">postgres-02</div><div class="arch-node-sub">Replica · streaming WAL</div></div>
+        </div>
+      </div>
+
+      <div class="arch-zone" style="border-color:rgba(133,183,235,0.4)">
+        <div class="arch-zone-label" style="color:#85b7eb">streaming-monitoring — observabilité</div>
+        <div class="arch-node-grid">
+          <div class="arch-node arch-node-click" style="background:rgba(133,183,235,0.08);border-color:rgba(133,183,235,0.3)" onclick="openDoc('nd-prometheus')"><div class="arch-node-title">Prometheus</div><div class="arch-node-sub">Métriques · scrape 15s</div></div>
+          <div class="arch-node arch-node-click" style="background:rgba(133,183,235,0.08);border-color:rgba(133,183,235,0.3)" onclick="openDoc('nd-loki')"><div class="arch-node-title">Loki</div><div class="arch-node-sub">Logs agrégés</div></div>
+          <div class="arch-node arch-node-click" style="background:rgba(133,183,235,0.08);border-color:rgba(133,183,235,0.3)" onclick="openDoc('nd-grafana')"><div class="arch-node-title">Grafana</div><div class="arch-node-sub">Dashboards · OIDC</div></div>
+          <div class="arch-node arch-node-click" style="background:rgba(133,183,235,0.08);border-color:rgba(133,183,235,0.3)" onclick="openDoc('nd-alertmanager')"><div class="arch-node-title">Alertmanager</div><div class="arch-node-sub">Alertes · :9093</div></div>
+          <div class="arch-node arch-node-click" style="background:rgba(133,183,235,0.08);border-color:rgba(133,183,235,0.3)" onclick="openDoc('nd-promtail')"><div class="arch-node-title">Promtail</div><div class="arch-node-sub">Logs Docker + FortiGate</div></div>
+          <div class="arch-node arch-node-click" style="background:rgba(133,183,235,0.08);border-color:rgba(133,183,235,0.3)" onclick="openDoc('nd-cadvisor')"><div class="arch-node-title">cAdvisor</div><div class="arch-node-sub">Métriques par conteneur</div></div>
+          <div class="arch-node arch-node-click" style="background:rgba(133,183,235,0.08);border-color:rgba(133,183,235,0.3)" onclick="openDoc('nd-nodeexp')"><div class="arch-node-title">node-exporter</div><div class="arch-node-sub">Métriques VM hôte</div></div>
+          <div class="arch-node arch-node-click" style="background:rgba(133,183,235,0.08);border-color:rgba(133,183,235,0.3)" onclick="openDoc('nd-pgexp')"><div class="arch-node-title">postgres-exporter</div><div class="arch-node-sub">Métriques Patroni + PG</div></div>
+        </div>
+      </div>
+
+      <div style="font-size:9px;color:rgba(255,255,255,0.18);text-align:center;margin-top:10px">Schéma généré depuis le DAT — Streaming Lab v2.0 · 18 conteneurs</div>
+    </div>
+  </div>
+
+  <!-- ══════════ LIVE TAB ══════════ -->
+  <div class="scroll" id="view-live" style="display:none">
+    <div class="live-filters" id="live-filters">
+      <button class="live-filter active" data-f="all" onclick="setLiveFilter('all')">TOUT</button>
+      <button class="live-filter" data-f="health" onclick="setLiveFilter('health')">SANTÉ</button>
+      <button class="live-filter" data-f="security" onclick="setLiveFilter('security')">SÉCURITÉ</button>
+      <button class="live-filter" data-f="deployments" onclick="setLiveFilter('deployments')">DÉPLOIEMENTS</button>
+    </div>
+    <div style="padding:2px 18px 0"><span class="chip" style="color:var(--text3)">◔ Données de démonstration — non connectées aux API en direct</span></div>
+
+    <div class="health-wrap">
+      <div class="health-label"><span>SANTÉ DU SYSTÈME</span><span style="color:var(--teal2)">94%</span></div>
+      <div class="progress-track"><div class="progress-fill" style="width:94%"></div></div>
+    </div>
+
+    <div class="section-label">Services</div>
+    <div id="svc-list"></div>
+
+    <div class="section-label">Derniers événements</div>
+    <div id="event-list"></div>
+    <div style="height:20px"></div>
+  </div>
+
+  <!-- ══════════ TEAM TAB ══════════ -->
+  <div class="scroll" id="view-team" style="display:none">
+    <div style="padding:18px 18px 4px;font-size:15px;font-weight:700;color:#fff">Qui construit ?</div>
+    <div style="padding:0 18px 6px;font-size:11px;color:var(--text2)">Ynov Campus B3 INFRA · Streaming Lab</div>
+    <div class="team-grid">
+      <div class="profile-card" onclick="openProfile('iman')">
+        <div class="profile-avatar">👩‍💻</div>
+        <div class="profile-name">IMAN</div>
+        <div class="profile-role">DEVOPS</div>
+      </div>
+      <div class="profile-card" onclick="openProfile('quentin')">
+        <div class="profile-avatar">🌐</div>
+        <div class="profile-name">QUENTIN</div>
+        <div class="profile-role">RÉSEAU</div>
+      </div>
+      <div class="profile-card" onclick="openProfile('adrien')">
+        <div class="profile-avatar">📊</div>
+        <div class="profile-name">ADRIEN</div>
+        <div class="profile-role">SUPERVISION</div>
+      </div>
+    </div>
+    <div style="height:20px"></div>
+  </div>
+
+  <!-- ── LIVE TICKER — visible on all tabs ── -->
+  <div class="ticker-bar">
+    <div class="ticker-label"><div class="ticker-dot"></div>En direct</div>
+    <div class="ticker-wrap">
+      <div class="ticker-scroll">
+        <span class="tick-item">jellyfin.duoowatch.com · HTTP 200 OK</span>
+        <span class="tick-item">Keycloak · realm streaming-lab · actif</span>
+        <span class="tick-item">Vault · unsealed · 3/5 clés</span>
+        <span class="tick-item">Prometheus · scrape 15s · 18 cibles actives</span>
+        <span class="tick-item">Patroni HA · postgres-01 Leader · postgres-02 Replica lag 0</span>
+        <span class="tick-item">Veeam B&R · dernière sauvegarde 02:00 ✓</span>
+        <span class="tick-item">postgres-exporter · métriques PG actives</span>
+        <span class="tick-item">TrivyHub · scan d'images actif</span>
+        <span class="tick-item">jellyfin.duoowatch.com · HTTP 200 OK</span>
+        <span class="tick-item">Keycloak · realm streaming-lab · actif</span>
+        <span class="tick-item">Vault · unsealed · 3/5 clés</span>
+        <span class="tick-item">Prometheus · scrape 15s · 18 cibles actives</span>
+        <span class="tick-item">Patroni HA · postgres-01 Leader · postgres-02 Replica lag 0</span>
+        <span class="tick-item">Veeam B&R · dernière sauvegarde 02:00 ✓</span>
+        <span class="tick-item">postgres-exporter · métriques PG actives</span>
+        <span class="tick-item">TrivyHub · scan d'images actif</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── BOTTOM NAV ── -->
+  <div class="bottom-nav">
+    <button class="nav-btn active" id="tab-home" onclick="switchTab('home')"><span class="nav-icon">⌂</span><span class="nav-label">Accueil</span></button>
+    <button class="nav-btn" id="tab-series" onclick="switchTab('series')"><span class="nav-icon">◫</span><span class="nav-label">Séries</span></button>
+    <button class="nav-btn nav-btn-main" id="tab-journey" onclick="switchTab('journey')"><span class="nav-icon">▶</span><span class="nav-label">Parcours</span></button>
+    <button class="nav-btn" id="tab-live" onclick="switchTab('live')"><span class="nav-icon">●</span><span class="nav-label">En direct</span></button>
+    <button class="nav-btn" id="tab-team" onclick="switchTab('team')"><span class="nav-icon">☰</span><span class="nav-label">Équipe</span></button>
+  </div>
+
+</div>
+
+<!-- SERIES / EPISODE LIST SHEET -->
+<div class="cat-detail-sheet" id="cat-overlay" onclick="closeCat()"></div>
+<div class="cat-sheet" id="cat-sheet">
+  <div class="sheet-handle"></div>
+  <div class="sheet-hdr">
+    <div class="sheet-icon" id="cs-icon"></div>
+    <div class="sheet-title-wrap">
+      <div class="sheet-title" id="cs-title"></div>
+      <div class="sheet-hostname" id="cs-sub"></div>
+    </div>
+    <button class="sheet-close" onclick="closeCat()">✕</button>
+  </div>
+  <div class="sheet-body" id="cs-body"></div>
+</div>
+
+<!-- EPISODE VIEWER (fullscreen) -->
+<div class="epview" id="epview">
+  <div class="epview-hdr">
+    <button class="docview-back" onclick="closeEp()">←</button>
+    <div class="docview-title" id="ep-crumb"></div>
+  </div>
+  <div class="epview-body" id="ep-body"></div>
+</div>
+
+<!-- DOC VIEWER (full screen slide-in, reused for "voir la documentation") -->
+<div class="docview" id="docview">
+  <div class="docview-hdr">
+    <button class="docview-back" onclick="closeDoc()">←</button>
+    <div class="docview-title" id="dv-title"></div>
+  </div>
+  <div class="docview-body" id="dv-body"></div>
+</div>
+
+<!-- PROFILE SHEET -->
+<div class="sheet-overlay" id="overlay" onclick="closeSheet()"></div>
+<div class="sheet" id="sheet">
+  <div class="sheet-handle"></div>
+  <div class="sheet-hdr">
+    <div class="sheet-icon" id="sh-icon"></div>
+    <div class="sheet-title-wrap">
+      <div class="sheet-title" id="sh-title"></div>
+      <div class="sheet-hostname" id="sh-host"></div>
+    </div>
+    <button class="sheet-close" onclick="closeSheet()">✕</button>
+  </div>
+  <div class="sheet-body" id="sh-body"></div>
+</div>
+<!-- DEMO STORYBOOK FULLSCREEN (Journey) -->
+<div id="demo-view" style="position:fixed;inset:0;z-index:80;display:none;flex-direction:column;background:var(--bg)"></div>
+
+<!-- INCIDENT SIMULATION FULLSCREEN ("When Things Break") -->
+<div id="incident-view" style="position:fixed;inset:0;z-index:80;display:none;flex-direction:column;background:var(--bg);font-family:'Space Grotesk',sans-serif">
+
+  <!-- PHASE 0: choose an incident -->
+  <div id="inc-p0" style="flex:1;display:flex;flex-direction:column;padding:26px 20px;background:radial-gradient(ellipse at 50% -10%,rgba(224,82,82,0.08) 0%,transparent 60%),#09090f;overflow-y:auto">
+    <div style="font-size:11px;font-weight:700;color:rgba(238,240,248,0.3);letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px">QUAND TOUT CASSE</div>
+    <div style="font-size:17px;font-weight:700;color:#eef0f8;margin-bottom:6px">Choisissez un incident</div>
+    <div style="font-size:12px;color:rgba(238,240,248,0.45);margin-bottom:20px;line-height:1.6">Vos décisions déterminent l'issue de la réponse.</div>
+    <div id="inc-picker" style="display:flex;flex-direction:column;gap:10px"></div>
+    <button onclick="closeIncident()" style="margin-top:20px;font-size:11px;color:rgba(238,240,248,0.25);background:none;border:none;cursor:pointer;font-family:'Space Grotesk',sans-serif;align-self:center">✕ Fermer</button>
+  </div>
+
+  <!-- PHASE 1: incident announcement -->
+  <div id="inc-p1" style="flex:1;display:none;flex-direction:column;align-items:center;justify-content:center;padding:28px 24px;text-align:center;background:radial-gradient(ellipse at 50% 20%,rgba(224,82,82,0.12) 0%,transparent 60%),#09090f">
+    <div style="font-size:11px;font-weight:700;color:rgba(238,240,248,0.3);letter-spacing:.1em;text-transform:uppercase;margin-bottom:18px">QUAND TOUT CASSE</div>
+    <div id="inc-icon" style="font-size:44px;margin-bottom:14px"></div>
+    <div id="inc-title" style="font-size:19px;font-weight:700;color:#eef0f8;margin-bottom:10px"></div>
+    <div id="inc-desc" style="font-size:13px;color:rgba(238,240,248,0.45);line-height:1.7;margin-bottom:8px;max-width:290px"></div>
+    <div id="inc-badge" style="display:inline-block;padding:5px 13px;border-radius:20px;font-size:10px;font-weight:700;margin-bottom:28px"></div>
+    <button onclick="incPhase(2)" style="padding:13px 22px;background:rgba(224,82,82,0.1);border:1px solid rgba(224,82,82,0.3);border-radius:12px;color:#ff7070;font-size:13px;font-weight:600;cursor:pointer;font-family:'Space Grotesk',sans-serif">▶ RÉPONDRE</button>
+    <button onclick="closeIncident()" style="margin-top:22px;font-size:11px;color:rgba(238,240,248,0.25);background:none;border:none;cursor:pointer;font-family:'Space Grotesk',sans-serif">✕ Fermer</button>
+  </div>
+
+  <!-- PHASE 2: decision -->
+  <div id="inc-p2" style="flex:1;display:none;flex-direction:column;padding:22px 20px;background:radial-gradient(ellipse at 50% -10%,rgba(240,160,48,0.08) 0%,transparent 60%),#09090f;overflow-y:auto">
+    <div style="font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#f0a030;margin-bottom:6px" id="inc-p2-crumb"></div>
+    <div style="font-size:15px;font-weight:700;color:#eef0f8;margin-bottom:6px" id="inc-p2-desc"></div>
+    <div style="font-size:12px;color:rgba(238,240,248,0.45);margin-bottom:18px">Que faites-vous ?</div>
+    <div id="inc-choices"></div>
+    <div id="inc-feedback"></div>
+  </div>
+
+  <!-- PHASE 3: containment + ITIL lifecycle -->
+  <div id="inc-p3" style="flex:1;display:none;flex-direction:column;padding:22px 20px;gap:14px;background:radial-gradient(ellipse at 50% -10%,rgba(78,203,170,0.08) 0%,transparent 60%),#09090f;overflow-y:auto">
+    <div style="font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#4ecbaa;margin-bottom:2px">✓ CONFINEMENT INITIÉ</div>
+    <div style="font-size:15px;font-weight:700;color:#eef0f8;margin-bottom:6px" id="inc-p3-desc"></div>
+    <div class="sb-card" style="margin-bottom:6px" id="inc-steps"></div>
+    <button onclick="incResolve()" style="width:100%;padding:13px;background:#1D9E75;color:#fff;border:none;border-radius:11px;font-size:13px;font-weight:700;cursor:pointer;font-family:'Space Grotesk',sans-serif">▶ Poursuivre l'investigation</button>
+    <button onclick="closeIncident()" style="font-size:10px;color:rgba(238,240,248,0.2);background:none;border:none;cursor:pointer;font-family:'Space Grotesk',sans-serif;text-align:center">✕ Fermer</button>
+  </div>
+
+  <!-- PHASE 4: resolved -->
+  <div id="inc-p4" style="flex:1;display:none;flex-direction:column;align-items:center;justify-content:center;padding:28px 24px;text-align:center;background:radial-gradient(ellipse at 50% 20%,rgba(29,158,117,0.12) 0%,transparent 60%),#09090f">
+    <div style="font-size:56px;margin-bottom:14px">✅</div>
+    <div style="font-size:20px;font-weight:700;color:#4ecbaa;margin-bottom:8px">Incident résolu</div>
+    <div style="font-size:13px;color:rgba(238,240,248,0.45);margin-bottom:22px;line-height:1.6" id="inc-p4-desc"></div>
+    <div style="background:rgba(29,158,117,0.08);border:1px solid rgba(78,203,170,0.2);border-radius:12px;padding:16px;margin-bottom:20px;width:100%;max-width:260px">
+      <div style="font-size:9px;color:rgba(238,240,248,0.3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px">MTTR — Temps de résolution</div>
+      <div id="inc-timer" style="font-size:32px;font-weight:700;color:#4ecbaa;font-family:'JetBrains Mono',monospace">0</div>
+      <div style="font-size:11px;color:rgba(78,203,170,0.5);margin-top:2px">secondes</div>
+    </div>
+    <button onclick="incPhase(0)" style="font-size:11px;color:rgba(238,240,248,0.25);background:none;border:none;cursor:pointer;font-family:'Space Grotesk',sans-serif;margin-top:8px">↺ Choisir un autre incident</button>
+    <button onclick="closeIncident()" style="font-size:10px;color:rgba(238,240,248,0.15);background:none;border:none;cursor:pointer;font-family:'Space Grotesk',sans-serif;margin-top:6px">✕ Fermer</button>
+  </div>
+</div>
+<script>
+// ══════════ DOCUMENTATION (real project docs, condensed) ══════════
+const docs = {
+  'doc-traefik':{label:'Traefik & Cloudflare Tunnel',html:`<div class="doc-eyebrow">Configuration · Traefik v3.3</div><div class="doc-h1">Reverse Proxy & Tunnel sortant</div><div class="doc-igrid"><div class="doc-icell"><div class="doc-ick">Port interne</div><div class="doc-icv">80</div></div><div class="doc-icell"><div class="doc-ick">Image</div><div class="doc-icv">traefik:v3.3</div></div></div><div class="doc-h2">Cloudflare Tunnel</div><div class="doc-p">Cloudflare termine le TLS 1.3 côté public puis pousse la requête dans un tunnel cloudflared sortant vers vm-streaming. Aucun port entrant n'est ouvert sur le FortiGate — tout le trafic transite en HTTP interne une fois dans le tunnel.</div><div class="doc-h2">Routage</div><div class="doc-p">Traefik route chaque sous-domaine (jellyfin., keycloak., grafana., minio., vault.duoowatch.com) vers le conteneur correspondant via labels Docker.</div><div class="doc-note">Le dashboard Traefik (traefik.duoowatch.com) est protégé par basic auth.</div>`},
+  'doc-keycloak':{label:'Configuration Keycloak',html:`<div class="doc-eyebrow">Configuration · Keycloak 24</div><div class="doc-h1">SSO — Realm streaming-lab</div><div class="doc-igrid"><div class="doc-icell"><div class="doc-ick">URL Admin</div><div class="doc-icv">192.168.10.2:8081</div></div><div class="doc-icell"><div class="doc-ick">Realm</div><div class="doc-icv">streaming-lab</div></div></div><div class="doc-h2">Rôles</div><div class="doc-p"><strong style="color:#eef0f8">admin</strong> — accès complet · <strong style="color:#eef0f8">viewer</strong> — lecture seule (Grafana, Jellyfin) · <strong style="color:#eef0f8">media-user</strong> — Jellyfin uniquement</div><div class="doc-h2">Clients OIDC</div><div class="doc-p">Un client par service (Grafana, MinIO, Jellyfin) — Authorization Code Flow avec PKCE, propagation du JWT après authentification unique.</div><div class="doc-note">Utilisateur admin principal : rôle admin assigné via Role Mapping, mot de passe permanent (non temporaire).</div>`},
+  'doc-vault':{label:'Configuration Vault',html:`<div class="doc-eyebrow">Configuration · HashiCorp Vault 1.17</div><div class="doc-h1">Secrets & Initialisation</div><div class="doc-igrid"><div class="doc-icell"><div class="doc-ick">URL</div><div class="doc-icv">192.168.10.2:8200</div></div><div class="doc-icell"><div class="doc-ick">Config</div><div class="doc-icv">vault-config.hcl</div></div></div><div class="doc-h2">Initialisation (une seule fois)</div><div class="doc-code"><pre>docker exec vault vault operator init</pre></div><div class="doc-p">Génère 5 Unseal Keys + 1 Root Token — à sauvegarder hors Git, affichés une seule fois.</div><div class="doc-h2">Unseal (à chaque redémarrage)</div><div class="doc-p">Vault démarre toujours scellé. Il faut fournir 3 des 5 clés pour le déverrouiller avant que les services puissent lire leurs secrets.</div><div class="doc-note">Aucun secret ne transite en clair dans docker-compose.yml — injection dynamique via Vault.</div>`},
+  'doc-backup':{label:'Procédure Sauvegarde & Restauration',html:`<div class="doc-eyebrow">Procédure · Veeam B&R</div><div class="doc-h1">Sauvegarde & Test de Restauration</div><div class="doc-igrid"><div class="doc-icell"><div class="doc-ick">RPO</div><div class="doc-icv">24 heures</div></div><div class="doc-icell"><div class="doc-ick">RTO</div><div class="doc-icv">4 heures</div></div></div><div class="doc-h2">Architecture</div><div class="doc-p">vm-streaming + vm-backup ──► Veeam B&R ──► stockage local /backup chiffré AES-256 (vm-backup VLAN 20). Dumps PostgreSQL ──► MinIO bucket <em>backups</em> via scripts cron.</div><div class="doc-h2">Planning</div><div class="doc-p">vm-streaming 02h00 (incrémentale quotidienne) · vm-backup 03h00 (complète hebdomadaire) · dump PostgreSQL 01h00 (quotidien). Rétention : 7j / 4 sem / 3 mois.</div><div class="doc-note">Test de restauration mensuel obligatoire — preuve opérationnelle du PCA.</div>`},
+  'doc-crowdsec':{label:'CrowdSec — Choix vs Suricata',html:`<div class="doc-eyebrow">Fiche de choix · Sécurité réseau</div><div class="doc-h1">CrowdSec plutôt que Suricata</div><div class="doc-p">Suricata avait initialement été retenu comme IDS réseau, mais son moteur d'inspection profonde de paquets (DPI) exige beaucoup de CPU et surtout de stockage — journaux de capture (PCAP) et base de signatures régulièrement mise à jour. Sur un unique Dell T140 déjà partagé entre 18 conteneurs sur vm-streaming, l'empreinte supplémentaire n'était plus acceptable.</div><div class="doc-h2">Substitution</div><div class="doc-p">CrowdSec a été choisi comme remplacement : au lieu d'inspecter les paquets réseau, il analyse les logs déjà produits par Traefik, Keycloak et SSH pour détecter des comportements suspects (brute-force, scan, payloads connus), avec une empreinte disque et CPU nettement plus faible.</div><div class="doc-igrid"><div class="doc-icell"><div class="doc-ick">Approche</div><div class="doc-icv">Analyse de logs</div></div><div class="doc-icell"><div class="doc-ick">Stockage</div><div class="doc-icv">Réduit vs DPI</div></div></div><div class="doc-note">Compromis assumé : CrowdSec ne voit pas le trafic réseau brut (pas de DPI), mais reste suffisant pour détecter les schémas d'attaque les plus courants sur une infrastructure de cette taille.</div>`},
+  'doc-incident':{label:'Gestion des Incidents (ITIL v4)',html:`<div class="doc-eyebrow">ITIL v4 / ISO 20000</div><div class="doc-h1">Classification & SLA</div><div class="doc-h2">Matrice Impact / Urgence</div><table style="width:100%;border-collapse:collapse;margin-bottom:12px;font-size:10px"><tr style="background:#0F6E56"><td style="padding:5px 6px;color:#9FE1CB;border:0.5px solid rgba(255,255,255,0.08)">Priorité</td><td style="padding:5px 6px;color:#9FE1CB;border:0.5px solid rgba(255,255,255,0.08)">Prise en charge</td><td style="padding:5px 6px;color:#9FE1CB;border:0.5px solid rgba(255,255,255,0.08)">Résolution</td></tr><tr style="background:#0d1117"><td style="padding:4px 6px;color:#ff8080;border:0.5px solid rgba(255,255,255,0.06)">🔴 P1 Critique</td><td style="padding:4px 6px;color:rgba(240,237,232,0.7);border:0.5px solid rgba(255,255,255,0.06)">15 min</td><td style="padding:4px 6px;color:rgba(240,237,232,0.7);border:0.5px solid rgba(255,255,255,0.06)">2 h</td></tr><tr style="background:#111418"><td style="padding:4px 6px;color:#f0a030;border:0.5px solid rgba(255,255,255,0.06)">🟠 P2 Haute</td><td style="padding:4px 6px;color:rgba(240,237,232,0.7);border:0.5px solid rgba(255,255,255,0.06)">30 min</td><td style="padding:4px 6px;color:rgba(240,237,232,0.7);border:0.5px solid rgba(255,255,255,0.06)">4 h</td></tr></table><div class="doc-p">Exemples P1 : Jellyfin inaccessible, Keycloak SSO en erreur. Exemple P2 : alerte CrowdSec — tentative d'intrusion.</div><div class="doc-note">Toute alerte CrowdSec critique déclenche automatiquement une classification P2 minimum.</div>`},
+  'doc-tco':{label:'Comparatif TCO',html:`<div class="doc-eyebrow">TCO 3 ans</div><div class="doc-h1">On-premise vs AWS vs SaaS</div><table style="width:100%;border-collapse:collapse;margin-bottom:12px;font-size:11px"><tr style="background:#0F6E56"><td style="padding:5px 8px;color:#9FE1CB;border:0.5px solid rgba(255,255,255,0.08)">Scénario</td><td style="padding:5px 8px;color:#9FE1CB;border:0.5px solid rgba(255,255,255,0.08)">TCO 3 ans</td></tr><tr style="background:#0d1117"><td style="padding:4px 8px;color:#4ecbaa;border:0.5px solid rgba(255,255,255,0.06)">On-premise (Dell T140)</td><td style="padding:4px 8px;color:#4ecbaa;border:0.5px solid rgba(255,255,255,0.06);font-family:monospace">~290 €</td></tr><tr style="background:#111418"><td style="padding:4px 8px;color:rgba(240,237,232,0.7);border:0.5px solid rgba(255,255,255,0.06)">SaaS (Plex+Auth0+Datadog)</td><td style="padding:4px 8px;color:rgba(240,237,232,0.7);border:0.5px solid rgba(255,255,255,0.06);font-family:monospace">~3 300 €</td></tr><tr style="background:#0d1117"><td style="padding:4px 8px;color:rgba(240,237,232,0.7);border:0.5px solid rgba(255,255,255,0.06)">AWS (EC2+RDS+S3)</td><td style="padding:4px 8px;color:rgba(240,237,232,0.7);border:0.5px solid rgba(255,255,255,0.06);font-family:monospace">~7 200 €</td></tr></table><div class="doc-note">Solution on-premise 25× moins chère qu'AWS sur 3 ans — le Dell T140 est fourni par l'établissement (0€ CAPEX).</div>`},
+  'doc-greenit':{label:'Green IT & Éco-responsabilité',html:`<div class="doc-eyebrow">Compétences 15 & 16</div><div class="doc-h1">Empreinte carbone du SI</div><div class="doc-igrid"><div class="doc-icell"><div class="doc-ick">Sans virtualisation</div><div class="doc-icv">189 kg CO₂/an</div></div><div class="doc-icell"><div class="doc-ick">Avec Proxmox</div><div class="doc-icv">34 kg CO₂/an</div></div></div><div class="doc-p">La consolidation sur un seul Dell T140 via Proxmox VE économise ~155 kg CO₂/an par rapport à 3 serveurs physiques dédiés.</div><div class="doc-h2">Densification Docker</div><div class="doc-p">18 conteneurs sur une seule VM (vm-streaming) consomment ~6 Go RAM contre ~26 Go pour des VMs dédiées équivalentes (−22% CPU idle).</div><div class="doc-note">Images Alpine privilégiées partout où possible — moins de transfert réseau, démarrages plus rapides.</div>`},
+  // ── Composant nodes (architecture clickable) ──
+  'nd-traefik':{label:'Traefik v3.3',html:`<div class="doc-eyebrow">streaming-public · Proxy inverse</div><div class="doc-h1">Traefik v3.3</div><div class="doc-igrid"><div class="doc-icell"><div class="doc-ick">Image</div><div class="doc-icv">traefik:v3.3</div></div><div class="doc-icell"><div class="doc-ick">Port interne</div><div class="doc-icv">:80</div></div></div><div class="doc-h2">Rôle</div><div class="doc-p">Point d'entrée unique pour tous les services exposés. Achemine chaque sous-domaine (jellyfin., keycloak., grafana., minio., vault., traefik.) vers le bon conteneur via labels Docker. Reçoit le trafic du tunnel Cloudflare en HTTP interne.</div><div class="doc-h2">Configuration</div><div class="doc-p">Dashboard protégé par basic auth. TLS terminé côté Cloudflare — Traefik n'expose pas de port 443. Compose : <em>docker/proxy/docker-compose.yml</em>.</div><div class="doc-note">Réseau : streaming-public. Aucun port entrant ouvert sur le FortiGate.</div>`},
+  'nd-jellyfin':{label:'Jellyfin 10.10.7',html:`<div class="doc-eyebrow">streaming-public · Serveur média</div><div class="doc-h1">Jellyfin 10.10.7</div><div class="doc-igrid"><div class="doc-icell"><div class="doc-ick">Image</div><div class="doc-icv">jellyfin/jellyfin:10.10.7</div></div><div class="doc-icell"><div class="doc-ick">Média</div><div class="doc-icv">Volume local bind-mount</div></div></div><div class="doc-h2">Rôle</div><div class="doc-p">Serveur de streaming vidéo open source. Gère la bibliothèque de médias, le transcodage et la lecture. SSO via Keycloak (OIDC). Image épinglée à 10.10.7 (correctif bind-mount volumes).</div><div class="doc-h2">Setup</div><div class="doc-p">Bibliothèque montée en volume local. Ancienne version 10.9 avait des bind-mounts placeholder → remplacés par volumes nommés. Compose : <em>docker/jellyfin/docker-compose.yml</em>.</div><div class="doc-note">Réseau : streaming-public. Accessible via jellyfin.duoowatch.com.</div>`},
+  'nd-keycloak':{label:'Keycloak 24',html:`<div class="doc-eyebrow">streaming-public · IAM / SSO</div><div class="doc-h1">Keycloak 24</div><div class="doc-igrid"><div class="doc-icell"><div class="doc-ick">Realm</div><div class="doc-icv">streaming-lab</div></div><div class="doc-icell"><div class="doc-ick">DB</div><div class="doc-icv">haproxy-postgres:5000</div></div></div><div class="doc-h2">Rôle</div><div class="doc-p">Identity & Access Management. Fournit le SSO OIDC pour Grafana, MinIO et Jellyfin via Authorization Code Flow avec PKCE. Rôles : admin, viewer, media-user.</div><div class="doc-h2">Setup</div><div class="doc-p">Base de données Keycloak dans le cluster Patroni (haproxy-postgres:5000 → postgres-01 Leader). KC_DB_URL corrigée après force-recreate du conteneur. Le script post_bootstrap.sh crée le user keycloak et la DB keycloak au bootstrap Patroni.</div><div class="doc-note">Accessible : keycloak.duoowatch.com. Compose : docker/keycloak/docker-compose.yml.</div>`},
+  'nd-minio':{label:'MinIO',html:`<div class="doc-eyebrow">streaming-public · Stockage objet S3</div><div class="doc-h1">MinIO</div><div class="doc-igrid"><div class="doc-icell"><div class="doc-ick">API S3</div><div class="doc-icv">:9000</div></div><div class="doc-icell"><div class="doc-ick">Console</div><div class="doc-icv">:9001</div></div></div><div class="doc-h2">Rôle</div><div class="doc-p">Stockage objet compatible S3. Trois buckets : <em>backups</em> (dumps Veeam), <em>db-dumps</em> (exports PostgreSQL via cron), <em>streaming-media</em> (médias Jellyfin). Console web SSO via Keycloak OIDC.</div><div class="doc-h2">Setup</div><div class="doc-p">Buckets créés via script <em>scripts/tests/test_minio_buckets.sh</em>. Fix minio/mc : l'image utilise mc comme entrypoint — utiliser <em>--entrypoint /bin/sh minio/mc:latest -c "..."</em>. Compose : docker/storage/docker-compose.yml.</div><div class="doc-note">Accessible : minio.duoowatch.com. Réseau : streaming-public + streaming-private.</div>`},
+  'nd-vault':{label:'HashiCorp Vault 1.17',html:`<div class="doc-eyebrow">streaming-public · Gestion des secrets</div><div class="doc-h1">HashiCorp Vault 1.17</div><div class="doc-igrid"><div class="doc-icell"><div class="doc-ick">URL</div><div class="doc-icv">vault.duoowatch.com</div></div><div class="doc-icell"><div class="doc-ick">Unseal</div><div class="doc-icv">3 / 5 clés Shamir</div></div></div><div class="doc-h2">Rôle</div><div class="doc-p">Source de vérité pour tous les secrets (mots de passe DB, tokens OIDC, clés JWT). Aucun secret en clair dans docker-compose.yml — tout est injecté via <em>vault-env.sh</em> qui reécrit le fichier .env depuis Vault KV.</div><div class="doc-h2">Setup</div><div class="doc-p">Init unique : <em>vault operator init</em> → 5 unseal keys + 1 root token. Vault démarre toujours scellé : 3 clés nécessaires après chaque redémarrage. Secrets stockés à <em>secret/databases</em>, <em>secret/keycloak</em>, <em>secret/minio</em>, <em>secret/grafana</em>, etc. POSTGRES_REPLICATION_PASSWORD stocké en version 3.</div><div class="doc-note">Compose : docker/security/docker-compose.yml. Config : vault-config.hcl.</div>`},
+  'nd-trivyhub':{label:'TrivyHub',html:`<div class="doc-eyebrow">streaming-public · Sécurité images</div><div class="doc-h1">TrivyHub</div><div class="doc-igrid"><div class="doc-icell"><div class="doc-ick">Outil</div><div class="doc-icv">Trivy (Aqua Security)</div></div><div class="doc-icell"><div class="doc-ick">Réseau</div><div class="doc-icv">streaming-public</div></div></div><div class="doc-h2">Rôle</div><div class="doc-p">Dashboard de scanning CVE pour toutes les images Docker en production. Détecte les vulnérabilités connues dans les images avant et après déploiement.</div><div class="doc-h2">Configuration</div><div class="doc-p">Se connecte au Docker socket pour lister et scanner les images locales. Résultats consultables via l'interface web. Compose : docker/security/docker-compose.yml.</div><div class="doc-note">Accessible via Traefik. JWT secret stocké dans Vault à secret/trivyhub.</div>`},
+  'nd-etcd':{label:'etcd v3.5.17',html:`<div class="doc-eyebrow">streaming-private · DCS Patroni</div><div class="doc-h1">etcd v3.5.17</div><div class="doc-igrid"><div class="doc-icell"><div class="doc-ick">Rôle</div><div class="doc-icv">Distributed Consensus Store</div></div><div class="doc-icell"><div class="doc-ick">Port</div><div class="doc-icv">:2379 (client)</div></div></div><div class="doc-h2">Rôle</div><div class="doc-p">Store distribué qui sert de DCS (Distributed Configuration Store) pour Patroni. Stocke l'état du cluster PostgreSQL : qui est Leader, qui est Replica, epoch de chaque failover. Patroni consulte etcd pour décider des promotions.</div><div class="doc-h2">Setup</div><div class="doc-p">Démarré en premier dans l'ordre de boot. Isolé sur streaming-private --internal. Mode single-node (pas de cluster etcd multi-nœuds dans ce projet). Compose : docker/databases/docker-compose.yml.</div><div class="doc-note">Réseau : streaming-private (non exposé à l'extérieur).</div>`},
+  'nd-haproxy':{label:'haproxy-postgres',html:`<div class="doc-eyebrow">streaming-private · Load Balancer PG</div><div class="doc-h1">haproxy-postgres</div><div class="doc-igrid"><div class="doc-icell"><div class="doc-ick">:5000</div><div class="doc-icv">Primary (R/W)</div></div><div class="doc-icell"><div class="doc-ick">:5001</div><div class="doc-icv">Replica (R/O)</div></div></div><div class="doc-h2">Rôle</div><div class="doc-p">Point d'entrée unique du cluster Patroni. Le port 5000 route vers le Leader actuel (lecture/écriture) — automatiquement mis à jour en cas de failover. Le port 5001 route vers la Replica (lecture seule). Port 7000 : stats HAProxy.</div><div class="doc-h2">Setup</div><div class="doc-p">Keycloak se connecte à haproxy-postgres:5000. Configuration via haproxy.cfg. Un dossier haproxy.cfg avait été créé par Docker (bind-mount absent) — supprimé via conteneur Alpine. Compose : docker/databases/docker-compose.yml.</div><div class="doc-note">Réseau : streaming-private + streaming-public (accès depuis Keycloak).</div>`},
+  'nd-pg01':{label:'postgres-01 (Leader)',html:`<div class="doc-eyebrow">streaming-private · Patroni Leader</div><div class="doc-h1">postgres-01 ★ Leader</div><div class="doc-igrid"><div class="doc-icell"><div class="doc-ick">Image</div><div class="doc-icv">PostgreSQL 17 + Patroni</div></div><div class="doc-icell"><div class="doc-ick">Socket</div><div class="doc-icv">/data/patroni</div></div></div><div class="doc-h2">Rôle</div><div class="doc-p">Nœud primaire du cluster HA. Traite toutes les écritures. Promu Leader par Patroni via consensus etcd. Post-bootstrap crée la DB keycloak et l'utilisateur keycloak.</div><div class="doc-h2">Setup</div><div class="doc-p">Bootstrap problématique : PATRONI_SUPERUSER_USERNAME était vide car le fichier .env n'était pas passé avec <em>--env-file .env</em>. Fix : toujours lancer <em>docker compose --env-file .env -f docker/databases/docker-compose.yml</em>. Socket Unix à <em>/data/patroni/.s.PGSQL.5432</em> (unix_socket_directories: '.') — post_bootstrap.sh exporte PGHOST=/data/patroni.</div><div class="doc-note">Compose : docker/databases/docker-compose.yml.</div>`},
+  'nd-pg02':{label:'postgres-02 (Replica)',html:`<div class="doc-eyebrow">streaming-private · Patroni Replica</div><div class="doc-h1">postgres-02 — Replica</div><div class="doc-igrid"><div class="doc-icell"><div class="doc-ick">Réplication</div><div class="doc-icv">Streaming WAL</div></div><div class="doc-icell"><div class="doc-ick">Lag</div><div class="doc-icv">0 (synchrone)</div></div></div><div class="doc-h2">Rôle</div><div class="doc-p">Nœud secondaire. Réplication streaming WAL depuis postgres-01 avec lag 0. Prêt à être promu Leader en cas de défaillance de postgres-01 (failover automatique via Patroni + etcd).</div><div class="doc-h2">Setup</div><div class="doc-p">Basebackup via pg_basebackup depuis postgres-01. Problème rencontré : permissions invalides sur /data/patroni après le basebackup — corrigé avec <em>docker exec -u root postgres-02 chmod 700 /data/patroni</em>. Compose : docker/databases/docker-compose.yml.</div><div class="doc-note">Accessible en lecture seule via haproxy-postgres:5001.</div>`},
+  'nd-prometheus':{label:'Prometheus',html:`<div class="doc-eyebrow">streaming-monitoring · Métriques</div><div class="doc-h1">Prometheus</div><div class="doc-igrid"><div class="doc-icell"><div class="doc-ick">Scrape</div><div class="doc-icv">toutes les 15s</div></div><div class="doc-icell"><div class="doc-ick">Port</div><div class="doc-icv">:9090</div></div></div><div class="doc-h2">Rôle</div><div class="doc-p">Collecte et stocke les métriques de tous les composants : VM hôte (node-exporter), conteneurs (cAdvisor), PostgreSQL/Patroni (postgres-exporter). Évalue les règles d'alertes et envoie les alertes à Alertmanager.</div><div class="doc-h2">Configuration</div><div class="doc-p">Config : docker/monitoring/prometheus/prometheus.yml. Alertes : alerts.yml. Scrape targets : node-exporter:9100, cadvisor:8080, postgres-exporter:9187.</div><div class="doc-note">Réseau : streaming-monitoring. Données visualisées dans Grafana.</div>`},
+  'nd-loki':{label:'Loki',html:`<div class="doc-eyebrow">streaming-monitoring · Logs</div><div class="doc-h1">Loki</div><div class="doc-igrid"><div class="doc-icell"><div class="doc-ick">Port</div><div class="doc-icv">:3100</div></div><div class="doc-icell"><div class="doc-ick">Source</div><div class="doc-icv">Promtail</div></div></div><div class="doc-h2">Rôle</div><div class="doc-p">Agrégateur de logs centralisé. Reçoit tous les logs Docker et système depuis Promtail. Grafana interroge Loki via datasource pour afficher et filtrer les logs en temps réel.</div><div class="doc-h2">Configuration</div><div class="doc-p">Config : docker/monitoring/loki/loki-config.yml. Stockage local dans le volume loki-data. Compose : docker/monitoring/docker-compose.yml.</div><div class="doc-note">Réseau : streaming-monitoring.</div>`},
+  'nd-grafana':{label:'Grafana',html:`<div class="doc-eyebrow">streaming-monitoring · Dashboards</div><div class="doc-h1">Grafana</div><div class="doc-igrid"><div class="doc-icell"><div class="doc-ick">Auth</div><div class="doc-icv">SSO Keycloak OIDC</div></div><div class="doc-icell"><div class="doc-ick">Port</div><div class="doc-icv">:3000</div></div></div><div class="doc-h2">Rôle</div><div class="doc-p">Visualisation des métriques (Prometheus) et des logs (Loki). Trois dashboards provisionnés : infra-overview, logs-central, vm-detail. Auth SSO via Keycloak — rôles viewer/admin mappés depuis le realm streaming-lab.</div><div class="doc-h2">Configuration</div><div class="doc-p">Provisioning : docker/monitoring/grafana/provisioning/. Datasources (Prometheus + Loki) provisionnées automatiquement. Credentials admin dans Vault (secret/grafana). Compose : docker/monitoring/docker-compose.yml.</div><div class="doc-note">Accessible : grafana.duoowatch.com.</div>`},
+  'nd-alertmanager':{label:'Alertmanager',html:`<div class="doc-eyebrow">streaming-monitoring · Alertes</div><div class="doc-h1">Alertmanager</div><div class="doc-igrid"><div class="doc-icell"><div class="doc-ick">Port</div><div class="doc-icv">:9093</div></div><div class="doc-icell"><div class="doc-ick">Source</div><div class="doc-icv">Prometheus</div></div></div><div class="doc-h2">Rôle</div><div class="doc-p">Reçoit les alertes de Prometheus, les déduplique, groupe et route vers les destinataires configurés. Gère les silences et l'inhibition d'alertes corrélées.</div><div class="doc-h2">Configuration</div><div class="doc-p">Config : docker/monitoring/alertmanager/alertmanager.yml. Note : la notification Slack watchtower a été retirée (aucun webhook configuré). Compose : docker/monitoring/docker-compose.yml.</div><div class="doc-note">Réseau : streaming-monitoring.</div>`},
+  'nd-promtail':{label:'Promtail',html:`<div class="doc-eyebrow">streaming-monitoring · Collecte logs</div><div class="doc-h1">Promtail</div><div class="doc-igrid"><div class="doc-icell"><div class="doc-ick">Sources</div><div class="doc-icv">Docker + FortiGate syslog</div></div><div class="doc-icell"><div class="doc-ick">Cible</div><div class="doc-icv">Loki:3100</div></div></div><div class="doc-h2">Rôle</div><div class="doc-p">Agent de collecte de logs. Scrape les logs de tous les conteneurs Docker via le socket Docker et les syslog FortiGate. Pousse vers Loki avec labels de job et de conteneur.</div><div class="doc-h2">Configuration</div><div class="doc-p">Config : docker/monitoring/promtail/promtail-config.yml. Monté avec accès au socket Docker en lecture seule. Compose : docker/monitoring/docker-compose.yml.</div><div class="doc-note">Réseau : streaming-monitoring.</div>`},
+  'nd-cadvisor':{label:'cAdvisor',html:`<div class="doc-eyebrow">streaming-monitoring · Métriques conteneurs</div><div class="doc-h1">cAdvisor</div><div class="doc-igrid"><div class="doc-icell"><div class="doc-ick">Port</div><div class="doc-icv">:8080</div></div><div class="doc-icell"><div class="doc-ick">Scraped by</div><div class="doc-icv">Prometheus</div></div></div><div class="doc-h2">Rôle</div><div class="doc-p">Expose les métriques de ressources (CPU, RAM, réseau, I/O) pour chaque conteneur Docker individuellement. Prometheus scrape cAdvisor toutes les 15s pour alimenter les dashboards Grafana vm-detail.</div><div class="doc-h2">Configuration</div><div class="doc-p">Accès en lecture seule au socket Docker et aux cgroups système. Compose : docker/monitoring/docker-compose.yml.</div><div class="doc-note">Réseau : streaming-monitoring.</div>`},
+  'nd-nodeexp':{label:'node-exporter',html:`<div class="doc-eyebrow">streaming-monitoring · Métriques VM hôte</div><div class="doc-h1">node-exporter</div><div class="doc-igrid"><div class="doc-icell"><div class="doc-ick">Port</div><div class="doc-icv">:9100</div></div><div class="doc-icell"><div class="doc-ick">Scraped by</div><div class="doc-icv">Prometheus</div></div></div><div class="doc-h2">Rôle</div><div class="doc-p">Expose les métriques système de vm-streaming : CPU, mémoire, disque, réseau, charge système. Donne une vue hôte complémentaire aux métriques conteneurs de cAdvisor.</div><div class="doc-h2">Configuration</div><div class="doc-p">Installé via script docker/monitoring/install-node-exporter.sh. Expose /proc et /sys en lecture seule. Compose : docker/monitoring/docker-compose.yml.</div><div class="doc-note">Réseau : streaming-monitoring.</div>`},
+  'nd-pgexp':{label:'postgres-exporter',html:`<div class="doc-eyebrow">streaming-monitoring · Métriques PostgreSQL</div><div class="doc-h1">postgres-exporter</div><div class="doc-igrid"><div class="doc-icell"><div class="doc-ick">Port</div><div class="doc-icv">:9187</div></div><div class="doc-icell"><div class="doc-ick">Cible</div><div class="doc-icv">haproxy-postgres:5000</div></div></div><div class="doc-h2">Rôle</div><div class="doc-p">Collecte les métriques Patroni et PostgreSQL : lag de réplication, connexions actives, taille des bases, état du Leader/Replica. Se connecte via haproxy-postgres:5000 (Leader).</div><div class="doc-h2">Configuration</div><div class="doc-p">Credentials de connexion depuis .env (POSTGRES_USER/POSTGRES_PASSWORD). Prometheus scrape :9187/metrics. Compose : docker/monitoring/docker-compose.yml.</div><div class="doc-note">Réseau : streaming-monitoring + streaming-private.</div>`},
+};
+
+// ══════════ SERIES DATA ══════════
+const seriesData = {
+  request:{icon:'🌐',title:'LA REQUÊTE',sub:'Saison 1 · 7 épisodes · Du clic au streaming',color:'#4ecbaa',
+    episodes:[
+      {t:'TROUVEZ-MOI',s:'DNS & résolution de domaine',dur:'2 min',body:'L\'utilisateur ouvre jellyfin.duoowatch.com. Cloudflare résout le domaine côté public et termine le TLS 1.3, puis établit un tunnel cloudflared sortant vers vm-streaming — aucun port entrant n\'est ouvert sur le FortiGate.',chips:['Cloudflare','DNS','TLS 1.3']},
+      {t:'LE GARDIEN',s:'Cloudflare Tunnel & Traefik',dur:'3 min',body:'Cloudflare termine le TLS 1.3 côté public puis pousse la requête dans un tunnel cloudflared sortant — aucun port entrant n\'est ouvert sur le FortiGate. Traefik reçoit la requête en HTTP interne sur le port 80 et route vers le bon service.',chips:['Traefik v3','Cloudflare Tunnel','Zero exposed port'],doc:'doc-traefik'},
+      {t:'QUI ÊTES-VOUS ?',s:'Keycloak · OIDC · Authorization Code + PKCE',dur:'4 min',body:'Avant d\'accéder à Jellyfin, l\'utilisateur est redirigé vers Keycloak (realm streaming-lab). L\'authentification suit le flow OpenID Connect Authorization Code avec PKCE — un token JWT est émis puis propagé au service demandé.',chips:['Keycloak 24','OIDC','JWT'],doc:'doc-keycloak'},
+      {t:'ACCÈS AUTORISÉ',s:'Vérification du rôle',dur:'3 min',body:'Le rôle attaché à l\'utilisateur (admin, viewer ou media-user) détermine ce qu\'il peut voir. Un profil media-user n\'a par exemple accès qu\'à Jellyfin, jamais à Grafana ou MinIO.',chips:['RBAC','Role mapping']},
+      {t:'TROUVER LE MÉDIA',s:'Jellyfin & stockage',dur:'4 min',body:'Jellyfin reçoit la demande et interroge sa bibliothèque de médias. Les fichiers sont servis depuis le volume local /home/principal/media monté sur vm-streaming, accessible via le réseau Docker streaming-public.',chips:['Jellyfin 10.10.7','streaming-public']},
+      {t:'S\'ADAPTER OU CHARGER',s:'Transcodage',dur:'3 min',body:'Selon la bande passante et l\'appareil du client, Jellyfin décide de transmettre le flux original ou de le transcoder à la volée vers un format et une résolution adaptés.',chips:['Transcodage','Adaptive bitrate']},
+      {t:'CHAQUE MOUVEMENT EST OBSERVÉ',s:'Logs · métriques · alertes',dur:'4 min',body:'Toute la requête laisse une trace : Prometheus scrape les métriques du conteneur Jellyfin toutes les 15 secondes, Promtail collecte les logs vers Loki, et Grafana les visualise en direct.',chips:['Prometheus','Loki','Grafana']},
+    ]},
+  zerotrust:{icon:'🔐',title:'CONFIANCE ZÉRO',sub:'Ne faites confiance à aucune requête. Vérifiez chaque identité. · 6 épisodes',color:'#afa9ec',
+    episodes:[
+      {t:'LE FOURNISSEUR D\'IDENTITÉ',s:'Keycloak — une identité, plusieurs services',dur:'4 min',body:'Keycloak centralise l\'identité pour Grafana, MinIO et Jellyfin. Un seul compte, une seule authentification, propagée par token à tous les services protégés.',chips:['Keycloak','SSO'],doc:'doc-keycloak'},
+      {t:'LE JETON',s:'Flow d\'authentification complet',dur:'4 min',body:'Login → vérification du mot de passe → émission du JWT par Keycloak → présentation du token au service → vérification du rôle. Cinq étapes, une seule fois par session.',chips:['OIDC','PKCE','JWT']},
+      {t:'LE COFFRE-FORT',s:'Les secrets n\'ont rien à faire dans Git',dur:'4 min',body:'Avant : mots de passe en clair dans docker-compose.yml. Après : chaque application interroge HashiCorp Vault, qui reste scellé tant que 3 des 5 unseal keys ne sont pas fournies.',chips:['HashiCorp Vault 1.17','Secrets dynamiques'],doc:'doc-vault'},
+      {t:'LE VEILLEUR',s:'Suricata → CrowdSec — décision architecturale documentée',dur:'3 min',body:"Suricata avait initialement été retenu comme IDS réseau, mais son inspection de paquets en profondeur (DPI) est trop gourmande en CPU et en stockage (PCAP, base de signatures) pour le Dell T140 partagé entre 18 services. CrowdSec a été documenté comme remplacement : analyse comportementale des logs (Traefik, Keycloak, SSH) sans empreinte PCAP. Cette décision est tracée dans notre RFC-001 ITIL — le déploiement final interviendra lors de la phase de durcissement.",chips:['Décision documentée','Suricata → CrowdSec','RFC-001 ITIL'],doc:'doc-crowdsec'},
+      {t:'DÉFENSE EN PROFONDEUR',s:'La chaîne complète',dur:'3 min',body:'Internet → Firewall → Traefik → Keycloak → Services → Vault, avec CrowdSec qui observe les logs et Grafana qui surveille la santé de chaque maillon.',chips:['Défense en profondeur']},
+      {t:'ISOLATION RÉSEAU',s:'Segmentation Docker',dur:'3 min',body:'Le cluster Patroni (etcd, postgres-01, postgres-02, haproxy-postgres) vit uniquement sur streaming-private, un réseau Docker marqué --internal. Les services exposés (Traefik, Jellyfin, Keycloak...) n\'y ont pas d\'accès direct — seul haproxy-postgres (:5000 primary, :5001 replica) fait le pont vers l\'extérieur du réseau.',chips:['streaming-private --internal','Patroni HA','Segmentation']},
+    ]},
+  watching:{icon:'📊',title:'TOUJOURS EN VEILLE',sub:'On ne protège pas ce qu\'on ne voit pas · 6 épisodes',color:'#85b7eb',
+    episodes:[
+      {t:'MÉTRIQUES',s:'Prometheus',dur:'3 min',body:'Prometheus scrape les métriques de tous les services toutes les 15 secondes, avec une rétention de 15 jours.',chips:['Prometheus','15s scrape']},
+      {t:'LA MACHINE',s:'Node Exporter',dur:'2 min',body:'Node Exporter expose les métriques systèmes de la VM elle-même : CPU, RAM, disque, réseau — la santé de la machine hôte des services.',chips:['Node Exporter',':9100']},
+      {t:'DANS LE CONTENEUR',s:'cAdvisor',dur:'3 min',body:'cAdvisor donne la visibilité par conteneur : consommation CPU/RAM individuelle, ce qui permet d\'identifier immédiatement quel service dérive.',chips:['cAdvisor']},
+      {t:'LA PISTE DES LOGS',s:'Promtail → Loki',dur:'3 min',body:'Chaque conteneur laisse une trace. Promtail collecte les logs Docker JSON et les pousse vers Loki, agrégés et interrogeables depuis Grafana.',chips:['Promtail','Loki']},
+      {t:'LA SALLE DE CONTRÔLE',s:'Grafana',dur:'4 min',body:'Grafana centralise métriques (Prometheus) et logs (Loki) dans des tableaux de bord uniques — le poste de pilotage de toute l\'infrastructure.',chips:['Grafana']},
+      {t:'SONNER L\'ALARME',s:'Alertmanager',dur:'3 min',body:'Alertmanager reçoit les règles déclenchées par Prometheus et notifie l\'équipe — c\'est ce mécanisme qui détecte une panne avant même qu\'un utilisateur ne s\'en plaigne.',chips:['Alertmanager',':9093']},
+    ]},
+  afterfall:{icon:'💾',title:'APRÈS LA CHUTE',sub:'Tout système finit par tomber. À quelle vitesse repart-on ? · 5 épisodes',color:'#f0a030',
+    episodes:[
+      {t:'QU\'EST-CE QUI COMPTE LE PLUS ?',s:'BIA & criticité des services',dur:'3 min',body:'Keycloak, Jellyfin, Traefik et le cluster Patroni HA (postgres-01/02 + haproxy-postgres) sont classés critiques : leur interruption bloque tous les utilisateurs. Vault et le stockage MinIO suivent en priorité haute.',chips:['BIA','Patroni HA']},
+      {t:'LE COMPTE À REBOURS',s:'RTO / RPO',dur:'2 min',body:'Objectifs globaux : RTO 4 heures, RPO 24 heures. Pour Keycloak spécifiquement, le RTO cible descend à 1 heure — sans authentification, plus aucun service n\'est utilisable.',chips:['RTO 4h','RPO 24h'],doc:'doc-backup'},
+      {t:'LA DERNIÈRE COPIE',s:'Architecture Veeam',dur:'3 min',body:'vm-streaming et vm-backup sont sauvegardées par Veeam B&R vers un stockage local chiffré AES-256. Les scripts PostgreSQL exportent les dumps vers MinIO (backups bucket). Rétention : 7j / 4 sem / 3 mois.',chips:['Veeam B&R','AES-256','MinIO backups'],doc:'doc-backup'},
+      {t:'TOUT RESTAURER',s:'Procédure de restauration',dur:'3 min',body:'Un test de restauration mensuel valide que chaque sauvegarde est réellement exploitable — pas seulement présente sur le disque.',chips:['Test mensuel']},
+      {t:'L\'ORDRE DE REPRISE',s:'Redémarrage par dépendances',dur:'2 min',body:'Réseau → etcd → postgres-01 (Leader) → haproxy-postgres → Keycloak → Vault → Traefik → MinIO → Jellyfin → Monitoring. L\'ordre n\'est pas arbitraire : Keycloak a besoin de la base de données, Jellyfin a besoin de Keycloak, le monitoring peut démarrer en dernier.',chips:['Dependency-based restart','Patroni first']},
+    ]},
+  cost:{icon:'🌱',title:'LE COÛT DU STREAMING',sub:'On-premise. Cloud. Énergie. Carbone. · 5 épisodes',color:'#4ecbaa',
+    episodes:[
+      {t:'CONSTRUIRE OU LOUER ?',s:'On-prem vs Cloud vs SaaS',dur:'3 min',body:'Trois scénarios comparés sur 3 ans : on-premise (~290€), SaaS type Plex+Auth0+Datadog (~3 300€) et AWS (~7 200€). Le Dell T140 étant fourni par l\'établissement, il n\'y a aucun CAPEX matériel.',chips:['TCO'],doc:'doc-tco'},
+      {t:'CHOISIR SA STACK',s:'Comparatifs techniques',dur:'3 min',body:'Proxmox VE plutôt que VMware (économie de 13 500€ sur 3 ans), Grafana/Prometheus/Loki plutôt qu\'ELK ou Splunk — chaque choix est justifié par un comparatif multi-critères.',chips:['Proxmox VE','Comparatif']},
+      {t:'LA FACTURE SUR TROIS ANS',s:'TCO détaillé',dur:'2 min',body:'La solution on-premise est 25 fois moins chère qu\'AWS sur 3 ans grâce à l\'usage exclusif de logiciels open source et à l\'absence de licence.',chips:['~290€ / 3 ans'],doc:'doc-tco'},
+      {t:'CHAQUE WATT COMPTE',s:'Green IT',dur:'3 min',body:'La consolidation sur un seul Dell T140 via Proxmox VE économise environ 155 kg de CO₂ par an par rapport à 3 serveurs dédiés. 2 VMs Debian mutualisent le matériel (vm-streaming, vm-backup).',chips:['Green IT','−155 kg CO₂/an'],doc:'doc-greenit'},
+      {t:'PLUS PETIT, C\'EST MIEUX',s:'Conteneurs & images Alpine',dur:'2 min',body:'18 conteneurs tournent sur une seule VM (vm-streaming) avec ~6 Go de RAM au lieu de ~26 Go pour des VMs dédiées équivalentes — les images Alpine réduisent encore l\'empreinte.',chips:['Alpine Linux','Docker']},
+    ]},
+};
+
+// ══════════ TEAM DATA ══════════
+const teamData = {
+  iman:{icon:'👩‍💻',name:'IMAN HAMDY',role:'ADMINISTRATION SYSTÈME & DEVOPS',pct:78,
+    items:['Architecture Docker & réseaux','Pipeline CI/CD (lint, Trivy, Gitleaks)','Workflow Gitflow','Déploiement des services','Automatisation infrastructure']},
+  quentin:{icon:'🌐',name:'QUENTIN',role:'ADMIN RÉSEAU',pct:70,
+    items:['Proxmox VE & VMs','VLANs & politiques FortiGate','Plan d\'adressage réseau','Cloudflare Tunnel']},
+  adrien:{icon:'📊',name:'ADRIEN',role:'ADMIN SUPERVISION',pct:65,
+    items:['Stack PLG (Prometheus/Loki/Grafana)','Dashboards Grafana','Règles d\'alerting Alertmanager','CrowdSec IDS']},
+};
+
+// ══════════ LIVE DATA ══════════
+const svcData = [
+  {name:'Traefik v3.3',status:'EN LIGNE',cat:'health'},
+  {name:'Jellyfin 10.10.7',status:'EN LIGNE',cat:'health'},
+  {name:'Keycloak 24',status:'EN LIGNE',cat:'security'},
+  {name:'Vault 1.17',status:'EN LIGNE',cat:'security'},
+  {name:'MinIO',status:'EN LIGNE',cat:'health'},
+  {name:'TrivyHub',status:'EN LIGNE',cat:'security'},
+  {name:'postgres-01 (Leader)',status:'EN LIGNE',cat:'health'},
+  {name:'postgres-02 (Replica)',status:'EN LIGNE',cat:'health'},
+  {name:'haproxy-postgres',status:'EN LIGNE',cat:'health'},
+  {name:'etcd',status:'EN LIGNE',cat:'health'},
+  {name:'Prometheus',status:'EN LIGNE',cat:'health'},
+  {name:'Grafana',status:'EN LIGNE',cat:'health'},
+  {name:'Loki',status:'EN LIGNE',cat:'health'},
+  {name:'Alertmanager',status:'EN LIGNE',cat:'health'},
+  {name:'Promtail',status:'EN LIGNE',cat:'health'},
+  {name:'cAdvisor',status:'EN LIGNE',cat:'health'},
+  {name:'node-exporter',status:'EN LIGNE',cat:'health'},
+  {name:'postgres-exporter',status:'EN LIGNE',cat:'health'},
+];
+const eventData = [
+  {time:'14:32',icon:'✓',text:'Sauvegarde Veeam terminée',cat:'deployments'},
+  {time:'14:27',icon:'✓',text:'Scan d\'image Trivy réussi',cat:'security'},
+  {time:'14:11',icon:'⚠',text:'Échec d\'authentification Keycloak',cat:'security'},
+  {time:'13:58',icon:'✓',text:'Déploiement develop → réussi',cat:'deployments'},
+  {time:'13:40',icon:'✓',text:'Health check Jellyfin OK',cat:'health'},
+];
+
+// ══════════ TAB SWITCH ══════════
+function switchTab(t) {
+  ['home','series','journey','live','team'].forEach(id => {
+    document.getElementById('tab-'+id).classList.toggle('active', t===id);
+  });
+  document.getElementById('view-home').style.display = t==='home' ? '' : 'none';
+  document.getElementById('view-series').style.display = t==='series' ? '' : 'none';
+  document.getElementById('view-journey').style.display = t==='journey' ? '' : 'none';
+  document.getElementById('view-live').style.display = t==='live' ? '' : 'none';
+  document.getElementById('view-team').style.display = t==='team' ? '' : 'none';
+  if (t==='live') renderLive('all');
+  if (t==='journey') renderFilmGrid();
+}
+
+// ══════════ SERIES / EPISODE SHEET ══════════
+function openSeries(id) {
+  if (id === 'incident') { launchIncident(); return; }
+  const s = seriesData[id]; if (!s) return;
+  document.getElementById('cs-icon').textContent = s.icon;
+  document.getElementById('cs-title').textContent = s.title;
+  document.getElementById('cs-sub').textContent = s.sub;
+  let html = s.episodes.map((e,i)=>`<div class="ep-row" onclick="openEpisode('${id}',${i})"><div class="ep-num">${String(i+1).padStart(2,'0')}</div><div class="ep-info"><div class="ep-title">${e.t}</div><div class="ep-sub">${e.s}</div></div><div class="ep-dur">${e.dur}</div></div>`).join('');
+  document.getElementById('cs-body').innerHTML = html;
+  document.getElementById('cat-sheet').classList.add('open');
+  document.getElementById('cat-overlay').classList.add('open');
+}
+function closeCat() {
+  document.getElementById('cat-sheet').classList.remove('open');
+  document.getElementById('cat-overlay').classList.remove('open');
+}
+
+function openEpisode(seriesId, i) {
+  const s = seriesData[seriesId]; const e = s.episodes[i];
+  document.getElementById('ep-crumb').textContent = s.title + ' · S1:E' + String(i+1).padStart(2,'0');
+  let html = `<div class="ep-eyebrow">${s.title} — ÉPISODE ${i+1}</div>`;
+  html += `<div class="ep-big-title">${e.t}</div>`;
+  html += `<div class="ep-body-text">${e.body}</div>`;
+  if (e.chips) html += `<div class="chip-row">${e.chips.map(c=>`<span class="chip">${c}</span>`).join('')}</div>`;
+  if (e.doc && docs[e.doc]) html += `<button class="doc-btn" onclick="openDoc('${e.doc}')"><span class="doc-btn-icon">📄</span><span class="doc-btn-label">VOIR LA DOCUMENTATION — ${docs[e.doc].label}</span></button>`;
+  document.getElementById('ep-body').innerHTML = html;
+  document.getElementById('epview').classList.add('open');
+}
+function closeEp() { document.getElementById('epview').classList.remove('open'); }
+
+function openDoc(id) {
+  const d = docs[id]; if (!d) return;
+  document.getElementById('dv-title').textContent = d.label;
+  document.getElementById('dv-body').innerHTML = d.html;
+  document.getElementById('docview').classList.add('open');
+}
+function closeDoc() { document.getElementById('docview').classList.remove('open'); }
+
+// ══════════ TEAM PROFILE SHEET ══════════
+function openProfile(id) {
+  const p = teamData[id]; if (!p) return;
+  document.getElementById('sh-icon').textContent = p.icon;
+  document.getElementById('sh-title').textContent = p.name;
+  document.getElementById('sh-host').textContent = p.role;
+  let html = `<div class="sec-title">Contributions</div>`;
+  html += `<div style="display:flex;flex-direction:column;gap:7px;margin-bottom:16px">` + p.items.map(i=>`<div style="display:flex;align-items:flex-start;gap:8px;padding:9px 12px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:9px;font-size:12px;color:rgba(238,240,248,0.65)"><div style="width:5px;height:5px;border-radius:50%;background:#4ecbaa;flex-shrink:0;margin-top:4px"></div>${i}</div>`).join('') + `</div>`;
+  html += `<div class="sec-title">Activité (illustratif)</div>`;
+  html += `<div class="activity-track"><div class="progress-fill" style="width:${p.pct}%"></div></div>`;
+  html += `<div style="font-size:10px;color:var(--text3)">Données illustratives — à dériver de l'historique Git réel.</div>`;
+  document.getElementById('sh-body').innerHTML = html;
+  document.getElementById('sheet').classList.add('open');
+  document.getElementById('overlay').classList.add('open');
+}
+function closeSheet() {
+  document.getElementById('sheet').classList.remove('open');
+  document.getElementById('overlay').classList.remove('open');
+}
+
+// ══════════ LIVE TAB RENDER ══════════
+let liveFilter = 'all';
+function setLiveFilter(f) {
+  liveFilter = f;
+  document.querySelectorAll('.live-filter').forEach(b=>b.classList.toggle('active', b.dataset.f===f));
+  renderLive(f);
+}
+function renderLive(f) {
+  const svcHtml = svcData.filter(s=>f==='all'||s.cat===f).map(s=>`<div class="svc-row"><span class="svc-name">${s.name}</span><span class="svc-status" style="color:#4ecbaa"><span class="svc-dot" style="background:#4ecbaa"></span>● ${s.status}</span></div>`).join('');
+  document.getElementById('svc-list').innerHTML = svcHtml || '<div style="padding:14px 18px;font-size:11px;color:var(--text3)">Aucun service dans ce filtre.</div>';
+  const evHtml = eventData.filter(e=>f==='all'||e.cat===f).map(e=>`<div class="event-row"><span class="event-time">${e.time}</span><span>${e.icon} ${e.text}</span></div>`).join('');
+  document.getElementById('event-list').innerHTML = evHtml || '<div style="padding:14px 18px;font-size:11px;color:var(--text3)">Aucun événement dans ce filtre.</div>';
+}
+
+// ══════════ JOURNEY STORYBOOK ══════════
+const demoStories = {
+  journey: {
+    logo:'DUOOWATCH', badge:'▶ LE PARCOURS',
+    badgeStyle:'background:rgba(78,203,170,0.12);color:#4ecbaa;border:1px solid rgba(78,203,170,0.25)',
+    logoColor:'#4ecbaa', nextClass:'sb-next-green', bg:'radial-gradient(ellipse at 50% -10%,rgba(78,203,170,0.08) 0%,transparent 60%),#09090f',
+    slides:[
+      {ey:'Départ',num:'01 / 07',icon:'👤',title:'Vous appuyez sur <em style="color:#4ecbaa">Lecture</em>',body:'Un utilisateur ouvre jellyfin.duoowatch.com et lance la lecture d\'un film. Sa requête part vers Internet.'},
+      {ey:'Étape 1 · Périphérie',num:'02 / 07',title:'<em style="color:#4ecbaa">Cloudflare</em> résout et protège',body:'Cloudflare résout le DNS et termine le TLS 1.3, puis pousse la requête dans un tunnel cloudflared sortant — aucun port n\'est ouvert côté FortiGate 60F.',card:[['DNS','Résolu'],['TLS','1.3 · terminé chez Cloudflare'],['Tunnel','cloudflared · sortant']]},
+      {ey:'Étape 2 · Proxy inverse',num:'03 / 07',title:'<em style="color:#4ecbaa">Traefik</em> route la requête',body:'Traefik reçoit le flux HTTP en interne sur le port 80 et route vers le bon conteneur selon le nom d\'hôte demandé.',card:[['Service','traefik:v3.3'],['Port','80'],['Domaine','jellyfin.duoowatch.com']]},
+      {ey:'Étape 3 · Identité',num:'04 / 07',title:'<em style="color:#4ecbaa">Keycloak</em> vérifie qui vous êtes',body:'L\'utilisateur est authentifié via OpenID Connect (Authorization Code + PKCE). Un token JWT est émis puis transmis à Jellyfin.',card:[['Realm','streaming-lab'],['Flux','Authorization Code + PKCE'],['Résultat','JWT émis ✓']]},
+      {ey:'Étape 4 · Média',num:'05 / 07',title:'<em style="color:#4ecbaa">Jellyfin</em> reçoit la demande',body:'Jellyfin retrouve le fichier dans sa bibliothèque et décide, selon l\'appareil et la bande passante, de transmettre le flux original ou de le transcoder.',card:[['Film demandé','Big Buck Bunny'],['Décision','Transcodage adaptatif']]},
+      {ey:'Étape 5 · Stockage & Calcul',num:'06 / 07',title:'Lecture, calcul, <em style="color:#4ecbaa">stockage</em>',body:'Jellyfin lit le média, le transcode à la volée si nécessaire, pendant que Prometheus, Loki et cAdvisor observent chaque conteneur impliqué en temps réel.',list:[['Stockage','Lecture du fichier média'],['Transcodage','Adaptation du flux'],['Télémétrie','Logs + métriques + traces en parallèle']]},
+      {ey:'Fin du parcours',num:'07 / 07',title:'<em style="color:#4ecbaa">Lecture démarrée</em>',body:'Le flux est envoyé au lecteur. Toute la chaîne — edge, proxy, identité, média, observabilité — vient d\'être traversée en une fraction de seconde.',verdict:{bg:'rgba(78,203,170,0.08)',border:'rgba(78,203,170,0.2)',icon:'▶',title:'En cours de lecture',titleColor:'#4ecbaa',sub:'Authentification ✓ vérifiée · Connexion ✓ TLS\nMonitoring ✓ actif · Sécurité ✓ observée'},list:[['Requête bout-en-bout validée','7 services traversés sans erreur'],['Chaîne de confiance respectée','Keycloak → Vault → Services'],['Observabilité continue','Prometheus / Loki / Grafana actifs pendant toute la lecture']]},
+    ]
+  }
+};
+
+function launchDemo(id) {
+  const s = demoStories[id]; if (!s) return;
+  demoState = { story: id, cur: 0 };
+  renderDemo();
+  document.getElementById('demo-view').style.display = 'flex';
+  document.getElementById('demo-view').style.flexDirection = 'column';
+  document.getElementById('demo-view').style.background = s.bg;
+}
+let demoState = {};
+function renderDemo() {
+  const id = demoState.story;
+  const s = demoStories[id];
+  const cur = demoState.cur;
+  const slide = s.slides[cur];
+  const dv = document.getElementById('demo-view');
+  let html = `
+  <div class="sb-hdr">
+    <button class="sb-back" onclick="closeDemo()">←</button>
+    <span class="sb-logo" style="color:${s.logoColor}">${s.logo}</span>
+    <span class="sb-badge" style="${s.badgeStyle}">${s.badge}</span>
+  </div>
+  <div class="sb-prog">${s.slides.map((_,i)=>`<div class="sb-seg" style="background:${i<cur?'rgba(78,203,170,0.6)':i===cur?s.logoColor:'rgba(255,255,255,0.08)'}"></div>`).join('')}</div>
+  <div class="sb-slides">
+    <div class="sb-slide active" style="background:transparent">
+      <div class="sb-eyebrow" style="color:${s.logoColor}80">${slide.ey}</div>
+      <div class="sb-num">${slide.num}</div>
+      ${slide.icon ? `<div class="sb-icon">${slide.icon}</div>` : ''}
+      <div class="sb-title">${slide.title}</div>
+      <div class="sb-body">${slide.body}</div>
+      ${slide.card ? `<div class="sb-card">${slide.card.map(([k,v])=>`<div class="sb-row"><span class="sb-k">${k}</span><span class="sb-v">${v}</span></div>`).join('')}</div>` : ''}
+      ${slide.callout ? `<div class="sb-callout" style="background:${slide.callout.color};border-left-color:${slide.callout.border}">${slide.callout.text}</div>` : ''}
+      ${slide.list ? `<div class="sb-list">${slide.list.map(([t,d])=>`<div class="sb-item"><div class="sb-dot" style="background:${s.logoColor}"></div><div><strong>${t}</strong><br>${d}</div></div>`).join('')}</div>` : ''}
+      ${slide.verdict ? `<div class="sb-verdict" style="background:${slide.verdict.bg};border:1px solid ${slide.verdict.border}"><span class="sb-vi">${slide.verdict.icon}</span><span class="sb-vt" style="color:${slide.verdict.titleColor}">${slide.verdict.title}</span><span class="sb-vs">${slide.verdict.sub}</span></div>` : ''}
+    </div>
+  </div>
+  <div class="sb-footer">
+    <div class="sb-hint">appuyez pour avancer</div>
+    <div class="sb-nav">
+      <button class="sb-btn sb-prev" onclick="demoNav(-1)" ${cur===0?'disabled':''}>←</button>
+      <button class="sb-btn ${s.nextClass}" onclick="demoNav(1)">${cur===s.slides.length-1?'Fermer ✓':'Suivant →'}</button>
+    </div>
+  </div>`;
+  dv.innerHTML = html;
+  dv.onclick = (e) => { if (!e.target.closest('.sb-nav') && !e.target.closest('.sb-hdr') && !e.target.closest('.sb-back')) demoNav(1); };
+}
+function demoNav(dir) {
+  const s = demoStories[demoState.story];
+  if (dir === 1 && demoState.cur === s.slides.length - 1) { closeDemo(); return; }
+  demoState.cur = Math.max(0, Math.min(s.slides.length - 1, demoState.cur + dir));
+  renderDemo();
+}
+function closeDemo() {
+  document.getElementById('demo-view').style.display = 'none';
+  document.getElementById('demo-view').onclick = null;
+}
+
+// ══════════ FILM PICKER → INTERACTIVE BACKEND FLOW ══════════
+const filmsData = {
+  bigbuck:{title:'Big Buck Bunny',poster:'🐰',meta:'2008 · Animation · 10 min',quality:'1080p · H.264',color:'#4ecbaa'},
+  sintel:{title:'Sintel',poster:'🐉',meta:'2010 · Fantastique · 15 min',quality:'4K · H.265',color:'#af9aec'},
+  tears:{title:'Tears of Steel',poster:'🤖',meta:'2012 · Science-fiction · 12 min',quality:'1080p · H.264',color:'#85b7eb'},
+  cosmos:{title:'Cosmos Laundromat',poster:'🐑',meta:'2015 · Animation · 12 min',quality:'4K · H.265',color:'#f0a030'},
+};
+
+function renderFilmGrid() {
+  const el = document.getElementById('film-grid');
+  if (el.dataset.rendered) return;
+  el.dataset.rendered = '1';
+  el.innerHTML = Object.entries(filmsData).map(([id,f])=>
+    `<div class="film-tile" style="background:${f.color}0d;border-color:${f.color}33">
+      <div class="film-tile-top">
+        <span class="film-poster">${f.poster}</span>
+        <div><div class="film-title">${f.title}</div><div class="film-meta">${f.meta} · ${f.quality}</div></div>
+      </div>
+      <button class="film-watch-btn" style="background:${f.color}" onclick="openFlow('${id}')">▶ Regarder maintenant</button>
+    </div>`).join('');
+}
+
+// Shared backend path — identical infrastructure for every film, only the caption/film name changes.
+function flowSteps(film) {
+  return [
+    {node:'user',packet:'GET /',caption:`Vous lancez la lecture de <strong style="color:#fff">${film.title}</strong>. La requête part de votre appareil vers Internet.`},
+    {node:'cloudflare',packet:'GET /',caption:"Cloudflare résout le DNS et termine le TLS 1.3, puis pousse la requête dans un tunnel cloudflared sortant vers vm-streaming. Aucun port n'est ouvert sur le FortiGate 60F."},
+    {node:'traefik',packet:'302 LOGIN',caption:"Traefik reçoit la requête en HTTP interne sur le port 80 et redirige vers Keycloak — aucune session valide n'a encore été trouvée."},
+    {node:'keycloak',packet:'JWT',caption:"Keycloak vérifie votre identité (OIDC · Authorization Code + PKCE, realm streaming-lab) et émet un token JWT."},
+    {node:'jellyfin',packet:'GET /stream',caption:`Jellyfin retrouve <strong style="color:#fff">${film.title}</strong> dans sa bibliothèque et prépare le flux selon votre appareil.`},
+    {node:'branches',packet:'200 VIDEO',caption:"Le fichier est lu depuis le stockage, transcodé si nécessaire, pendant que Prometheus, Loki et cAdvisor observent chaque conteneur en temps réel."},
+    {node:'done',packet:'200 VIDEO',caption:'verdict'},
+  ];
+}
+const flowNodeMeta = {
+  user:{icon:'👤',label:'Vous',sub:'Appareil client'},
+  cloudflare:{icon:'☁️',label:'Cloudflare',sub:'DNS · TLS 1.3 · Tunnel'},
+  traefik:{icon:'🔀',label:'Traefik',sub:'Reverse proxy · :80'},
+  keycloak:{icon:'🔐',label:'Keycloak',sub:'SSO · OIDC · JWT'},
+  jellyfin:{icon:'🎬',label:'Jellyfin',sub:'Streaming multimédia'},
+};
+const flowBranchMeta = [
+  {icon:'🗃️',label:'Stockage'},
+  {icon:'⚙️',label:'Transcodage'},
+  {icon:'📊',label:'Télémétrie'},
+];
+
+let flowState = {};
+function openFlow(filmId) {
+  const film = filmsData[filmId];
+  flowState = { film, steps: flowSteps(film), cur: 0 };
+  document.getElementById('flow-film-title').textContent = film.title;
+  document.getElementById('flow-film-meta').textContent = film.meta + ' · ' + film.quality;
+  document.documentElement.style.setProperty('--flow-color', film.color);
+  renderFlowStep();
+  document.getElementById('flow-view').classList.add('open');
+}
+function closeFlow() {
+  document.getElementById('flow-view').classList.remove('open');
+}
+function openArch() { document.getElementById('arch-view').classList.add('open'); }
+function closeArch() { document.getElementById('arch-view').classList.remove('open'); }
+function renderFlowStep() {
+  const { film, steps, cur } = flowState;
+  const step = steps[cur];
+  const order = ['user','cloudflare','traefik','keycloak','jellyfin','branches'];
+  const curIdx = order.indexOf(step.node) === -1 ? order.length : order.indexOf(step.node);
+
+  let html = '';
+  order.forEach((nodeId, i) => {
+    if (nodeId === 'branches') {
+      const state = i < curIdx ? 'done' : i === curIdx ? 'active' : 'pending';
+      html += `<div class="flow-connector ${i<=curIdx?'done':''}"></div>`;
+      html += `<div class="flow-branches">${flowBranchMeta.map(b=>`<div class="flow-node ${state}" style="--node-color:${film.color}"><span class="flow-node-icon">${b.icon}</span><span class="flow-node-label" style="font-size:10px">${b.label}</span></div>`).join('')}</div>`;
+    } else {
+      const meta = flowNodeMeta[nodeId];
+      const state = i < curIdx ? 'done' : i === curIdx ? 'active' : 'pending';
+      if (i>0) html += `<div class="flow-connector ${i<=curIdx?'done':''}"></div>`;
+      html += `<div class="flow-node ${state}" style="--node-color:${film.color}">
+        <span class="flow-node-icon">${meta.icon}</span>
+        <div><div class="flow-node-label">${meta.label}</div><div class="flow-node-sub">${meta.sub}</div></div>
+        ${state==='done' ? '<span class="flow-node-check">✓</span>' : ''}
+      </div>`;
+    }
+  });
+  document.getElementById('flow-diagram').innerHTML = html;
+
+  const chip = document.getElementById('flow-packet-chip');
+  if (step.node === 'done') { chip.style.display = 'none'; } else { chip.style.display = ''; chip.textContent = step.packet; chip.style.color = film.color; chip.style.borderColor = film.color+'55'; }
+
+  const capEl = document.getElementById('flow-caption');
+  if (step.caption === 'verdict') {
+    capEl.innerHTML = `<div class="flow-verdict">
+      <div style="font-size:32px;margin-bottom:6px">▶</div>
+      <div style="font-size:16px;font-weight:700;color:${film.color};margin-bottom:2px">Lecture démarrée ✓</div>
+      <div style="font-size:11px;color:var(--text2);margin-bottom:14px">${film.title}</div>
+      <div class="specs-grid" style="margin-bottom:0">
+        <div class="spec-cell"><div class="spec-k">Qualité</div><div class="spec-v">${film.quality}</div></div>
+        <div class="spec-cell"><div class="spec-k">Authentification</div><div class="spec-v" style="color:${film.color}">✓ Vérifiée</div></div>
+        <div class="spec-cell"><div class="spec-k">Connexion</div><div class="spec-v" style="color:${film.color}">✓ TLS 1.3</div></div>
+        <div class="spec-cell"><div class="spec-k">Télémétrie</div><div class="spec-v" style="color:${film.color}">✓ Active</div></div>
+      </div>
+    </div>`;
+  } else {
+    capEl.innerHTML = `<div class="flow-caption-eyebrow">Étape ${cur+1} / ${flowState.steps.length}</div><div class="flow-caption-text">${step.caption}</div>`;
+  }
+
+  document.getElementById('flow-prog').innerHTML = flowState.steps.map((_,i)=>`<div class="sb-seg" style="background:${i<cur?film.color+'99':i===cur?film.color:'rgba(255,255,255,0.08)'}"></div>`).join('');
+  document.getElementById('flow-prev').disabled = cur === 0;
+  document.getElementById('flow-next').textContent = cur === flowState.steps.length-1 ? 'Fermer ✓' : 'Suivant →';
+}
+function flowNav(dir) {
+  if (dir === 1 && flowState.cur === flowState.steps.length - 1) { closeFlow(); return; }
+  flowState.cur = Math.max(0, Math.min(flowState.steps.length - 1, flowState.cur + dir));
+  renderFlowStep();
+}
+
+// ══════════ INCIDENT SIMULATION — "WHEN THINGS BREAK" (3 incidents) ══════════
+const incidentData = {
+  idsalert:{icon:'👁',title:'Alerte IDS · CrowdSec',badgeColor:'#f0a030',badge:'🟠 P2 — HAUTE · SLA 30 min',
+    desc:"CrowdSec détecte, via l'analyse des logs Traefik, un comportement suspect en provenance du conteneur Jellyfin.",
+    crumb:'INCIDENT · P2 HAUTE',
+    choices:[
+      {label:'A · Redémarrer Jellyfin',correct:false,fb:"⚠ Un simple redémarrage ne traite pas la cause : si le trafic suspect persiste, l'incident recommencera. Réessayez."},
+      {label:'B · Isoler le conteneur du réseau',correct:true,fb:"✓ Action correcte — isolation du conteneur Jellyfin du réseau streaming-net. Le confinement empêche toute propagation pendant l'investigation."},
+      {label:"C · Ignorer l'alerte",correct:false,fb:"✗ Ignorer une alerte CrowdSec critique va à l'encontre de la procédure P2. Réessayez."},
+    ],
+    containDesc:'Jellyfin isolé de streaming-net',
+    steps:[['DÉTECTER','CrowdSec · alerte comportementale'],['CLASSIFIER','P2 · Haute'],['CONTENIR','Isolation réseau ✓'],['INVESTIGUER',"Logs + scan d'image"],['RESTAURER','Reconnexion contrôlée'],['POST-MORTEM','RCA documentée']],
+    resolvedDesc:"Conteneur reconnecté après scan d'image et validation.<br>Aucune propagation détectée.",
+    mttr:38},
+  ransomware:{icon:'💀',title:'Chiffrement suspect · MinIO',badgeColor:'#ff6b6b',badge:'🔴 P1 — CRITIQUE · SLA 15 min',
+    desc:"Des fichiers du bucket MinIO sont renommés en masse avec une extension inconnue — signature typique d'un ransomware.",
+    crumb:'INCIDENT · P1 CRITIQUE',
+    choices:[
+      {label:'A · Laisser tourner et surveiller',correct:false,fb:"⚠ Attendre pendant un chiffrement actif laisse le temps à l'attaque de se propager à d'autres volumes. Réessayez."},
+      {label:'B · Couper MinIO et déclencher le PCA/PRA',correct:true,fb:"✓ Action correcte — arrêt immédiat du service touché puis activation du plan de continuité. Objectifs : RTO 4h, RPO 24h via Veeam B&R."},
+      {label:'C · Payer une rançon supposée',correct:false,fb:"✗ Aucune rançon n'est envisagée — la procédure s'appuie sur la restauration depuis sauvegarde, pas sur la négociation. Réessayez."},
+    ],
+    containDesc:'MinIO arrêté · PCA/PRA activé',
+    steps:[['DÉTECTER','Renommage de masse détecté'],['CLASSIFIER','P1 · Critique'],['CONTENIR','Service MinIO arrêté ✓'],['INVESTIGUER','Identification du point d\'entrée'],['RESTAURER','Restauration Veeam B&R (RPO 24h)'],['POST-MORTEM','RCA + durcissement des accès']],
+    resolvedDesc:"Données restaurées depuis la dernière sauvegarde Veeam saine.<br>Test de restauration validé.",
+    mttr:230},
+  servicedown:{icon:'🔥',title:'Jellyfin indisponible',badgeColor:'#ff6b6b',badge:'🔴 P1 — CRITIQUE · SLA 15 min',
+    desc:"Prometheus signale up{job=\"jellyfin\"} = 0 — le service de streaming ne répond plus, Alertmanager a déclenché une alerte.",
+    crumb:'INCIDENT · P1 CRITIQUE',
+    choices:[
+      {label:"A · Consulter Grafana puis redémarrer le conteneur",correct:true,fb:"✓ Action correcte — vérifier les métriques/logs avant d'agir évite de masquer la cause, puis un redémarrage ciblé rétablit le service rapidement."},
+      {label:'B · Redémarrer tout le serveur Proxmox',correct:false,fb:"⚠ Redémarrer l'hyperviseur entier coupe aussi Keycloak, Traefik et PostgreSQL — bien plus large que nécessaire. Réessayez."},
+      {label:"C · Attendre qu'Alertmanager se calme",correct:false,fb:"✗ Le SLA P1 impose une prise en charge en 15 minutes — attendre viole la procédure ITIL. Réessayez."},
+    ],
+    containDesc:'Jellyfin diagnostiqué puis redémarré',
+    steps:[['DÉTECTER','Prometheus · up{job="jellyfin"}=0'],['CLASSIFIER','P1 · Critique'],['CONTENIR','Cause isolée au conteneur Jellyfin'],['INVESTIGUER','Logs Loki + métriques cAdvisor'],['RESTAURER','docker compose restart jellyfin'],['POST-MORTEM','RCA + règle Alertmanager affinée']],
+    resolvedDesc:"up{job=\"jellyfin\"} = 1 — service de nouveau opérationnel.<br>Aucun impact sur les autres services.",
+    mttr:47},
+};
+let incState = { id: null };
+
+function launchIncident() {
+  document.getElementById('incident-view').style.display = 'flex';
+  renderIncidentPicker();
+  incPhase(0);
+}
+function closeIncident() {
+  document.getElementById('incident-view').style.display = 'none';
+}
+function renderIncidentPicker() {
+  const el = document.getElementById('inc-picker');
+  el.innerHTML = Object.entries(incidentData).map(([id,inc])=>
+    `<button class="incident-card" style="border-color:${inc.badgeColor}44;background:${inc.badgeColor}0d" onclick="selectIncident('${id}')">
+      <span class="incident-card-icon">${inc.icon}</span>
+      <div><div class="incident-card-title">${inc.title}</div><div class="incident-card-sub">${inc.desc.split('.')[0]}.</div></div>
+      <span class="incident-card-badge" style="background:${inc.badgeColor}22;color:${inc.badgeColor}">${inc.badge.split('·')[0].trim()}</span>
+    </button>`).join('');
+}
+function selectIncident(id) {
+  incState.id = id;
+  const inc = incidentData[id];
+  document.getElementById('inc-icon').textContent = inc.icon;
+  document.getElementById('inc-title').textContent = inc.title;
+  document.getElementById('inc-desc').textContent = inc.desc;
+  const badgeEl = document.getElementById('inc-badge');
+  badgeEl.textContent = inc.badge;
+  badgeEl.style.background = inc.badgeColor+'1a';
+  badgeEl.style.color = inc.badgeColor;
+  badgeEl.style.border = '1px solid '+inc.badgeColor+'55';
+  document.getElementById('inc-p2-crumb').textContent = inc.crumb;
+  document.getElementById('inc-p2-crumb').style.color = inc.badgeColor;
+  document.getElementById('inc-p2-desc').textContent = inc.desc;
+  document.getElementById('inc-choices').innerHTML = inc.choices.map((c,i)=>`<button class="incident-choice" onclick="incChoice(${i})">${c.label}</button>`).join('');
+  document.getElementById('inc-feedback').innerHTML = '';
+  document.getElementById('inc-p3-desc').textContent = inc.containDesc;
+  document.getElementById('inc-steps').innerHTML = inc.steps.map(([k,v])=>`<div class="sb-row"><span class="sb-k">${k}</span><span class="sb-v">${v}</span></div>`).join('');
+  document.getElementById('inc-p4-desc').innerHTML = inc.resolvedDesc;
+  incPhase(1);
+}
+function incPhase(n) {
+  for (let i=0;i<=4;i++) document.getElementById('inc-p'+i).style.display = (i===n) ? 'flex' : 'none';
+}
+function incChoice(i) {
+  const inc = incidentData[incState.id];
+  const choice = inc.choices[i];
+  const fb = document.getElementById('inc-feedback');
+  const color = choice.correct ? '#4ecbaa' : (choice.label.startsWith('C') ? '#ff6b6b' : '#f0a030');
+  const bg = choice.correct ? 'rgba(78,203,170,0.1)' : (choice.label.startsWith('C') ? 'rgba(224,82,82,0.1)' : 'rgba(240,160,48,0.1)');
+  fb.innerHTML = `<div class="incident-feedback" style="background:${bg};border:1px solid ${color}55;color:${color}">${choice.fb}</div>`;
+  if (choice.correct) setTimeout(()=>incPhase(3), 900);
+}
+function incResolve() {
+  incPhase(4);
+  const target = incidentData[incState.id].mttr;
+  let t = 0;
+  const el = document.getElementById('inc-timer');
+  const step = Math.max(1, Math.round(target/19));
+  const iv = setInterval(() => {
+    t += step; if (t >= target) { t = target; clearInterval(iv); }
+    if (el) el.textContent = t;
+  }, 60);
+}
+</script>
+</body>
+</html>

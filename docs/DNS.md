@@ -1,36 +1,68 @@
-# DNS and `streaminglab.local`
+# DNS — Streaming Lab
 
-This project uses the internal domain `streaminglab.local` for local service discovery.
+## DNS public (Cloudflare)
 
-## Recommended internal hostnames
+Le domaine `duoowatch.com` est géré par Cloudflare. Les sous-domaines exposés pointent vers le tunnel Cloudflare via des enregistrements CNAME :
 
-Use the following hostnames in your internal DNS zone or Pi-hole/DNS server:
+| Sous-domaine | Service |
+|-------------|---------|
+| `jellyfin.duoowatch.com` | Jellyfin 10.10.7 |
+| `keycloak.duoowatch.com` | Keycloak 24 |
+| `grafana.duoowatch.com` | Grafana |
+| `minio.duoowatch.com` | MinIO Console |
+| `vault.duoowatch.com` | HashiCorp Vault |
+| `traefik.duoowatch.com` | Dashboard Traefik (basic auth) |
 
-- `vm-streaming.streaminglab.local` — main streaming VM
-- `vm-dns.streaminglab.local` — DNS/PI-hole VM
-- `vm-backup.streaminglab.local` — backup VM
-- `prometheus.streaminglab.local` — Prometheus
-- `grafana.streaminglab.local` — Grafana
-- `loki.streaminglab.local` — Loki
-- `keycloak.streaminglab.local` — Keycloak
-- `jellyfin.streaminglab.local` — Jellyfin
-- `vault.streaminglab.local` — Vault
-- `minio.streaminglab.local` — MinIO
+Aucun port entrant n'est ouvert sur le FortiGate — tout le trafic transite via le tunnel cloudflared sortant.
 
-## DNS zone setup
+---
 
-If you use Pi-hole or another internal DNS resolver, create the zone `streaminglab.local` and add static records for each service IP.
+## DNS interne (DNS-01 — Raspberry Pi 3B+)
 
-Example records:
+La résolution DNS interne est assurée par le **Raspberry Pi 3B+** (DNS-01) :
 
-- `streaminglab.local` -> `192.168.10.2`
-- `grafana.streaminglab.local` -> `192.168.40.13`
-- `prometheus.streaminglab.local` -> `192.168.40.10`
-- `loki.streaminglab.local` -> `192.168.40.11`
-- `jellyfin.streaminglab.local` -> `192.168.10.20`
-- `keycloak.streaminglab.local` -> `192.168.10.30`
+| Attribut | Valeur |
+|----------|--------|
+| Hostname | DNS-01 |
+| IP | 192.168.20.20 |
+| VLAN | 20 |
+| Matériel | Raspberry Pi 3B+ |
 
-## Notes
+> **Choix architectural :** une VM dédiée (vm-dns) avait été initialement envisagée. Le Raspberry Pi 3B+ existant sur le réseau remplit ce rôle sans consommer de ressources Proxmox supplémentaires.
 
-- `.local` is used only for internal DNS; do not expose it publicly.
-- If you need an external-facing domain later, keep `streaminglab.local` for internal resolution and use a separate public domain for external services.
+### Enregistrements internes recommandés (`streaminglab.local`)
+
+| Hostname | IP |
+|----------|----|
+| `vm-streaming.streaminglab.local` | 192.168.10.2 |
+| `vm-backup.streaminglab.local` | 192.168.20.2 |
+| `proxmox.streaminglab.local` | 192.168.90.50 |
+
+### Résolution Docker
+
+Les conteneurs se résolvent entre eux par leur **nom de service** Docker Compose sur le réseau Docker partagé. Aucune entrée DNS externe n'est nécessaire pour la communication inter-conteneurs.
+
+---
+
+## Flux de résolution
+
+```
+Utilisateur externe
+    │ → jellyfin.duoowatch.com
+    ▼
+Cloudflare DNS (résolution publique + tunnel TLS)
+    │
+    ▼
+cloudflared (tunnel sortant sur vm-streaming)
+    │
+    ▼
+Traefik :80 → Jellyfin
+
+Utilisateur interne (LAN)
+    │ → vm-streaming.streaminglab.local
+    ▼
+DNS-01 Raspberry Pi (192.168.20.20)
+    │
+    ▼
+192.168.10.2 (vm-streaming)
+```
