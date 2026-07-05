@@ -29,12 +29,10 @@ echo "[$(date)] Uploading to MinIO bucket: $BUCKET..."
 docker run --rm \
   --network streaming-private \
   -v /tmp:/backup \
-  -e MINIO_ROOT_USER="$MINIO_ROOT_USER" \
-  -e MINIO_ROOT_PASSWORD="$MINIO_ROOT_PASSWORD" \
-  minio/mc:latest \
-  sh -c "mc alias set minio http://minio:9000 \"\$MINIO_ROOT_USER\" \"\$MINIO_ROOT_PASSWORD\" && \
-         mc mb -p minio/$BUCKET && \
-         mc cp /backup/streaming-lab-configs-$DATE.tar.gz minio/$BUCKET/"
+  --entrypoint /bin/sh minio/mc:latest \
+  -c "mc alias set minio http://minio:9000 \"$MINIO_ROOT_USER\" \"$MINIO_ROOT_PASSWORD\" && \
+      mc mb -p minio/$BUCKET && \
+      mc cp /backup/streaming-lab-configs-$DATE.tar.gz minio/$BUCKET/"
 
 rm -rf "$TMP" "$ARCHIVE"
 echo "[$(date)] Done. Config backup uploaded to minio/$BUCKET/streaming-lab-configs-$DATE.tar.gz"

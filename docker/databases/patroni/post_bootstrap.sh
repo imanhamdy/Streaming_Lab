@@ -4,6 +4,8 @@ set -e
 # Runs once on cluster bootstrap (primary only).
 # Creates per-service DB users and databases.
 
+export PGHOST=/data/patroni
+
 psql -U "${POSTGRES_USER}" -d postgres <<-EOSQL
     CREATE DATABASE keycloak;
     CREATE USER keycloak WITH PASSWORD '${KC_DB_PASSWORD}';
