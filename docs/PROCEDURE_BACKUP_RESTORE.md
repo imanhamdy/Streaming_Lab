@@ -1,12 +1,15 @@
 # Procédure de Sauvegarde et Test de Restauration
 **Streaming Lab - Ynov Campus B3 INFRA**
-Version 1.0 - Juin 2026
+Version 2.0 - Juillet 2026
 
 ---
 
 ## 1. Objectif
 
-Ce document décrit la procédure de sauvegarde automatisée des VMs Proxmox ainsi que le protocole de test de restauration mensuel. Il constitue la preuve opérationnelle du Plan de Continuité d'Activité (PCA) défini dans `docs/PCA_PRA.docx`.
+Ce document décrit la stratégie 3-2-1 implémentée pour le Streaming Lab, combinant :
+- **Veeam B&R** : sauvegarde VM-level de `vm-streaming` vers `vm-backup`
+- **pg_dump → MinIO** : dump logique PostgreSQL quotidien
+- **Config export → MinIO** : archivage hebdomadaire des configurations Docker/scripts
 
 **Objectifs de récupération :**
 | Indicateur | Cible |
@@ -17,40 +20,73 @@ Ce document décrit la procédure de sauvegarde automatisée des VMs Proxmox ain
 
 ---
 
-## 2. Architecture de sauvegarde
+## 2. Architecture de sauvegarde (Règle 3-2-1)
 
 ```
-vm-streaming (192.168.20.10)  ─┐
-vm-dns       (192.168.110.101) ─┼──► Veeam B&R ──► vm-backup (192.168.140.10)
-vm-backup    (192.168.140.10)  ─┘         │
-                                           └──► Stockage local /backup (chiffré AES-256)
+PROXMOX HOST
+│
+├── vm-streaming (192.168.20.10)
+│     ├── Production : Keycloak, Jellyfin, MinIO, Grafana, Vault
+│     ├── pg_dump daily 02:30  ──────────────────────────────────► MinIO bucket: db-dumps
+│     └── config export Sunday 02:45 ──────────────────────────► MinIO bucket: backups
+│
+├── Veeam Backup Server / Appliance
+│     ├── Orchestration des jobs
+│     └── Proxmox plug-in + Worker
+│
+└── vm-backup (192.168.140.10)
+      └── /backup  ◄── Veeam incremental daily 02:00, full Sunday 01:00
 ```
 
-- **Outil :** Veeam Backup & Replication sur `vm-backup`
-- **Chiffrement :** AES-256 sur le canal réseau (VLAN 140 dédié)
-- **Rétention :**
-  - Quotidienne : 7 jours
-  - Hebdomadaire : 4 semaines
-  - Mensuelle : 3 mois
+**3 copies :** production + Veeam VM-level + dumps applicatifs MinIO
+**2 supports :** stockage Proxmox/VM + stockage objet MinIO
+**1 copie isolée :** réplication future vers S3 externe (Backblaze B2 / Scaleway)
 
 ---
 
-## 3. Procédure de sauvegarde automatisée
+## 3. Sauvegardes automatisées
 
-### 3.1 Planning des sauvegardes
+### 3.1 Planning
 
-| VM | Heure | Fréquence | Type |
-|---|---|---|---|
-| vm-streaming | 02h00 | Quotidienne | Incrémentale |
-| vm-dns | 02h30 | Quotidienne | Incrémentale |
-| vm-backup (config) | 03h00 | Hebdomadaire | Complète |
+| Composant | Script / Outil | Heure | Fréquence | Destination |
+|---|---|---|---|---|
+| VM complète vm-streaming | Veeam incrémental | 02:00 | Quotidienne | vm-backup:/backup |
+| VM complète vm-streaming | Veeam full | 01:00 | Dimanche | vm-backup:/backup |
+| PostgreSQL pg_dumpall | `backup_pgsql_to_minio.sh` | 02:30 | Quotidienne | MinIO: db-dumps |
+| Configs Docker/scripts | `backup_configs_to_minio.sh` | 02:45 | Dimanche | MinIO: backups |
+| Nettoyage dumps anciens | `cleanup_old_dumps.sh` | 03:00 | Dimanche | MinIO: db-dumps |
 
-### 3.2 Vérification du statut des sauvegardes
+### 3.2 Cron installé sur vm-streaming
 
-Connexion à Veeam B&R sur `vm-backup` :
+```cron
+30 2 * * * /home/principal/streaming-lab/scripts/backup/backup_pgsql_to_minio.sh >> /var/log/streaming-lab-pg-backup.log 2>&1
+45 2 * * 0 /home/principal/streaming-lab/scripts/backup/backup_configs_to_minio.sh >> /var/log/streaming-lab-config-backup.log 2>&1
+0  3 * * 0 /home/principal/streaming-lab/scripts/backup/cleanup_old_dumps.sh >> /var/log/streaming-lab-cleanup.log 2>&1
+```
+
+Vérifier les logs :
+```bash
+tail -f /var/log/streaming-lab-pg-backup.log
+tail -f /var/log/streaming-lab-config-backup.log
+```
+
+### 3.3 Exécution manuelle
+
+```bash
+# Régénérer .env depuis Vault
+VAULT_TOKEN=<token> bash scripts/vault-env.sh
+
+# Dump PostgreSQL
+bash scripts/backup/backup_pgsql_to_minio.sh
+
+# Export configuration
+bash scripts/backup/backup_configs_to_minio.sh
+```
+
+### 3.4 Veeam — vérification statut
+
 ```bash
 ssh principal@192.168.140.10
-# Vérifier le journal des jobs Veeam
 sudo veeamconfig job list
 sudo veeamconfig session list --jobName "Backup_vm-streaming"
 ```
@@ -59,130 +95,168 @@ Résultat attendu : `Status: Success` pour chaque job.
 
 ---
 
-## 4. Procédure de test de restauration mensuel
+## 4. Tests de validation — Suite automatisée
 
-### Pré-requis
-- [ ] VPN FortiClient actif
-- [ ] Accès SSH à Proxmox (192.168.90.50)
-- [ ] Accès Veeam B&R sur vm-backup
-- [ ] Créneau de maintenance annoncé à l'équipe (hors heures de production)
+La suite de tests est dans `scripts/tests/`. Lancer tous les tests :
+
+```bash
+bash scripts/tests/test_all.sh
+```
+
+Sortie attendue :
+```
+========================================
+ Streaming Lab — Full Test Suite
+========================================
+
+01 Containers         [PASS]
+02 Networks           [PASS]
+03 Routes             [PASS]
+04 Volumes            [PASS]
+05 MinIO buckets      [PASS]
+06 PG Backup          [PASS]
+07 PG Restore         [PASS]
+08 Monitoring         [PASS]
+09 SSO                [PASS]
+10 Vault              [PASS]
+11 Backup repo        [PASS]
+
+========================================
+ OVERALL: 11/11 PASS
+========================================
+```
+
+Tests disponibles individuellement :
+
+| Script | Valide |
+|---|---|
+| `test_containers.sh` | Tous les containers en cours d'exécution |
+| `test_network.sh` | Routage interne et exposition bloquée |
+| `test_routes.sh` | Routes HTTP par domaine via Traefik |
+| `test_volumes.sh` | Volumes Docker et mount rclone |
+| `test_minio_buckets.sh` | Création/vérification des buckets requis |
+| `test_pgsql_backup.sh` | Backup end-to-end + upload MinIO |
+| `test_pgsql_restore.sh` | Restauration dans container temporaire + validation |
+| `test_monitoring.sh` | Prometheus, Grafana, Loki, Alertmanager |
+| `test_sso.sh` | Keycloak OIDC discovery, MinIO SSO redirect |
+| `test_vault.sh` | Vault initialisé, descellé, secrets lisibles |
+| `test_backup_repository.sh` | SSH vm-backup, /backup, espace disque |
 
 ---
 
-### Étape 1 - Identifier le point de restauration
+## 5. Test de restauration mensuel (Veeam)
 
-Sur `vm-backup`, lister les points de restauration disponibles :
+### Pré-requis
+- [ ] Accès SSH à Proxmox (192.168.90.50)
+- [ ] Accès Veeam B&R
+- [ ] Créneau de maintenance annoncé à l'équipe
+
+### Étape 1 — Identifier le point de restauration
+
 ```bash
 sudo veeamconfig point list --jobName "Backup_vm-streaming"
 ```
 
-Exemple de sortie :
-```
-ID                                   CreationTime          Type
-----                                 ------------          ----
-a1b2c3d4-...                         2026-06-22 02:00:01   Increment
-e5f6g7h8-...                         2026-06-15 02:00:01   Full
-```
+### Étape 2 — Restauration en environnement isolé
 
-Sélectionner le point de restauration J-1 (dernier incrémental).
+> **Important :** Ne jamais restaurer par-dessus la VM de production.
 
----
-
-### Étape 2 - Restauration en environnement isolé
-
-> **Important :** Ne jamais restaurer par-dessus la VM de production. Toujours restaurer dans un environnement de test isolé.
-
-Sur Proxmox (192.168.90.50), créer une VM de test temporaire :
-
-```bash
-# Via l'interface Proxmox ou CLI
-qm clone <vmid_vm-streaming> <new_vmid> --name vm-streaming-test --full
-```
-
-Lancer la restauration via Veeam vers la VM de test :
 ```bash
 sudo veeamconfig restore vm \
-  --pointId a1b2c3d4-... \
+  --pointId <id> \
   --vmName vm-streaming-test \
   --server 192.168.90.50
 ```
 
----
-
-### Étape 3 - Vérification post-restauration
-
-Une fois la VM restaurée et démarrée, vérifier :
+### Étape 3 — Vérification post-restauration
 
 ```bash
 ssh principal@<ip_vm_test>
 
-# 1. Vérifier que les containers Docker sont actifs
+# Containers
 docker ps
 
-# Résultat attendu : tous les containers en status "Up"
-# traefik, jellyfin, keycloak, vault, prometheus, grafana, loki, minio
+# Suite de tests complète
+bash /home/principal/streaming-lab/scripts/tests/test_all.sh
 
-# 2. Vérifier l'accès aux bases de données
+# Vérification base de données
 docker exec postgres pg_isready -U streaminglab
-docker exec redis redis-cli ping
 
-# 3. Vérifier l'intégrité des données
-docker exec postgres psql -U streaminglab -c "SELECT COUNT(*) FROM information_schema.tables;"
-
-# 4. Vérifier les volumes MinIO
+# MinIO
 docker exec minio mc ready local
 ```
 
 **Critères de succès :**
 - [ ] Tous les containers démarrent sans erreur
+- [ ] `test_all.sh` : tous les tests PASS
 - [ ] `pg_isready` retourne `accepting connections`
-- [ ] `redis-cli ping` retourne `PONG`
 - [ ] MinIO répond `The cluster is ready`
-- [ ] Interface Grafana accessible sur port 3000
+- [ ] Grafana accessible sur port 3000
 - [ ] Jellyfin accessible sur port 8096
+- [ ] MinIO SSO : `loginStrategy=redirect`
 
----
+### Étape 4 — Rapport de test
 
-### Étape 4 - Rapport de test
+| Date | Point restauré | Durée restauration | test_all.sh | Anomalies | Validé par |
+|---|---|---|---|---|---|
+| 2026-06-22 | 2026-06-21 02:00 | 47 min | — | Aucune | Iman H. |
+| | | | | | |
 
-Compléter le tableau de suivi ci-dessous après chaque test :
+### Étape 5 — Nettoyage
 
-| Date | Point restauré | VM testée | Durée restauration | Résultat | Anomalies | Validé par |
-|---|---|---|---|---|---|---|
-| 2026-06-22 | 2026-06-21 02:00 | vm-streaming-test | 47 min | ✅ Succès | Aucune | Iman H. |
-| | | | | | | |
-| | | | | | | |
-
----
-
-### Étape 5 - Nettoyage
-
-Après validation, supprimer la VM de test :
 ```bash
-# Arrêter et supprimer la VM de test sur Proxmox
 qm stop <new_vmid>
 qm destroy <new_vmid>
 ```
 
 ---
 
-## 5. Procédure de restauration d'urgence (sinistre réel)
+## 6. Restauration PostgreSQL depuis dump MinIO
 
-En cas de défaillance réelle d'une VM de production :
+```bash
+source /home/principal/streaming-lab/.env
 
-1. **Évaluer l'impact** - identifier la VM affectée et les services impactés
-2. **Notifier l'équipe** - informer tous les membres via le canal d'urgence
-3. **Isoler** - désactiver les accès réseau vers la VM défaillante (règle FortiGate)
-4. **Restaurer** - suivre les étapes 1 à 3 ci-dessus, mais vers la VM de production
-5. **Valider** - exécuter les vérifications de l'étape 3
-6. **Rétablir** - réactiver les accès réseau
-7. **Post-mortem** - documenter l'incident dans `docs/` sous `INCIDENT_YYYY-MM-DD.md`
+# Lister les dumps disponibles
+docker run --rm --network streaming-net \
+  -e MINIO_ROOT_USER="$MINIO_ROOT_USER" \
+  -e MINIO_ROOT_PASSWORD="$MINIO_ROOT_PASSWORD" \
+  minio/mc:latest \
+  sh -c "mc alias set minio http://minio:9000 \"\$MINIO_ROOT_USER\" \"\$MINIO_ROOT_PASSWORD\" && mc ls minio/db-dumps"
+
+# Exécuter le test de restauration automatisé
+bash scripts/tests/test_pgsql_restore.sh
+```
+
+Voir [POSTGRESQL_BACKUP.md](POSTGRESQL_BACKUP.md) pour la procédure complète.
+
+---
+
+## 7. Procédure de restauration d'urgence (sinistre réel)
+
+1. **Évaluer l'impact** — identifier la VM affectée et les services impactés
+2. **Notifier l'équipe** — informer tous les membres via le canal d'urgence
+3. **Isoler** — désactiver les accès réseau vers la VM défaillante
+4. **Restaurer** — Veeam restore vers production OU restauration PostgreSQL depuis MinIO selon la nature du sinistre
+5. **Valider** — `bash scripts/tests/test_all.sh`
+6. **Rétablir** — réactiver les accès réseau
+7. **Post-mortem** — documenter dans `docs/INCIDENT_YYYY-MM-DD.md`
 
 **RTO cible : 4 heures** à partir du déclenchement de la restauration.
 
 ---
 
-## 6. Contacts d'urgence
+## 8. Rétention
+
+| Type | Rétention |
+|---|---|
+| Veeam incrémental | 30 jours |
+| Veeam full | 4 semaines |
+| MinIO db-dumps | 30 jours (cleanup_old_dumps.sh) |
+| MinIO backups (configs) | Manuel |
+
+---
+
+## 9. Contacts d'urgence
 
 | Rôle | Nom | Responsabilité |
 |---|---|---|
