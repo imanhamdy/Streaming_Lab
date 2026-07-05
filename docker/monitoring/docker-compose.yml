@@ -195,3 +195,17 @@ services:
       - streaming-public
       - streaming-monitoring
 
+  # ── POSTGRES EXPORTER ─────────────────────────────────────
+  postgres-exporter:
+    image: prometheuscommunity/postgres-exporter:v0.15.0
+    container_name: postgres-exporter
+    restart: unless-stopped
+    env_file: ../../.env
+    environment:
+      - DATA_SOURCE_NAME=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@haproxy-postgres:5000/postgres?sslmode=disable
+      - PG_EXPORTER_AUTO_DISCOVER_DATABASES=true
+      - PG_EXPORTER_EXCLUDE_DATABASES=template0,template1
+    networks:
+      - streaming-monitoring
+      - streaming-private
+

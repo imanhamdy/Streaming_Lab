@@ -18,7 +18,7 @@ services:
     volumes:
       - /home/principal/jellyfin/config:/config
       - /home/principal/jellyfin/cache:/cache
-      - /home/principal/media:/media:ro
+      - /home/principal/media/movies:/media/movies:ro
     environment:
       - JELLYFIN_PublishedServerUrl=https://jellyfin.duoowatch.com
     extra_hosts:
