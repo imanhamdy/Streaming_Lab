@@ -46,7 +46,19 @@ services:
     restart: unless-stopped
     env_file: ../../.env
     environment:
+      # Node identity — Patroni reads these natively
       - PATRONI_NAME=postgres-01
+      - PATRONI_RESTAPI_LISTEN=0.0.0.0:8008
+      - PATRONI_RESTAPI_CONNECT_ADDRESS=postgres-01:8008
+      - PATRONI_POSTGRESQL_LISTEN=0.0.0.0:5432
+      - PATRONI_POSTGRESQL_CONNECT_ADDRESS=postgres-01:5432
+      - PATRONI_POSTGRESQL_DATA_DIR=/data/patroni
+      - PATRONI_POSTGRESQL_PGPASS=/tmp/pgpass0
+      # Credentials from .env via env_file
+      - PATRONI_SUPERUSER_USERNAME=${POSTGRES_USER}
+      - PATRONI_SUPERUSER_PASSWORD=${POSTGRES_PASSWORD}
+      - PATRONI_REPLICATION_USERNAME=replicator
+      - PATRONI_REPLICATION_PASSWORD=${POSTGRES_REPLICATION_PASSWORD}
     volumes:
       - postgres01_data:/data/patroni
     networks:
@@ -55,10 +67,10 @@ services:
       etcd:
         condition: service_healthy
     healthcheck:
-      test: ["CMD", "pg_isready", "-U", "postgres", "-h", "localhost"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres} -h localhost || exit 1"]
       interval: 10s
       timeout: 5s
-      retries: 5
+      retries: 10
 
   # ── POSTGRES REPLICA (patroni node 2) ──────────────────────
   postgres-02:
@@ -70,6 +82,16 @@ services:
     env_file: ../../.env
     environment:
       - PATRONI_NAME=postgres-02
+      - PATRONI_RESTAPI_LISTEN=0.0.0.0:8008
+      - PATRONI_RESTAPI_CONNECT_ADDRESS=postgres-02:8008
+      - PATRONI_POSTGRESQL_LISTEN=0.0.0.0:5432
+      - PATRONI_POSTGRESQL_CONNECT_ADDRESS=postgres-02:5432
+      - PATRONI_POSTGRESQL_DATA_DIR=/data/patroni
+      - PATRONI_POSTGRESQL_PGPASS=/tmp/pgpass0
+      - PATRONI_SUPERUSER_USERNAME=${POSTGRES_USER}
+      - PATRONI_SUPERUSER_PASSWORD=${POSTGRES_PASSWORD}
+      - PATRONI_REPLICATION_USERNAME=replicator
+      - PATRONI_REPLICATION_PASSWORD=${POSTGRES_REPLICATION_PASSWORD}
     volumes:
       - postgres02_data:/data/patroni
     networks:
@@ -80,10 +102,10 @@ services:
       postgres-01:
         condition: service_healthy
     healthcheck:
-      test: ["CMD", "pg_isready", "-U", "postgres", "-h", "localhost"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres} -h localhost || exit 1"]
       interval: 10s
       timeout: 5s
-      retries: 5
+      retries: 10
 
   # ── HAPROXY (postgres router) ──────────────────────────────
   haproxy-postgres:

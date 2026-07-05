@@ -1,10 +1,8 @@
 scope: streaming-postgres
 namespace: /service/
-name: ${PATRONI_NAME}
 
 restapi:
   listen: 0.0.0.0:8008
-  connect_address: ${PATRONI_NAME}:8008
 
 etcd3:
   host: etcd:2379
@@ -38,19 +36,8 @@ bootstrap:
 
 postgresql:
   listen: 0.0.0.0:5432
-  connect_address: ${PATRONI_NAME}:5432
   data_dir: /data/patroni
   pgpass: /tmp/pgpass0
-  authentication:
-    replication:
-      username: replicator
-      password: ${POSTGRES_REPLICATION_PASSWORD}
-    superuser:
-      username: ${POSTGRES_USER}
-      password: ${POSTGRES_PASSWORD}
-    rewind:
-      username: ${POSTGRES_USER}
-      password: ${POSTGRES_PASSWORD}
   parameters:
     unix_socket_directories: '.'
 
