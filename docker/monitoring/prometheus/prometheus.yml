@@ -48,3 +48,19 @@ scrape_configs:
         labels:
           instance: "vm-backup"
           env: "prod"
+
+  # ── PATRONI HA ────────────────────────────────────────────
+  - job_name: "patroni"
+    static_configs:
+      - targets:
+          - "postgres-01:8008"
+          - "postgres-02:8008"
+        labels:
+          env: "prod"
+
+  # ── POSTGRES EXPORTER ─────────────────────────────────────
+  - job_name: "postgres"
+    static_configs:
+      - targets: ["postgres-exporter:9187"]
+        labels:
+          env: "prod"
