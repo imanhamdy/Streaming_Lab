@@ -18,13 +18,11 @@ services:
     volumes:
       - /home/principal/jellyfin/config:/config
       - /home/principal/jellyfin/cache:/cache
-      - /home/principal/streaming-media:/media:ro,shared
+      - /home/principal/media:/media:ro
     environment:
       - JELLYFIN_PublishedServerUrl=https://jellyfin.duoowatch.com
     extra_hosts:
       - host.docker.internal:host-gateway
-    depends_on:
-      - rclone
     labels:
       - traefik.enable=true
       - traefik.docker.network=streaming-public
@@ -34,33 +32,4 @@ services:
       - traefik.http.services.jellyfin.loadbalancer.server.port=8096
     networks:
       - streaming-public
-      - streaming-private
-
-  rclone:
-    image: rclone/rclone:latest
-    container_name: jellyfin-rclone
-    restart: unless-stopped
-    env_file: ../../.env
-    environment:
-      # Override rclone.conf credentials via env vars (rclone expands RCLONE_CONFIG_<NAME>_<KEY>)
-      - RCLONE_CONFIG_MINIO_ACCESS_KEY_ID=${MINIO_ROOT_USER}
-      - RCLONE_CONFIG_MINIO_SECRET_ACCESS_KEY=${MINIO_ROOT_PASSWORD}
-    command: >
-      mount minio:streaming-media /mnt/media
-      --allow-other
-      --allow-non-empty
-      --vfs-cache-mode writes
-      --vfs-cache-max-size 2G
-      --dir-cache-time 10m
-      --poll-interval 30s
-    volumes:
-      - /home/principal/streaming-media:/mnt/media:shared
-      - ./rclone.conf:/config/rclone/rclone.conf:ro
-    devices:
-      - /dev/fuse:/dev/fuse
-    cap_add:
-      - SYS_ADMIN
-    security_opt:
-      - apparmor:unconfined
-    networks:
       - streaming-private
