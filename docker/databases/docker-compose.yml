@@ -1,4 +1,10 @@
-﻿version: '3.8'
+networks:
+  db-net:
+    external: true
+    name: db-net
+
+volumes:
+  postgres_data:
 
 services:
   postgres:
@@ -16,40 +22,3 @@ services:
       - "5432:5432"
     networks:
       - db-net
-
-  mongodb:
-    image: mongo:4.4
-    container_name: mongodb
-    restart: unless-stopped
-    env_file: ../.env
-    environment:
-      - MONGO_INITDB_ROOT_USERNAME=${MONGO_INITDB_ROOT_USERNAME}
-      - MONGO_INITDB_ROOT_PASSWORD=${MONGO_INITDB_ROOT_PASSWORD}
-    volumes:
-      - mongo_data:/data/db
-    ports:
-      - "27017:27017"
-    networks:
-      - db-net
-
-  redis:
-    image: redis:7-alpine
-    container_name: redis
-    restart: unless-stopped
-    env_file: ../.env
-    command: ["redis-server", "--save", "60", "1", "--appendonly", "yes", "--requirepass", "${REDIS_PASSWORD}"]
-    volumes:
-      - redis_data:/data
-    ports:
-      - "6379:6379"
-    networks:
-      - db-net
-
-networks:
-  db-net:
-    external: true
-
-volumes:
-  postgres_data:
-  mongo_data:
-  redis_data:
