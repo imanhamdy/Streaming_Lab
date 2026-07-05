@@ -24,6 +24,7 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - crowdsec_data:/etc/crowdsec
       - crowdsec_db:/var/lib/crowdsec/data
+      - ./crowdsec-acquis.yaml:/etc/crowdsec/acquis.yaml:ro
     networks:
       - streaming-public
 

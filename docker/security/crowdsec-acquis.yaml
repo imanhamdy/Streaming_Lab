@@ -1,0 +1,24 @@
+---
+# Traefik access logs via Docker socket
+source: docker
+container_name:
+  - traefik
+labels:
+  type: traefik
+
+---
+# Keycloak logs via Docker socket
+source: docker
+container_name:
+  - keycloak
+labels:
+  type: syslog
+
+---
+# SSH auth logs from host
+source: file
+filenames:
+  - /var/log/host/auth.log
+  - /var/log/host/syslog
+labels:
+  type: syslog
