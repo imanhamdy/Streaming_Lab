@@ -14,7 +14,7 @@ services:
     env_file: ../../.env
     environment:
       - KC_DB=postgres
-      - KC_DB_URL=jdbc:postgresql://postgres:5432/keycloak
+      - KC_DB_URL=jdbc:postgresql://haproxy-postgres:5000/keycloak
       - KC_DB_USERNAME=keycloak
       - KC_HOSTNAME_URL=https://keycloak.duoowatch.com
       - KC_HOSTNAME_ADMIN_URL=https://keycloak.duoowatch.com

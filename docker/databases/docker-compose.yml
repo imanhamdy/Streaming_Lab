@@ -4,21 +4,99 @@ networks:
     name: streaming-private
 
 volumes:
-  postgres_data:
+  postgres01_data:
+  postgres02_data:
+  etcd_data:
 
 services:
-  postgres:
-    image: postgres:17-alpine
-    container_name: postgres
+
+  # ── ETCD (DCS for Patroni) ─────────────────────────────────
+  etcd:
+    image: bitnami/etcd:3.5
+    container_name: etcd
+    restart: unless-stopped
+    environment:
+      - ALLOW_NONE_AUTHENTICATION=yes
+      - ETCD_NAME=etcd0
+      - ETCD_DATA_DIR=/etcd-data
+      - ETCD_LISTEN_CLIENT_URLS=http://0.0.0.0:2379
+      - ETCD_ADVERTISE_CLIENT_URLS=http://etcd:2379
+      - ETCD_LISTEN_PEER_URLS=http://0.0.0.0:2380
+      - ETCD_INITIAL_ADVERTISE_PEER_URLS=http://etcd:2380
+      - ETCD_INITIAL_CLUSTER=etcd0=http://etcd:2380
+      - ETCD_INITIAL_CLUSTER_TOKEN=streaming-postgres-cluster
+      - ETCD_INITIAL_CLUSTER_STATE=new
+    volumes:
+      - etcd_data:/etcd-data
+    networks:
+      - streaming-private
+    healthcheck:
+      test: ["CMD", "etcdctl", "endpoint", "health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ── POSTGRES PRIMARY (patroni node 1) ──────────────────────
+  postgres-01:
+    build:
+      context: ./patroni
+    image: streaming-patroni:17
+    container_name: postgres-01
     restart: unless-stopped
     env_file: ../../.env
     environment:
-      - POSTGRES_USER=${POSTGRES_USER}
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
-      - POSTGRES_DB=${POSTGRES_DB}
-      - KC_DB_PASSWORD=${KC_DB_PASSWORD}
+      - PATRONI_NAME=postgres-01
     volumes:
-      - postgres_data:/var/lib/postgresql/data
-      - ./init:/docker-entrypoint-initdb.d:ro
+      - postgres01_data:/data/patroni
     networks:
       - streaming-private
+    depends_on:
+      etcd:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "postgres", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ── POSTGRES REPLICA (patroni node 2) ──────────────────────
+  postgres-02:
+    build:
+      context: ./patroni
+    image: streaming-patroni:17
+    container_name: postgres-02
+    restart: unless-stopped
+    env_file: ../../.env
+    environment:
+      - PATRONI_NAME=postgres-02
+    volumes:
+      - postgres02_data:/data/patroni
+    networks:
+      - streaming-private
+    depends_on:
+      etcd:
+        condition: service_healthy
+      postgres-01:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "postgres", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ── HAPROXY (postgres router) ──────────────────────────────
+  haproxy-postgres:
+    image: haproxy:2.9-alpine
+    container_name: haproxy-postgres
+    restart: unless-stopped
+    volumes:
+      - ./haproxy/haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg:ro
+    ports:
+      - "5000:5000"
+      - "5001:5001"
+      - "7000:7000"
+    networks:
+      - streaming-private
+    depends_on:
+      - postgres-01
+      - postgres-02

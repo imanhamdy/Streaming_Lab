@@ -20,6 +20,7 @@ DOCKER_API_VERSION=1.41
 POSTGRES_USER=$(get databases postgres_user)
 POSTGRES_PASSWORD=$(get databases postgres_password)
 POSTGRES_DB=$(get databases postgres_db)
+POSTGRES_REPLICATION_PASSWORD=$(get databases postgres_replication_password)
 
 # --- Keycloak ---
 KEYCLOAK_ADMIN=$(get keycloak admin_user)
