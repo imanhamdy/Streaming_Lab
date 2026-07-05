@@ -1,3 +1,11 @@
+networks:
+  streaming-public:
+    external: true
+    name: streaming-public
+  streaming-private:
+    external: true
+    name: streaming-private
+
 services:
   jellyfin:
     image: jellyfin/jellyfin
@@ -5,8 +13,8 @@ services:
     restart: unless-stopped
     hostname: jellyfin
     ports:
-      - 8096:8096/tcp
-      - 7359:7359/udp
+      - "8096:8096/tcp"
+      - "7359:7359/udp"
     volumes:
       - /path/to/config:/config
       - /path/to/cache:/cache
@@ -14,15 +22,39 @@ services:
       - JELLYFIN_PublishedServerUrl=https://jellyfin.duoowatch.com
     extra_hosts:
       - host.docker.internal:host-gateway
+    depends_on:
+      - rclone
     labels:
       - traefik.enable=true
+      - traefik.docker.network=streaming-public
       - traefik.http.routers.jellyfin.rule=Host(`jellyfin.duoowatch.com`)
-      - traefik.http.routers.jellyfin.entrypoints=websecure
-      - traefik.http.routers.jellyfin.tls.certresolver=letsencrypt
+      - traefik.http.routers.jellyfin.entrypoints=web
+      - traefik.http.routers.jellyfin.service=jellyfin
       - traefik.http.services.jellyfin.loadbalancer.server.port=8096
     networks:
-      - streaming-net
+      - streaming-public
+      - streaming-private
 
-networks:
-  streaming-net:
-    external: true
+  rclone:
+    image: rclone/rclone:latest
+    container_name: jellyfin-rclone
+    restart: unless-stopped
+    command: >
+      mount minio:streaming-media /mnt/media
+      --allow-other
+      --allow-non-empty
+      --vfs-cache-mode writes
+      --vfs-cache-max-size 2G
+      --dir-cache-time 10m
+      --poll-interval 30s
+    volumes:
+      - /home/principal/streaming-media:/mnt/media:shared
+      - ./rclone.conf:/config/rclone/rclone.conf:ro
+    devices:
+      - /dev/fuse:/dev/fuse
+    cap_add:
+      - SYS_ADMIN
+    security_opt:
+      - apparmor:unconfined
+    networks:
+      - streaming-private

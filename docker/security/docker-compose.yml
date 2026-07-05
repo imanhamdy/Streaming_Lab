@@ -1,9 +1,10 @@
-version: '3.8'
-
 networks:
-  streaming-net:
+  streaming-public:
     external: true
-    name: streaming-net
+    name: streaming-public
+  streaming-private:
+    external: true
+    name: streaming-private
 
 volumes:
   vault_data:
@@ -24,10 +25,12 @@ services:
       - ./vault-config.hcl:/vault/config/vault.hcl:ro
     labels:
       - "traefik.enable=true"
+      - "traefik.docker.network=streaming-public"
       - "traefik.http.routers.vault.rule=Host(`vault.duoowatch.com`)"
       - "traefik.http.routers.vault.entrypoints=web"
       - "traefik.http.services.vault.loadbalancer.server.port=8200"
     ports:
       - "8200:8200"
     networks:
-      - streaming-net
+      - streaming-public
+      - streaming-private

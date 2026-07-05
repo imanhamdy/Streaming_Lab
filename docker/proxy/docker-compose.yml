@@ -1,7 +1,7 @@
 networks:
-  streaming-net:
+  streaming-public:
     external: true
-    name: streaming-net
+    name: streaming-public
 
 volumes:
   traefik_certs:
@@ -19,7 +19,7 @@ services:
       - "--entrypoints.web.address=:80"
       - "--providers.docker=true"
       - "--providers.docker.exposedbydefault=false"
-      - "--providers.docker.network=streaming-net"
+      - "--providers.docker.network=streaming-public"
       - "--log.level=INFO"
       - "--accesslog=true"
     ports:
@@ -34,4 +34,4 @@ services:
       - "traefik.http.routers.dashboard.middlewares=auth"
       - "traefik.http.middlewares.auth.basicauth.users=${TRAEFIK_DASHBOARD_USERS}"
     networks:
-      - streaming-net
+      - streaming-public

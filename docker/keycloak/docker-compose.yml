@@ -1,10 +1,10 @@
 networks:
-  streaming-net:
+  streaming-public:
     external: true
-    name: streaming-net
-  db-net:
+    name: streaming-public
+  streaming-private:
     external: true
-    name: db-net
+    name: streaming-private
 
 services:
   keycloak:
@@ -24,9 +24,10 @@ services:
     command: start
     labels:
       - "traefik.enable=true"
+      - "traefik.docker.network=streaming-public"
       - "traefik.http.routers.keycloak.rule=Host(`keycloak.duoowatch.com`)"
       - "traefik.http.routers.keycloak.entrypoints=web"
       - "traefik.http.services.keycloak.loadbalancer.server.port=8080"
     networks:
-      - streaming-net
-      - db-net
+      - streaming-public
+      - streaming-private

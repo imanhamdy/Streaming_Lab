@@ -1,7 +1,7 @@
 networks:
-  db-net:
+  streaming-private:
     external: true
-    name: db-net
+    name: streaming-private
 
 volumes:
   postgres_data:
@@ -21,4 +21,4 @@ services:
       - postgres_data:/var/lib/postgresql/data
       - ./init:/docker-entrypoint-initdb.d:ro
     networks:
-      - db-net
+      - streaming-private
