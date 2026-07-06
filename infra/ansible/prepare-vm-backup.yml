@@ -1,0 +1,36 @@
+---
+# Prepare vm-backup: backup directory, Veeam repository, node-exporter
+- name: Prepare vm-backup
+  hosts: backup
+  become: true
+
+  roles:
+    - node-exporter
+    - backup-repository
+
+  tasks:
+    - name: Create backup root directory
+      file:
+        path: /backup
+        state: directory
+        owner: principal
+        group: principal
+        mode: "0750"
+
+    - name: Create backup subdirectories
+      file:
+        path: "/backup/{{ item }}"
+        state: directory
+        owner: principal
+        group: principal
+        mode: "0750"
+      loop:
+        - veeam
+        - manual
+
+    - name: Enable QEMU guest agent
+      systemd:
+        name: qemu-guest-agent
+        enabled: true
+        state: started
+      ignore_errors: true
