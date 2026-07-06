@@ -1,0 +1,71 @@
+---
+# Prepare vm-streaming: Docker, networks, directories, node-exporter
+- name: Prepare vm-streaming
+  hosts: streaming
+  become: true
+
+  vars:
+    repo_path: /home/principal/streaming-lab
+    docker_networks:
+      - name: streaming-public
+        internal: false
+      - name: streaming-private
+        internal: true
+      - name: streaming-monitoring
+        internal: false
+
+  roles:
+    - docker
+    - node-exporter
+
+  tasks:
+    - name: Create streaming-lab directory
+      file:
+        path: "{{ repo_path }}"
+        state: directory
+        owner: principal
+        group: principal
+        mode: "0755"
+
+    - name: Create Docker networks
+      community.docker.docker_network:
+        name: "{{ item.name }}"
+        internal: "{{ item.internal }}"
+        state: present
+      loop: "{{ docker_networks }}"
+
+    - name: Create media directory for Jellyfin
+      file:
+        path: /home/principal/media
+        state: directory
+        owner: principal
+        group: principal
+        mode: "0755"
+
+    - name: Install cron jobs for backups
+      cron:
+        name: "{{ item.name }}"
+        minute: "{{ item.minute }}"
+        hour: "{{ item.hour }}"
+        job: "{{ item.job }}"
+        user: principal
+      loop:
+        - name: "PostgreSQL dump to MinIO"
+          hour: "1"
+          minute: "0"
+          job: "bash {{ repo_path }}/scripts/backup/backup_pgsql_to_minio.sh >> /var/log/streaming-backup.log 2>&1"
+        - name: "Config backup to MinIO"
+          hour: "2"
+          minute: "30"
+          job: "bash {{ repo_path }}/scripts/backup/backup_configs_to_minio.sh >> /var/log/streaming-backup.log 2>&1"
+        - name: "Cleanup old MinIO dumps"
+          hour: "3"
+          minute: "0"
+          job: "bash {{ repo_path }}/scripts/backup/cleanup_old_dumps.sh >> /var/log/streaming-backup.log 2>&1"
+
+    - name: Enable QEMU guest agent
+      systemd:
+        name: qemu-guest-agent
+        enabled: true
+        state: started
+      ignore_errors: true

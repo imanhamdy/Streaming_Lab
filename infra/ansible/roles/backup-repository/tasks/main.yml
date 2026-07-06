@@ -1,0 +1,40 @@
+---
+- name: Create /backup directory
+  file:
+    path: /backup
+    state: directory
+    owner: principal
+    group: principal
+    mode: "0750"
+
+- name: Create backup subdirectories
+  file:
+    path: "/backup/{{ item }}"
+    state: directory
+    owner: principal
+    group: principal
+    mode: "0750"
+  loop:
+    - veeam
+    - manual
+    - logs
+
+- name: Install Veeam Agent for Linux prerequisites
+  apt:
+    name:
+      - dkms
+      - curl
+    state: present
+    update_cache: true
+
+- name: Add Veeam repository key
+  apt_key:
+    url: https://www.veeam.com/packageKey/GPGkey.gpg
+    state: present
+  ignore_errors: true
+
+- name: Note — Veeam Agent
+  debug:
+    msg: >
+      Veeam Agent for Linux requires manual licence activation and job
+      creation via 'veeam' CLI after package install. See docs/sauvegarde/PROCEDURE_BACKUP_RESTORE.md.
