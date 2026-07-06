@@ -37,10 +37,12 @@ run_test  4  "Volumes"        "test_volumes.sh"
 run_test  5  "MinIO buckets"  "test_minio_buckets.sh"
 run_test  6  "PG Backup"      "test_pgsql_backup.sh"
 run_test  7  "PG Restore"     "test_pgsql_restore.sh"
-run_test  8  "Monitoring"     "test_monitoring.sh"
-run_test  9  "SSO"            "test_sso.sh"
-run_test 10  "Vault"          "test_vault.sh"
-run_test 11  "Backup repo"    "test_backup_repository.sh"
+run_test  8  "Replication"    "test_replication.sh"
+run_test  9  "Failover"       "test_failover.sh"
+run_test 10  "Monitoring"     "test_monitoring.sh"
+run_test 11  "SSO"            "test_sso.sh"
+run_test 12  "Vault"          "test_vault.sh"
+run_test 13  "Backup repo"    "test_backup_repository.sh"
 
 rm -f /tmp/test_output_$$
 
