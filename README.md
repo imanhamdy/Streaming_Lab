@@ -38,16 +38,17 @@ Infrastructure homelab de streaming video sur Proxmox VE 8 - Ynov Campus B3 INFR
 
 | Document | Contenu |
 |---|---|
-| [CHARTE_INFORMATIQUE](docs/CHARTE_INFORMATIQUE.md) | Politique de securite |
-| [ANALYSE_RISQUES](docs/ANALYSE_RISQUES.md) | Matrice de risques ISO 27005 |
-| [BIA](docs/BIA.md) | Business Impact Analysis - RTO/RPO |
-| [PLAN_URGENCE_MALWARE](docs/PLAN_URGENCE_MALWARE.md) | Reponse aux incidents malware |
-| [PLAN_TELETRAVAIL](docs/PLAN_TELETRAVAIL.md) | Plan teletravail securise |
-| [PROCEDURE_BACKUP_RESTORE](docs/PROCEDURE_BACKUP_RESTORE.md) | Sauvegarde & restauration |
-| [DAT_ITIL_SUPPLEMENT](docs/DAT_ITIL_SUPPLEMENT.md) | ITIL v4 + ISO 20000 + ISO 27001 |
-| [COMPARATIF_SOLUTIONS](docs/COMPARATIF_SOLUTIONS.md) | TCO & justification des choix |
-| [PLAN_DEPLOIEMENT](docs/PLAN_DEPLOIEMENT.md) | Plan de deploiement par phases |
-| [GREEN_IT](docs/GREEN_IT.md) | Indicateurs Green IT & RSE |
+| [CARTE_COMPETENCES](docs/projet/CARTE_COMPETENCES.md) | Mapping grille d'evaluation UF INFRA <-> livrables |
+| [CHARTE_INFORMATIQUE](docs/securite/CHARTE_INFORMATIQUE.md) | Politique de securite |
+| [ANALYSE_RISQUES](docs/securite/ANALYSE_RISQUES.md) | Matrice de risques ISO 27005 |
+| [BIA](docs/securite/BIA.md) | Business Impact Analysis - RTO/RPO |
+| [PLAN_URGENCE_MALWARE](docs/securite/PLAN_URGENCE_MALWARE.md) | Reponse aux incidents malware |
+| [PLAN_TELETRAVAIL](docs/securite/PLAN_TELETRAVAIL.md) | Plan teletravail securise |
+| [PROCEDURE_BACKUP_RESTORE](docs/sauvegarde/PROCEDURE_BACKUP_RESTORE.md) | Sauvegarde & restauration |
+| [DAT_ITIL_SUPPLEMENT](docs/ITIL/DAT_ITIL_SUPPLEMENT.md) | ITIL v4 + ISO 20000 + ISO 27001 |
+| [COMPARATIF_SOLUTIONS](docs/projet/COMPARATIF_SOLUTIONS.md) | TCO & justification des choix |
+| [PLAN_DEPLOIEMENT](docs/projet/PLAN_DEPLOIEMENT.md) | Plan de deploiement par phases |
+| [GREEN_IT](docs/projet/GREEN_IT.md) | Indicateurs Green IT & RSE |
 
 ## Equipe
 
