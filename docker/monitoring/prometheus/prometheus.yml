@@ -21,7 +21,7 @@ scrape_configs:
 
   - job_name: "node-vm-streaming"
     static_configs:
-      - targets: ["172.18.0.1:9100"]
+      - targets: ["node-exporter:9100"]
         labels:
           instance: "vm-streaming"
           env: "prod"
@@ -64,3 +64,11 @@ scrape_configs:
       - targets: ["postgres-exporter:9187"]
         labels:
           env: "prod"
+
+  # ── CROWDSEC ──────────────────────────────────────────────────
+  - job_name: "crowdsec"
+    static_configs:
+      - targets: ["crowdsec:6060"]
+        labels:
+          env: "prod"
+          instance: "vm-streaming"

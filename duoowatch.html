@@ -1636,6 +1636,78 @@ function incResolve() {
     if (el) el.textContent = t;
   }, 60);
 }
+
+// ══════════ HASH ROUTING ══════════
+const _slugToSeries = {
+  'la-requete':'request','confiance-zero':'zerotrust','toujours-en-veille':'watching',
+  'quand-tout-casse':'incident','apres-la-chute':'afterfall','le-cout-du-streaming':'cost',
+  'les-donnees-survivent':'survive','linfra-en-code':'devops'
+};
+let _hashLock = false;
+
+function _pushHash(h) {
+  if (_hashLock) return;
+  history.replaceState(null, '', '#' + h);
+}
+
+function _navFromHash() {
+  const raw = decodeURIComponent(window.location.hash.replace(/^#\/?/, ''));
+  if (!raw) return;
+  const parts = raw.split('/');
+  _hashLock = true;
+  try {
+    if (parts[0] === 'team') {
+      switchTab('team');
+      if (parts[1] && teamData[parts[1]]) setTimeout(() => openProfile(parts[1]), 80);
+    } else if (parts[0] === 'series') {
+      switchTab('series');
+      if (parts[1]) {
+        const sid = _slugToSeries[parts[1]] || parts[1];
+        setTimeout(() => {
+          openSeries(sid);
+          if (parts[2] !== undefined) {
+            // support both numeric index and "episode-NN-*" slugs
+            const m = String(parts[2]).match(/^(?:episode-)?(\d+)/i);
+            const idx = m ? (parseInt(m[1], 10) - (m[0].startsWith('episode') ? 1 : 0)) : parseInt(parts[2], 10);
+            if (!isNaN(idx)) setTimeout(() => openEpisode(sid, idx), 80);
+          }
+        }, 80);
+      }
+    } else if (parts[0] === 'journey') {
+      switchTab('journey'); renderFilmGrid();
+    } else if (parts[0] === 'live') {
+      switchTab('live'); renderLive('all');
+    } else if (['home','series','live','team','journey'].includes(parts[0])) {
+      switchTab(parts[0]);
+    }
+  } finally {
+    setTimeout(() => { _hashLock = false; }, 200);
+  }
+}
+
+// Patch navigation functions to update hash
+const _origSwitchTab = switchTab;
+switchTab = function(t) { _origSwitchTab(t); _pushHash(t); };
+
+const _origOpenSeries = openSeries;
+openSeries = function(id) {
+  _origOpenSeries(id);
+  const slug = Object.keys(_slugToSeries).find(k => _slugToSeries[k] === id) || id;
+  _pushHash('series/' + slug);
+};
+
+const _origOpenEpisode = openEpisode;
+openEpisode = function(sid, i) {
+  _origOpenEpisode(sid, i);
+  const slug = Object.keys(_slugToSeries).find(k => _slugToSeries[k] === sid) || sid;
+  _pushHash('series/' + slug + '/episode-' + String(i + 1).padStart(2, '0'));
+};
+
+const _origOpenProfile = openProfile;
+openProfile = function(id) { _origOpenProfile(id); _pushHash('team/' + id); };
+
+window.addEventListener('hashchange', _navFromHash);
+window.addEventListener('load', _navFromHash);
 </script>
 </body>
 </html>
