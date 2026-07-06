@@ -27,7 +27,7 @@ echo "[1/4] Downloading latest dump from MinIO..."
 mkdir -p /tmp/restore-test-$$
 
 LATEST=$(docker run --rm \
-  --network streaming-private \
+  --network streaming-net \
   -e MINIO_ROOT_USER="$MINIO_ROOT_USER" \
   -e MINIO_ROOT_PASSWORD="$MINIO_ROOT_PASSWORD" \
   minio/mc:latest \
@@ -40,7 +40,7 @@ if [ -z "$LATEST" ]; then
 fi
 
 docker run --rm \
-  --network streaming-private \
+  --network streaming-net \
   -v /tmp/restore-test-$$:/restore \
   -e MINIO_ROOT_USER="$MINIO_ROOT_USER" \
   -e MINIO_ROOT_PASSWORD="$MINIO_ROOT_PASSWORD" \
@@ -55,7 +55,7 @@ echo ""
 echo "[2/4] Starting temporary PostgreSQL container..."
 docker run -d \
   --name "$RESTORE_CONTAINER" \
-  --network streaming-private \
+  --network db-net \
   -e POSTGRES_PASSWORD=testonly \
   -e POSTGRES_USER=postgres \
   postgres:17-alpine

@@ -27,7 +27,7 @@ fi
 echo ""
 echo "[2/4] Checking dump in MinIO bucket db-dumps..."
 LATEST=$(docker run --rm \
-  --network streaming-private \
+  --network streaming-net \
   -e MINIO_ROOT_USER="$MINIO_ROOT_USER" \
   -e MINIO_ROOT_PASSWORD="$MINIO_ROOT_PASSWORD" \
   minio/mc:latest \
@@ -46,7 +46,7 @@ echo ""
 echo "[3/4] Downloading and testing dump readability..."
 mkdir -p /tmp/backup-test-$$
 docker run --rm \
-  --network streaming-private \
+  --network streaming-net \
   -v /tmp/backup-test-$$:/restore \
   -e MINIO_ROOT_USER="$MINIO_ROOT_USER" \
   -e MINIO_ROOT_PASSWORD="$MINIO_ROOT_PASSWORD" \
