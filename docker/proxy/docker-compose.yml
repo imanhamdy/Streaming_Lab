@@ -35,3 +35,18 @@ services:
       - "traefik.http.middlewares.auth.basicauth.users=${TRAEFIK_DASHBOARD_USERS}"
     networks:
       - streaming-public
+
+  carto:
+    image: nginx:alpine
+    container_name: carto
+    restart: unless-stopped
+    volumes:
+      - /home/principal/streaming-lab/duoowatch.html:/usr/share/nginx/html/index.html:ro
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=streaming-public"
+      - "traefik.http.routers.carto.rule=Host(`carto.duoowatch.com`)"
+      - "traefik.http.routers.carto.entrypoints=web"
+      - "traefik.http.services.carto.loadbalancer.server.port=80"
+    networks:
+      - streaming-public
