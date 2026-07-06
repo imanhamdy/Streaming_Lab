@@ -22,7 +22,8 @@ Ce document décrit l'architecture réseau complète : équipements physiques, V
 | VLAN | Réseau | Usage | Équipements |
 |------|--------|-------|-------------|
 | 10 | 192.168.10.0/24 | Services applicatifs | vm-streaming (192.168.10.2) |
-| 20 | 192.168.20.0/24 | Sauvegardes + DNS | vm-backup (192.168.20.2) · DNS-01 Pi (192.168.20.20) |
+| 20 | 192.168.20.0/24 | DNS physique | DNS-01 Pi (192.168.20.20) |
+| 30 | 192.168.30.0/24 | Sauvegardes | vm-backup (192.168.30.2) · Veeam Repository |
 | 90 | 192.168.90.0/24 | Management | Proxmox (192.168.90.50) · SW-01 (192.168.90.10) |
 
 Le FortiGate applique des ACLs entre VLANs : le VLAN 10 (services) ne peut pas initier de connexion vers le VLAN 20 (sauvegardes) sauf sur les ports autorisés.
@@ -94,7 +95,7 @@ Enregistrements internes recommandés (DNS-01) :
 | Hostname | IP |
 |----------|----|
 | `vm-streaming.streaminglab.local` | 192.168.10.2 |
-| `vm-backup.streaminglab.local` | 192.168.20.2 |
+| `vm-backup.streaminglab.local` | 192.168.30.2 |
 
 ---
 

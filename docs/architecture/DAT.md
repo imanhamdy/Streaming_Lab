@@ -44,7 +44,7 @@ Le projet Streaming Lab consiste à déployer une infrastructure complète de di
 | VM | Rôle | OS | IP | VLAN | RAM | vCPU |
 |----|------|----|----|------|-----|------|
 | vm-streaming | Services applicatifs (18 conteneurs Docker) | Debian 12 | 192.168.10.2 | VLAN 10 | 8 Go | 4 |
-| vm-backup | Sauvegardes Veeam B&R | Debian 12 | 192.168.20.2 | VLAN 20 | 4 Go | 2 |
+| vm-backup | Sauvegardes Veeam B&R | Debian 12 | 192.168.30.2 | VLAN 30 | 4 Go | 2 |
 
 > **Note :** La résolution DNS interne est assurée par le Raspberry Pi 3B+ (DNS-01, 192.168.20.20, VLAN 20) — équipement physique dédié, pas une VM.
 
@@ -67,7 +67,8 @@ FortiGate 60F (10.0.0.1)  ← Firewall · ACLs · VPN IPsec
 Cisco 3650 48P (SW-01, 192.168.90.10)
     │
     ├── VLAN 10 (192.168.10.0/24)  → vm-streaming (services)
-    ├── VLAN 20 (192.168.20.0/24)  → vm-backup + DNS-01 (Raspberry Pi)
+    ├── VLAN 20 (192.168.20.0/24)  → DNS-01 Raspberry Pi (192.168.20.20)
+    ├── VLAN 30 (192.168.30.0/24)  → vm-backup (192.168.30.2) · Veeam Repository
     └── VLAN 90 (192.168.90.0/24)  → Management (Proxmox iDRAC, SW-01)
 ```
 
@@ -76,7 +77,8 @@ Cisco 3650 48P (SW-01, 192.168.90.10)
 | VLAN | Réseau | Usage |
 |------|--------|-------|
 | 10 | 192.168.10.0/24 | vm-streaming — services applicatifs |
-| 20 | 192.168.20.0/24 | vm-backup + DNS-01 Raspberry Pi |
+| 20 | 192.168.20.0/24 | DNS-01 Raspberry Pi (192.168.20.20) |
+| 30 | 192.168.30.0/24 | vm-backup (192.168.30.2) — Veeam Repository |
 | 90 | 192.168.90.0/24 | Management (Proxmox, iDRAC, switch) |
 
 ### Flux TLS
@@ -296,7 +298,7 @@ CrowdSec est déployé en mode **log analyser** : il analyse les logs produits p
 | Copie | Support | Outil |
 |-------|---------|-------|
 | 1 — locale | Volumes Docker (vm-streaming) | Docker volumes |
-| 2 — vm-backup | Veeam B&R sur vm-backup (VLAN 20) | Veeam Agent |
+| 2 — vm-backup | Veeam Worker → vm-backup:/backup (192.168.30.2, VLAN 30) | Veeam B&R |
 | 3 — objet | MinIO buckets (db-dumps, backups) | Scripts cron |
 
 ### RTO / RPO

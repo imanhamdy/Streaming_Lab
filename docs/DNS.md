@@ -35,7 +35,7 @@ La résolution DNS interne est assurée par le **Raspberry Pi 3B+** (DNS-01) :
 | Hostname | IP |
 |----------|----|
 | `vm-streaming.streaminglab.local` | 192.168.10.2 |
-| `vm-backup.streaminglab.local` | 192.168.20.2 |
+| `vm-backup.streaminglab.local` | 192.168.30.2 |
 | `proxmox.streaminglab.local` | 192.168.90.50 |
 
 ### Résolution Docker
