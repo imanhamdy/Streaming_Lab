@@ -443,6 +443,8 @@ html,body{height:100%;background:var(--bg);font-family:var(--sans);color:var(--t
 .arch-node-click{cursor:pointer;transition:filter .15s,transform .1s}
 .arch-node-click:hover{filter:brightness(1.4);transform:scale(1.02)}
 </style>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+<script>mermaid.initialize({startOnLoad:false,theme:'dark',darkMode:true,themeVariables:{primaryColor:'#1D9E75',primaryTextColor:'#eef0f8',primaryBorderColor:'#4ecbaa',lineColor:'#4ecbaa',background:'#09090f',mainBkg:'#12131e',nodeBorder:'#4ecbaa',clusterBkg:'#0d0d16',titleColor:'#eef0f8',edgeLabelBackground:'#12131e',fontSize:'12px'}});</script>
 </head>
 <body>
 <div class="app">
@@ -506,6 +508,10 @@ html,body{height:100%;background:var(--bg);font-family:var(--sans);color:var(--t
       <a href="https://github.com/imanhamdy/Streaming_Lab/actions/runs/28662530761" target="_blank" rel="noopener" style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:rgba(78,203,170,0.06);border:1px solid rgba(78,203,170,0.18);border-radius:10px;font-size:11px;text-decoration:none">
         <span style="font-size:14px">✅</span>
         <div><div style="color:#eef0f8;font-weight:600">CI/CD Pipeline — run #28662530761 ↗</div><div style="color:var(--text3);font-size:10px">GitHub Actions · lint + Trivy + Gitleaks · PASS</div></div>
+      </a>
+      <a href="https://projet-libre.atlassian.net/jira/software/projects/KAN/boards/1" target="_blank" rel="noopener" style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:rgba(78,203,170,0.06);border:1px solid rgba(78,203,170,0.18);border-radius:10px;font-size:11px;text-decoration:none">
+        <span style="font-size:14px">✅</span>
+        <div><div style="color:#eef0f8;font-weight:600">Jira KAN — Board Kanban ↗</div><div style="color:var(--text3);font-size:10px">Backlog · Sprints · Suivi agile · projet KAN</div></div>
       </a>
       <div style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:rgba(240,160,48,0.06);border:1px solid rgba(240,160,48,0.2);border-radius:10px;font-size:11px">
         <span style="font-size:14px">🟡</span>
@@ -981,6 +987,92 @@ const docs = {
   'doc-backup321':{label:'Stratégie de Sauvegarde 3-2-1',html:`<div class="doc-eyebrow">Stratégie · Veeam + MinIO + off-site cible</div><div class="doc-h1">Règle 3-2-1 — Streaming Lab</div><div class="doc-igrid"><div class="doc-icell"><div class="doc-ick">3 copies</div><div class="doc-icv">prod + Veeam + MinIO</div></div><div class="doc-icell"><div class="doc-ick">2 supports</div><div class="doc-icv">VM storage + objet S3</div></div></div><div class="doc-h2">Composants</div><div class="doc-p">Veeam B&R : vm-streaming → Proxmox snapshot → Veeam Worker → vm-backup:/backup, incrémentale 02h00 / full dimanche 01h00 / rétention 30j. pg_dump : cron 03h00 → MinIO db-dumps. Config export : hebdomadaire → MinIO backups.</div><div class="doc-h2">Limite actuelle — 1 copie hors site manquante</div><div class="doc-p">⚠ MinIO est sur vm-streaming (même serveur que la prod). La règle 3-2-1 est partiellement satisfaite. Objectif : répliquer db-dumps vers S3 externe (Backblaze B2 ou Scaleway Object Storage).</div><div class="doc-note">🔮 Évolution cible : réplication off-site S3 pour 3ème copie géographiquement séparée. ✅ Test #001 restauration PASS 2026-07-06.</div>`},
   'doc-pca':{label:'PCA / PRA — Plan de Continuité & Reprise',html:`<div class="doc-eyebrow">Compétence 3.17 · Version 1.0 · Juillet 2026</div><div class="doc-h1">PCA / PRA — Streaming Lab</div><div class="doc-igrid"><div class="doc-icell"><div class="doc-ick">RPO</div><div class="doc-icv">24 heures</div></div><div class="doc-icell"><div class="doc-ick">RTO global</div><div class="doc-icv">4 heures</div></div></div><div class="doc-h2">PCA — Modes dégradés</div><div class="doc-p">Container tombé : docker restart → RTO &lt; 5 min. vm-streaming redémarrée : make up → RTO &lt; 30 min. DNS indisponible : fallback 8.8.8.8 sur FortiGate.</div><div class="doc-h2">PRA — Procédure de reprise (8 étapes)</div><div class="doc-p">1. Évaluer + notifier (15 min) → 2. Isoler FortiGate (10 min) → 3. Identifier point Veeam (10 min) → 4. Restaurer VM (45–90 min) → 5. Vérifier containers (30 min) → 6. Réactiver réseau (10 min) → 7. Valider services (15 min) → 8. Post-mortem (24h après). RTO estimé : 2h00–2h50.</div><div class="doc-h2">Ordre de redémarrage</div><div class="doc-p">etcd → postgres-01 → haproxy-postgres → Keycloak → Vault → Traefik → MinIO → Jellyfin → Monitoring.</div><div class="doc-note">Compétence 3.17 : données répliquées disponibles et opérationnelles — prouvé par Test #001 RESTORE_TEST_LOG.md.</div>`},
   // ── Projet & Déploiement ──
+  'doc-mcd':{label:'MCD — Modèle Conceptuel de Données (Merise)',html:`<div class="doc-eyebrow">Merise · Base PostgreSQL Keycloak · streaming-lab</div><div class="doc-h1">Modèle Conceptuel de Données</div><div class="doc-p">Entités principales du domaine identité/accès hébergé sur PostgreSQL 17 (cluster Patroni). Le MCD représente les associations sans dépendance technologique.</div><div class="mermaid" style="margin:12px 0">erDiagram
+    REALM ||--o{ USER_ENTITY : "contient (1,N)"
+    REALM ||--o{ CLIENT : "déclare (1,N)"
+    REALM ||--o{ KEYCLOAK_ROLE : "définit (1,N)"
+    REALM ||--o{ CLIENT_SCOPE : "possède (1,N)"
+    REALM ||--o{ USER_SESSION : "gère (1,N)"
+    USER_ENTITY ||--o{ CREDENTIAL : "a (1,N)"
+    USER_ENTITY ||--o{ USER_SESSION : "ouvre (0,N)"
+    USER_ENTITY }o--o{ KEYCLOAK_ROLE : "USER_ROLE_MAPPING (N,N)"
+    CLIENT ||--o| RESOURCE_SERVER : "protège (0,1)"
+    CLIENT ||--o{ CLIENT_SCOPE : "CLIENT_SCOPE_MAPPING (N,N)"
+</div><div class="doc-h2">Entités</div><div class="doc-p"><strong style="color:#4ecbaa">REALM</strong> — domaine d'identité (streaming-lab). <strong style="color:#4ecbaa">USER_ENTITY</strong> — utilisateur SSO (admin, service account). <strong style="color:#4ecbaa">CLIENT</strong> — application OIDC (jellyfin, grafana, minio, vault). <strong style="color:#4ecbaa">KEYCLOAK_ROLE</strong> — rôles RBAC (admin, user, viewer). <strong style="color:#4ecbaa">CREDENTIAL</strong> — hash mot de passe (bcrypt). <strong style="color:#4ecbaa">RESOURCE_SERVER</strong> — API protégée par Authorization Services.</div><div class="doc-note">17+ tables vérifiées lors du Test #001 restore (2026-07-06). Seul SGBD du projet : PostgreSQL 17 via Patroni HA.</div>`},
+
+  'doc-mld':{label:'MLD — Modèle Logique de Données (PostgreSQL)',html:`<div class="doc-eyebrow">Merise MLD · PostgreSQL 17 · Patroni HA</div><div class="doc-h1">Modèle Logique de Données</div><div class="doc-p">Transposition relationnelle du MCD. Chaque entité devient une table avec PK, les associations N:N génèrent des tables de jonction.</div><div class="mermaid" style="margin:12px 0">erDiagram
+    REALM {
+        varchar id PK
+        varchar name
+        boolean enabled
+        varchar ssl_required
+    }
+    USER_ENTITY {
+        varchar id PK
+        varchar username
+        varchar email
+        varchar realm_id FK
+        boolean enabled
+        timestamp created_timestamp
+    }
+    KEYCLOAK_ROLE {
+        varchar id PK
+        varchar name
+        varchar realm_id FK
+        boolean client_role
+        varchar client FK
+    }
+    CLIENT {
+        varchar id PK
+        varchar client_id
+        varchar realm_id FK
+        boolean enabled
+        varchar protocol
+    }
+    CLIENT_SCOPE {
+        varchar id PK
+        varchar name
+        varchar realm_id FK
+        varchar protocol
+    }
+    CREDENTIAL {
+        varchar id PK
+        varchar type
+        varchar user_id FK
+        text secret_data
+        text credential_data
+    }
+    USER_ROLE_MAPPING {
+        varchar user_id FK
+        varchar role_id FK
+    }
+    USER_SESSION {
+        varchar id PK
+        varchar user_id FK
+        varchar realm_id FK
+        bigint started
+        varchar ip_address
+    }
+    RESOURCE_SERVER {
+        varchar id PK
+        varchar name
+        varchar client_scope_id FK
+        boolean allow_rs_remote_mgmt
+    }
+    REALM ||--o{ USER_ENTITY : "realm_id"
+    REALM ||--o{ CLIENT : "realm_id"
+    REALM ||--o{ KEYCLOAK_ROLE : "realm_id"
+    REALM ||--o{ CLIENT_SCOPE : "realm_id"
+    REALM ||--o{ USER_SESSION : "realm_id"
+    USER_ENTITY ||--o{ CREDENTIAL : "user_id"
+    USER_ENTITY ||--o{ USER_ROLE_MAPPING : "user_id"
+    KEYCLOAK_ROLE ||--o{ USER_ROLE_MAPPING : "role_id"
+    USER_ENTITY ||--o{ USER_SESSION : "user_id"
+    CLIENT ||--o| RESOURCE_SERVER : "client_scope_id"
+</div><div class="doc-note">Clés primaires UUID v4 (varchar). Pas de clé auto-incrémentée — compatible déploiement distribué Patroni. Schéma généré par Keycloak 24 au premier démarrage.</div>`},
+
+  'doc-agile':{label:'Suivi Agile — Backlog, Sprints & Kanban Jira',html:`<div class="doc-eyebrow">Gestion de projet · Jira Software · Kanban</div><div class="doc-h1">Suivi Agile — Streaming Lab</div><div class="doc-igrid"><div class="doc-icell"><div class="doc-ick">Méthode</div><div class="doc-icv">Kanban</div></div><div class="doc-icell"><div class="doc-ick">Outil</div><div class="doc-icv">Jira Software</div></div></div><div class="doc-h2">Tableau Kanban</div><div class="doc-p">Le backlog du projet est géré sur Jira Software (projet KAN). Chaque tâche technique correspond à une user story ou à un ticket d'infrastructure. Les colonnes reflètent l'avancement réel : À FAIRE · EN COURS · EN REVUE · TERMINÉ.</div><a href="https://projet-libre.atlassian.net/jira/software/projects/KAN/boards/1" target="_blank" rel="noopener" style="display:flex;align-items:center;justify-content:center;gap:8px;padding:12px 18px;background:rgba(78,203,170,0.10);border:1px solid rgba(78,203,170,0.3);border-radius:11px;color:#4ecbaa;font-size:12px;font-weight:700;text-decoration:none;margin:12px 0">📋 OUVRIR LE BOARD JIRA KAN ↗</a><div class="doc-h2">Correspondance GitFlow ↔ Jira</div><div class="doc-p">Chaque ticket Jira correspond à une branche feature/* dans GitFlow. La PR GitHub close le ticket. Les épics Jira correspondent aux phases du Plan de Déploiement (P1–P7).</div><div class="doc-h2">Sprints</div><div class="doc-p">Sprint 1 : Infrastructure (Proxmox, VMs, réseau) ✅ · Sprint 2 : Services applicatifs (Docker stacks) ✅ · Sprint 3 : Sécurité & Monitoring (IDS, Grafana) ✅ · Sprint 4 : DevOps & Documentation ✅.</div><div class="doc-note">Backlog archivé sur Jira — preuve de la gestion de projet agile tout au long du semestre.</div>`},
+
   'doc-deploiement':{label:'Plan de Déploiement',html:`<div class="doc-eyebrow">Compétence 4 BC02 · Version 1.0 · Juin 2026</div><div class="doc-h1">Plan de Déploiement — 7 Phases</div><div class="doc-h2">Avancement</div><table style="width:100%;border-collapse:collapse;margin-bottom:10px;font-size:10px"><tr style="background:#0F6E56"><td style="padding:4px 6px;color:#9FE1CB;border:0.5px solid rgba(255,255,255,0.08)">Phase</td><td style="padding:4px 6px;color:#9FE1CB;border:0.5px solid rgba(255,255,255,0.08)">Responsable</td><td style="padding:4px 6px;color:#9FE1CB;border:0.5px solid rgba(255,255,255,0.08)">Statut</td></tr><tr style="background:#0d1117"><td style="padding:3px 6px;color:#eef0f8;border:0.5px solid rgba(255,255,255,0.06)">P1 Proxmox & VMs</td><td style="padding:3px 6px;color:rgba(240,237,232,0.7);border:0.5px solid rgba(255,255,255,0.06)">Quentin</td><td style="padding:3px 6px;color:#4ecbaa;border:0.5px solid rgba(255,255,255,0.06)">✅ Terminé</td></tr><tr style="background:#111418"><td style="padding:3px 6px;color:#eef0f8;border:0.5px solid rgba(255,255,255,0.06)">P2 Réseau & sécurité</td><td style="padding:3px 6px;color:rgba(240,237,232,0.7);border:0.5px solid rgba(255,255,255,0.06)">Quentin + Iman</td><td style="padding:3px 6px;color:#f0a030;border:0.5px solid rgba(255,255,255,0.06)">🔄 En cours</td></tr><tr style="background:#0d1117"><td style="padding:3px 6px;color:#eef0f8;border:0.5px solid rgba(255,255,255,0.06)">P3 BDD & stockage</td><td style="padding:3px 6px;color:rgba(240,237,232,0.7);border:0.5px solid rgba(255,255,255,0.06)">Iman</td><td style="padding:3px 6px;color:#4ecbaa;border:0.5px solid rgba(255,255,255,0.06)">✅ Terminé</td></tr><tr style="background:#111418"><td style="padding:3px 6px;color:#eef0f8;border:0.5px solid rgba(255,255,255,0.06)">P4 Monitoring & IDS</td><td style="padding:3px 6px;color:rgba(240,237,232,0.7);border:0.5px solid rgba(255,255,255,0.06)">Adrien</td><td style="padding:3px 6px;color:#4ecbaa;border:0.5px solid rgba(255,255,255,0.06)">✅ Terminé</td></tr><tr style="background:#0d1117"><td style="padding:3px 6px;color:#eef0f8;border:0.5px solid rgba(255,255,255,0.06)">P5 Services app</td><td style="padding:3px 6px;color:rgba(240,237,232,0.7);border:0.5px solid rgba(255,255,255,0.06)">Iman</td><td style="padding:3px 6px;color:#4ecbaa;border:0.5px solid rgba(255,255,255,0.06)">✅ Terminé</td></tr><tr style="background:#111418"><td style="padding:3px 6px;color:#eef0f8;border:0.5px solid rgba(255,255,255,0.06)">P6 DevOps CI/CD</td><td style="padding:3px 6px;color:rgba(240,237,232,0.7);border:0.5px solid rgba(255,255,255,0.06)">Iman</td><td style="padding:3px 6px;color:#4ecbaa;border:0.5px solid rgba(255,255,255,0.06)">✅ Terminé</td></tr><tr style="background:#0d1117"><td style="padding:3px 6px;color:#eef0f8;border:0.5px solid rgba(255,255,255,0.06)">P7 Documentation</td><td style="padding:3px 6px;color:rgba(240,237,232,0.7);border:0.5px solid rgba(255,255,255,0.06)">Tous</td><td style="padding:3px 6px;color:#4ecbaa;border:0.5px solid rgba(255,255,255,0.06)">✅ Terminé</td></tr></table><div class="doc-note">Retard Phase 2 : FortiGate HA livré S18 au lieu de S16. Contrainte : un seul Dell T140, pas de rollback matériel possible.</div>`},
   // ── Composant nodes (architecture clickable) ──
   'nd-traefik':{label:'Traefik v3.3',html:`<div class="doc-eyebrow">streaming-public · Proxy inverse</div><div class="doc-h1">Traefik v3.3</div><div class="doc-igrid"><div class="doc-icell"><div class="doc-ick">Image</div><div class="doc-icv">traefik:v3.3</div></div><div class="doc-icell"><div class="doc-ick">Port interne</div><div class="doc-icv">:80</div></div></div><div class="doc-h2">Rôle</div><div class="doc-p">Point d'entrée unique pour tous les services exposés. Achemine chaque sous-domaine (jellyfin., keycloak., grafana., minio., vault., traefik.) vers le bon conteneur via labels Docker. Reçoit le trafic du tunnel Cloudflare en HTTP interne.</div><div class="doc-h2">Configuration</div><div class="doc-p">Dashboard protégé par basic auth. TLS terminé côté Cloudflare — Traefik n'expose pas de port 443. Compose : <em>docker/proxy/docker-compose.yml</em>.</div><div class="doc-note">Réseau : streaming-public. Aucun port entrant ouvert sur le FortiGate.</div>`},
@@ -1065,6 +1157,8 @@ const seriesData = {
   devops:{icon:'⚙️',title:'L\'INFRA EN CODE',sub:'Ansible, GitFlow, CI/CD · 5 épisodes',color:'#85b7eb',
     episodes:[
       {t:'BOOTSTRAP ANSIBLE 🟡',s:'Provisionnement automatisé des VMs',dur:'4 min',body:'Deux playbooks Ansible : prepare-vm-streaming.yml (Docker CE + Compose, 3 réseaux Docker, crons de sauvegarde, qemu-guest-agent) et prepare-vm-backup.yml (/backup dirs, node-exporter, prérequis Veeam). Rôles : docker, node-exporter, backup-repository. Inventaire : streaming (192.168.10.2) + backup (192.168.30.2). Run réel sur VMs à prévoir avant l\'oral.',chips:['🟡 Playbooks écrits','Rôle docker','Rôle node-exporter']},
+      {t:'SUIVI AGILE — KANBAN JIRA ✅',s:'Backlog, Sprints & tableau de bord',dur:'2 min',body:'Gestion de projet agile sur Jira Software (projet KAN). 4 sprints : Infrastructure → Services → Sécurité/Monitoring → DevOps/Docs. Chaque ticket Jira = une branche feature/* GitFlow. Les épics correspondent aux phases P1–P7 du Plan de Déploiement.<br><br><a href="https://projet-libre.atlassian.net/jira/software/projects/KAN/boards/1" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:6px;padding:8px 14px;background:rgba(78,203,170,0.12);border:1px solid rgba(78,203,170,0.35);border-radius:9px;color:#4ecbaa;font-size:11px;font-weight:700;text-decoration:none">📋 Board Kanban KAN ↗</a>',chips:['✅ Jira KAN','Kanban board','4 sprints'],doc:'doc-agile'},
+      {t:'MODÈLE DE DONNÉES ✅',s:'MCD & MLD Merise — PostgreSQL Keycloak',dur:'3 min',body:'Modélisation UML/Merise de la base PostgreSQL hébergeant Keycloak. MCD : 9 entités (REALM, USER_ENTITY, CLIENT, KEYCLOAK_ROLE, CREDENTIAL, CLIENT_SCOPE, USER_SESSION, USER_ROLE_MAPPING, RESOURCE_SERVER). MLD : transposition relationnelle avec PK UUID v4 et FK. 17+ tables validées lors du Test #001 de restauration.',chips:['✅ MCD Merise','MLD PostgreSQL','17 tables validées'],doc:'doc-mcd'},
       {t:'GITFLOW STRUCTURÉ ✅',s:'Branches feature, develop, main',dur:'3 min',body:'Workflow GitFlow : branches feature/* → develop (intégration continue) → main (production stable). Chaque merge est validé par les CI checks. GitFlow = implémentation native ITIL : feature branch = RFC, PR review = CAB, merge main = MEP.<br><br><pre style="font-family:monospace;font-size:10px;line-height:1.55;color:#9FE1CB;background:rgba(0,0,0,0.25);border:1px solid rgba(78,203,170,0.15);border-radius:8px;padding:10px;overflow-x:auto;margin:0">main          ●────────────────────────────────●  (production)\n               ╲                              ╱\ndevelop         ●──●──●──●──●──●──●──●──●──●   (intégration CI)\n               ╱   │    │    │    │    │    ╲\nfeature/       │   │    │    │    │    │     │\n  backup       ●───╯    │    │    │    │     │\n  ci                    ●────╯    │    │     │\n  docker-stacks                  ●────╯     │\n  documentation                             │\n  iac-devops                     ●──────────╯\n  monitoring-ids         ●───────╯</pre>',chips:['✅ GitFlow','feature/* branches','ITIL natif'],doc:'doc-deploiement'},
       {t:'CI/CD — PIPELINE ✅',s:'Lint, Trivy, Gitleaks',dur:'3 min',body:'Pipeline GitHub Actions sur chaque push et PR : lint Docker Compose (yamllint), scan CVE des images (Trivy), scan de secrets dans le code (Gitleaks). La branche main est protégée — aucun merge sans CI vert.<br><br><a href="https://github.com/imanhamdy/Streaming_Lab/actions/runs/28662530761" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:6px;padding:8px 14px;background:rgba(78,203,170,0.12);border:1px solid rgba(78,203,170,0.35);border-radius:9px;color:#4ecbaa;font-size:11px;font-weight:700;text-decoration:none">▶ Voir le run #28662530761 sur GitHub Actions ↗</a>',chips:['✅ CI/CD','Trivy scan','Gitleaks']},
       {t:'LE PROCESSUS RFC ✅',s:'ITIL Gestion des Changements',dur:'2 min',body:'Tout changement normal passe par une RFC avec évaluation CAB. RFC-001 MinIO ✅, RFC-002 credentials ✅, RFC-003 fix Jellyfin ✅ — clôturées en production. RFC-004 monitoring et RFC-005 Cloudflare Tunnel : en cours ou planifiées. GitFlow implémente nativement ce processus.',chips:['ITIL RFC','CAB','RFC-001 ✅'],doc:'doc-changements'},
@@ -1162,6 +1256,8 @@ function openDoc(id) {
   document.getElementById('dv-title').textContent = d.label;
   document.getElementById('dv-body').innerHTML = d.html;
   document.getElementById('docview').classList.add('open');
+  const nodes = Array.from(document.querySelectorAll('#dv-body .mermaid'));
+  if (nodes.length && window.mermaid) setTimeout(()=>mermaid.run({nodes}), 60);
 }
 function closeDoc() { document.getElementById('docview').classList.remove('open'); }
 
