@@ -16,11 +16,11 @@ run_test() {
 
   if bash "$SCRIPT_DIR/$script" &>/tmp/test_output_$$; then
     printf "[PASS]\n"
-    ((PASS++))
+    PASS=$((PASS+1))
   else
     printf "[FAIL]\n"
     sed 's/^/     /' /tmp/test_output_$$ | grep -E "FAIL|error|Error" | head -5 || true
-    ((FAIL++))
+    FAIL=$((FAIL+1))
   fi
 }
 

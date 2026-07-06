@@ -6,8 +6,8 @@ source /home/principal/streaming-lab/.env
 PASS=0
 FAIL=0
 
-ok()   { printf "  [PASS] %s\n" "$1"; ((PASS++)); }
-fail() { printf "  [FAIL] %s\n" "$1"; ((FAIL++)); }
+ok()   { printf "  [PASS] %s\n" "$1"; PASS=$((PASS+1)); }
+fail() { printf "  [FAIL] %s\n" "$1"; FAIL=$((FAIL+1)); }
 
 echo "========================================"
 echo " PostgreSQL Backup Validation"
@@ -27,7 +27,7 @@ fi
 echo ""
 echo "[2/4] Checking dump in MinIO bucket db-dumps..."
 LATEST=$(docker run --rm \
-  --network streaming-net \
+  --network streaming-public \
   -e MINIO_ROOT_USER="$MINIO_ROOT_USER" \
   -e MINIO_ROOT_PASSWORD="$MINIO_ROOT_PASSWORD" \
   minio/mc:latest \
@@ -46,7 +46,7 @@ echo ""
 echo "[3/4] Downloading and testing dump readability..."
 mkdir -p /tmp/backup-test-$$
 docker run --rm \
-  --network streaming-net \
+  --network streaming-public \
   -v /tmp/backup-test-$$:/restore \
   -e MINIO_ROOT_USER="$MINIO_ROOT_USER" \
   -e MINIO_ROOT_PASSWORD="$MINIO_ROOT_PASSWORD" \

@@ -79,6 +79,8 @@ services:
       - /var/log/suricata:/var/log/suricata:ro
       - /var/lib/docker/containers:/var/lib/docker/containers:ro
       - /var/log/journal:/var/log/journal:ro
+    ports:
+      - "1514:1514/tcp"
     command: -config.file=/etc/promtail/config.yml
     depends_on:
       - loki

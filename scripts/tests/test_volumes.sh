@@ -13,14 +13,14 @@ check_volume() {
     mount=$(docker volume inspect "$volume" --format '{{.Mountpoint}}')
     if [ -d "$mount" ]; then
       printf "  [PASS] %-30s exists at %s\n" "$label" "$mount"
-      ((PASS++))
+      PASS=$((PASS+1))
     else
       printf "  [FAIL] %-30s volume exists but mountpoint missing\n" "$label"
-      ((FAIL++))
+      FAIL=$((FAIL+1))
     fi
   else
     printf "  [FAIL] %-30s volume not found\n" "$label"
-    ((FAIL++))
+    FAIL=$((FAIL+1))
   fi
 }
 
@@ -30,13 +30,13 @@ check_rclone_mount() {
 
   if mountpoint -q "$path" 2>/dev/null; then
     printf "  [PASS] %-30s mounted\n" "$label"
-    ((PASS++))
+    PASS=$((PASS+1))
   elif [ -d "$path" ] && [ "$(ls -A "$path" 2>/dev/null)" ]; then
     printf "  [PASS] %-30s accessible (non-empty)\n" "$label"
-    ((PASS++))
+    PASS=$((PASS+1))
   else
     printf "  [FAIL] %-30s not mounted or empty\n" "$label"
-    ((FAIL++))
+    FAIL=$((FAIL+1))
   fi
 }
 

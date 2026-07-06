@@ -8,10 +8,10 @@ check() {
   local name="$1"
   if docker inspect "$name" --format '{{.State.Running}}' 2>/dev/null | grep -q true; then
     printf "  [PASS] %-20s running\n" "$name"
-    ((PASS++))
+    PASS=$((PASS+1))
   else
     printf "  [FAIL] %-20s not running\n" "$name"
-    ((FAIL++))
+    FAIL=$((FAIL+1))
   fi
 }
 

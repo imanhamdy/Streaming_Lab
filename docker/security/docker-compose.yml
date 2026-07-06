@@ -5,6 +5,9 @@ networks:
   streaming-private:
     external: true
     name: streaming-private
+  streaming-monitoring:
+    external: true
+    name: streaming-monitoring
 
 volumes:
   vault_data:
@@ -27,6 +30,7 @@ services:
       - ./crowdsec-acquis.yaml:/etc/crowdsec/acquis.yaml:ro
     networks:
       - streaming-public
+      - streaming-monitoring
 
   vault:
     image: hashicorp/vault:1.17

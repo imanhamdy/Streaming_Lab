@@ -4,8 +4,8 @@ set -euo pipefail
 PASS=0
 FAIL=0
 
-ok()   { printf "  [PASS] %s\n" "$1"; ((PASS++)); }
-fail() { printf "  [FAIL] %s\n" "$1"; ((FAIL++)); }
+ok()   { printf "  [PASS] %s\n" "$1"; PASS=$((PASS+1)); }
+fail() { printf "  [FAIL] %s\n" "$1"; FAIL=$((FAIL+1)); }
 
 echo "========================================"
 echo " SSO / Keycloak Test"

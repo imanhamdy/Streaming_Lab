@@ -17,10 +17,10 @@ for d in "${DOMAINS[@]}"; do
   STATUS=$(curl -s -o /dev/null -w "%{http_code}" --max-time 5 "http://127.0.0.1" -H "Host: $d" || echo "000")
   if [[ "$STATUS" =~ ^(200|301|302|307|308)$ ]]; then
     echo "  OK  $d → HTTP $STATUS"
-    ((PASS++))
+    PASS=$((PASS+1))
   else
     echo " FAIL $d → HTTP $STATUS"
-    ((FAIL++))
+    FAIL=$((FAIL+1))
   fi
 done
 

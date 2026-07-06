@@ -27,7 +27,7 @@ echo "[$(date)] Archive created: $ARCHIVE"
 
 echo "[$(date)] Uploading to MinIO bucket: $BUCKET..."
 docker run --rm \
-  --network streaming-net \
+  --network streaming-public \
   -v /tmp:/backup \
   --entrypoint /bin/sh minio/mc:latest \
   -c "mc alias set minio http://minio:9000 \"$MINIO_ROOT_USER\" \"$MINIO_ROOT_PASSWORD\" && \

@@ -4,8 +4,8 @@ set -euo pipefail
 PASS=0
 FAIL=0
 
-ok()   { printf "  [PASS] %s\n" "$1"; ((PASS++)); }
-fail() { printf "  [FAIL] %s\n" "$1"; ((FAIL++)); }
+ok()   { printf "  [PASS] %s\n" "$1"; PASS=$((PASS+1)); }
+fail() { printf "  [FAIL] %s\n" "$1"; FAIL=$((FAIL+1)); }
 
 http_ok() {
   local label="$1"
@@ -34,18 +34,24 @@ http_ok "Alertmanager health" "http://localhost:9093/-/healthy"
 
 echo ""
 echo "--- Prometheus targets ---"
+# node-vm-dns (192.168.20.2) is a separate lab VM not always deployed — expected down
+EXPECTED_DOWN="node-vm-dns"
+
 TARGETS=$(curl -s "http://localhost:9090/api/v1/targets" 2>/dev/null | \
   python3 -c "import sys,json; d=json.load(sys.stdin); \
     [print(t['labels'].get('job','?'), t['health']) for t in d['data']['activeTargets']]" 2>/dev/null || echo "")
 
 if [ -n "$TARGETS" ]; then
-  UP=$(echo "$TARGETS" | grep -c "up" || true)
-  DOWN=$(echo "$TARGETS" | grep -c "down" || true)
-  ok "Prometheus targets: $UP up, $DOWN down"
-  if [ "$DOWN" -gt 0 ]; then
-    echo "     DOWN targets:"
-    echo "$TARGETS" | grep "down" | while read -r line; do echo "       $line"; done
-    ((FAIL++)); ((PASS--))
+  UP=$(echo "$TARGETS" | grep -c " up" || true)
+  UNEXPECTED_DOWN=$(echo "$TARGETS" | grep " down" | grep -v "$EXPECTED_DOWN" || true)
+  DOWN_COUNT=$(echo "$TARGETS" | grep -c " down" || true)
+  ok "Prometheus targets: $UP up, $DOWN_COUNT down"
+  if [ -n "$UNEXPECTED_DOWN" ]; then
+    echo "     UNEXPECTED DOWN targets:"
+    echo "$UNEXPECTED_DOWN" | while read -r line; do echo "       $line"; done
+    FAIL=$((FAIL+1)); PASS=$((PASS-1))
+  else
+    echo "     (node-vm-dns expected down — separate VM)"
   fi
 else
   fail "Could not reach Prometheus API"

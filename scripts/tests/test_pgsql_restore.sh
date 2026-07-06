@@ -7,8 +7,8 @@ PASS=0
 FAIL=0
 RESTORE_CONTAINER="postgres-restore-test-$$"
 
-ok()   { printf "  [PASS] %s\n" "$1"; ((PASS++)); }
-fail() { printf "  [FAIL] %s\n" "$1"; ((FAIL++)); }
+ok()   { printf "  [PASS] %s\n" "$1"; PASS=$((PASS+1)); }
+fail() { printf "  [FAIL] %s\n" "$1"; FAIL=$((FAIL+1)); }
 
 cleanup() {
   docker stop "$RESTORE_CONTAINER" 2>/dev/null || true
@@ -27,7 +27,7 @@ echo "[1/4] Downloading latest dump from MinIO..."
 mkdir -p /tmp/restore-test-$$
 
 LATEST=$(docker run --rm \
-  --network streaming-net \
+  --network streaming-public \
   -e MINIO_ROOT_USER="$MINIO_ROOT_USER" \
   -e MINIO_ROOT_PASSWORD="$MINIO_ROOT_PASSWORD" \
   minio/mc:latest \
@@ -40,7 +40,7 @@ if [ -z "$LATEST" ]; then
 fi
 
 docker run --rm \
-  --network streaming-net \
+  --network streaming-public \
   -v /tmp/restore-test-$$:/restore \
   -e MINIO_ROOT_USER="$MINIO_ROOT_USER" \
   -e MINIO_ROOT_PASSWORD="$MINIO_ROOT_PASSWORD" \
@@ -55,7 +55,7 @@ echo ""
 echo "[2/4] Starting temporary PostgreSQL container..."
 docker run -d \
   --name "$RESTORE_CONTAINER" \
-  --network db-net \
+  --network streaming-private \
   -e POSTGRES_PASSWORD=testonly \
   -e POSTGRES_USER=postgres \
   postgres:17-alpine

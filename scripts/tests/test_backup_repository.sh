@@ -6,8 +6,8 @@ FAIL=0
 VM_BACKUP_HOST="${VM_BACKUP_HOST:-vm-backup}"
 VM_BACKUP_USER="${VM_BACKUP_USER:-principal}"
 
-ok()   { printf "  [PASS] %s\n" "$1"; ((PASS++)); }
-fail() { printf "  [FAIL] %s\n" "$1"; ((FAIL++)); }
+ok()   { printf "  [PASS] %s\n" "$1"; PASS=$((PASS+1)); }
+fail() { printf "  [FAIL] %s\n" "$1"; FAIL=$((FAIL+1)); }
 
 echo "========================================"
 echo " Veeam Backup Repository Check (vm-backup)"

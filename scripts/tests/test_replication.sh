@@ -5,12 +5,12 @@ set -euo pipefail
 source /home/principal/streaming-lab/.env
 
 PASS=0; FAIL=0
-ok()   { echo "  ✅ $*"; ((PASS++)); }
-fail() { echo "  ❌ $*"; ((FAIL++)); }
+ok()   { echo "  ✅ $*"; PASS=$((PASS+1)); }
+fail() { echo "  ❌ $*"; FAIL=$((FAIL+1)); }
 hdr()  { echo; echo "▶ $*"; }
 
 hdr "Patroni cluster state"
-CLUSTER=$(docker exec postgres-01 patronictl -c /etc/patroni/patroni.yml list 2>/dev/null)
+CLUSTER=$(docker exec postgres-01 patronictl -c /etc/patroni/config.yml list 2>/dev/null)
 echo "$CLUSTER"
 
 LEADER=$(echo "$CLUSTER" | awk '/Leader/ {print $2}')

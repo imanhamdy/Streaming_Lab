@@ -15,7 +15,7 @@ dc() {
 }
 
 echo "==> Creating networks..."
-for net in streaming-net db-net monitoring-net; do
+for net in streaming-public streaming-private streaming-monitoring; do
   docker network inspect "$net" >/dev/null 2>&1 || docker network create "$net"
 done
 
