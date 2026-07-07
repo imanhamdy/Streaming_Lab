@@ -1,5 +1,5 @@
 # Green IT & Éco-responsabilité - Streaming Lab
-**Ynov Campus B3 INFRA - Compétence 15 & 16**
+**Ynov Campus B3 INFRA
 Version 1.0 - Juin 2026
 
 ---
@@ -10,7 +10,7 @@ Le projet Streaming Lab intègre dès sa conception les principes du **Green IT*
 
 ---
 
-## 2. Choix techniques éco-responsables (Compétence 15)
+## 2. Choix techniques éco-responsables 
 
 ### 2.1 Consolidation serveur - principal levier d'économie
 
@@ -76,7 +76,7 @@ Veeam B&R est configuré en mode **incrémental quotidien** avec une sauvegarde 
 
 ---
 
-## 3. Indicateurs environnementaux suivis (Compétence 16)
+## 3. Indicateurs environnementaux suivis 
 
 Les KPIs suivants sont définis, mesurés via Prometheus/Grafana et révisés mensuellement :
 
